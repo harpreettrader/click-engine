@@ -45,7 +45,6 @@ import {
   getObjectTreeViewItemId,
   type EventsBasedObjectProps,
   type EventsBasedObjectCallbacks,
-  type EventsBasedObjectCreationParameters,
 } from './EventsBasedObjectTreeViewItemContent';
 import { type HTMLDataset } from '../Utils/HTMLDataset';
 import { type MenuItemTemplate } from '../UI/Menu/Menu.flow';
@@ -56,7 +55,6 @@ import { type GDevelopTheme } from '../UI/Theme';
 
 const gd: libGDevelop = global.gd;
 
-export const extensionConfigurationRootFolderId = 'extension-configuration';
 export const extensionObjectsRootFolderId = 'extension-objects';
 export const extensionBehaviorsRootFolderId = 'extension-behaviors';
 export const extensionFunctionsRootFolderId = 'extension-functions';
@@ -76,10 +74,6 @@ const styles = {
 
 const extensionItemReactDndType = 'GD_EXTENSION_ITEM';
 
-const extensionPropertiesItemId = 'extension-properties';
-const extensionGlobalVariablesItemId = 'extension-global-variables';
-const extensionSceneVariablesItemId = 'extension-scene-variables';
-
 export interface TreeViewItemContent {
   getName(): string | React.Node;
   getId(): string;
@@ -87,7 +81,6 @@ export interface TreeViewItemContent {
   getThumbnail(): ?string;
   getDataset(): ?HTMLDataset;
   onSelect(): void;
-  onClick(): void;
   buildMenuTemplate(i18n: I18nType, index: number): Array<MenuItemTemplate>;
   getRightButton(i18n: I18nType): ?MenuButton;
   renderRightComponent(i18n: I18nType): ?React.Node;
@@ -317,114 +310,6 @@ class LabelTreeViewItemContent implements TreeViewItemContent {
 
   onSelect(): void {}
 
-  onClick(): void {}
-
-  buildMenuTemplate(i18n: I18nType, index: number) {
-    return this.buildMenuTemplateFunction(i18n, index);
-  }
-
-  renderRightComponent(i18n: I18nType): ?React.Node {
-    return null;
-  }
-
-  rename(newName: string): void {}
-
-  edit(): void {}
-
-  delete(): void {}
-
-  copy(): void {}
-
-  paste(): void {}
-
-  cut(): void {}
-
-  getIndex(): number {
-    return 0;
-  }
-
-  moveAt(destinationIndex: number): void {}
-
-  isDescendantOf(itemContent: TreeViewItemContent): boolean {
-    return false;
-  }
-
-  addFunctionAtSelection(
-    selectedEventsBasedBehavior: ?gdEventsBasedBehavior,
-    selectedEventsBasedObject: ?gdEventsBasedObject,
-    selectedEventsFunction: ?gdEventsFunction
-  ): void {}
-}
-
-class ActionTreeViewItemContent implements TreeViewItemContent {
-  id: string;
-  label: string | React.Node;
-  buildMenuTemplateFunction: (
-    i18n: I18nType,
-    index: number
-  ) => Array<MenuItemTemplate>;
-  thumbnail: ?string;
-  onClickCallback: () => void;
-
-  constructor(
-    id: string,
-    label: string | React.Node,
-    onClickCallback: () => void,
-    thumbnail?: string
-  ) {
-    this.id = id;
-    this.label = label;
-    this.onClickCallback = onClickCallback;
-    this.thumbnail = thumbnail;
-    this.buildMenuTemplateFunction = (i18n: I18nType, index: number) => [];
-  }
-
-  getName(): string | React.Node {
-    return this.label;
-  }
-
-  getId(): string {
-    return this.id;
-  }
-
-  getRightButton(i18n: I18nType): ?MenuButton {
-    return null;
-  }
-
-  getEventsFunctionsContainer(): ?gdEventsFunctionsContainer {
-    return null;
-  }
-
-  getEventsFunction(): ?gdEventsFunction {
-    return null;
-  }
-
-  getEventsBasedBehavior(): ?gdEventsBasedBehavior {
-    return null;
-  }
-
-  getEventsBasedObject(): ?gdEventsBasedObject {
-    return null;
-  }
-
-  getHtmlId(index: number): ?string {
-    return this.id;
-  }
-
-  getDataset(): ?HTMLDataset {
-    return {};
-  }
-
-  onSelect(): void {}
-
-  getThumbnail(): ?string {
-    return this.thumbnail;
-  }
-
-  onClick(): void {
-    this.onClickCallback();
-  }
-
   buildMenuTemplate(i18n: I18nType, index: number) {
     return this.buildMenuTemplateFunction(i18n, index);
   }
@@ -481,9 +366,6 @@ const renderTreeViewItemRightComponent = (i18n: I18nType) => (
 const renameItem = (item: TreeViewItem, newName: string) => {
   item.content.rename(newName);
 };
-const onClickItem = (item: TreeViewItem) => {
-  item.content.onClick();
-};
 const editItem = (item: TreeViewItem) => {
   item.content.edit();
 };
@@ -511,9 +393,6 @@ type Props = {|
   // Free functions
   selectedEventsFunction: ?gdEventsFunction,
   ...EventsFunctionCallbacks,
-  onSelectExtensionProperties: () => void,
-  onSelectExtensionGlobalVariables: () => void,
-  onSelectExtensionSceneVariables: () => void,
 |};
 
 const EventsFunctionsList = React.forwardRef<
@@ -539,15 +418,10 @@ const EventsFunctionsList = React.forwardRef<
       onDeleteEventsBasedObject,
       onRenameEventsBasedObject,
       onEventsBasedObjectRenamed,
-      onAddEventsBasedObject,
       selectedEventsFunction,
       selectedEventsBasedBehavior,
       selectedEventsBasedObject,
       forceUpdateEditor,
-      onSelectExtensionProperties,
-      onSelectExtensionGlobalVariables,
-      onSelectExtensionSceneVariables,
-      onOpenCustomObjectEditor,
     }: Props,
     ref
   ) => {
@@ -680,11 +554,7 @@ const EventsFunctionsList = React.forwardRef<
               scrollToItem(functionItemId);
             }, 100); // A few ms is enough for a new render to be done.
 
-            onEventsFunctionAdded(
-              eventsFunction,
-              eventsBasedBehavior,
-              eventsBasedObject
-            );
+            onEventsFunctionAdded(eventsFunction);
             if (unsavedChanges) {
               unsavedChanges.triggerUnsavedChanges();
             }
@@ -776,57 +646,47 @@ const EventsFunctionsList = React.forwardRef<
 
     const addNewEventsBasedObject = React.useCallback(
       () => {
-        onAddEventsBasedObject(
-          (parameters: ?EventsBasedObjectCreationParameters) => {
-            if (!parameters) {
-              return;
-            }
+        const eventBasedObjects = eventsFunctionsExtension.getEventsBasedObjects();
 
-            const eventBasedObjects = eventsFunctionsExtension.getEventsBasedObjects();
-
-            const name = newNameGenerator('MyObject', name =>
-              eventBasedObjects.has(name)
-            );
-            const newEventsBasedObject = eventBasedObjects.insertNew(
-              name,
-              eventBasedObjects.getCount()
-            );
-            newEventsBasedObject.markAsRenderedIn3D(parameters.isRenderedIn3D);
-            if (unsavedChanges) {
-              unsavedChanges.triggerUnsavedChanges();
-            }
-            forceUpdate();
-
-            const objectItemId = getObjectTreeViewItemId(newEventsBasedObject);
-
-            if (treeViewRef.current) {
-              treeViewRef.current.openItems([
-                objectItemId,
-                extensionObjectsRootFolderId,
-              ]);
-            }
-            // Scroll to the new function.
-            // Ideally, we'd wait for the list to be updated to scroll, but
-            // to simplify the code, we just wait a few ms for a new render
-            // to be done.
-            setTimeout(() => {
-              scrollToItem(objectItemId);
-            }, 100); // A few ms is enough for a new render to be done.
-
-            // We focus it so the user can edit the name directly.
-            onSelectEventsBasedObject(newEventsBasedObject);
-            editName(objectItemId);
-          }
+        const name = newNameGenerator('MyObject', name =>
+          eventBasedObjects.has(name)
         );
+        const newEventsBasedObject = eventBasedObjects.insertNew(
+          name,
+          eventBasedObjects.getCount()
+        );
+        if (unsavedChanges) {
+          unsavedChanges.triggerUnsavedChanges();
+        }
+        forceUpdate();
+
+        const objectItemId = getObjectTreeViewItemId(newEventsBasedObject);
+
+        if (treeViewRef.current) {
+          treeViewRef.current.openItems([
+            objectItemId,
+            extensionObjectsRootFolderId,
+          ]);
+        }
+        // Scroll to the new function.
+        // Ideally, we'd wait for the list to be updated to scroll, but
+        // to simplify the code, we just wait a few ms for a new render
+        // to be done.
+        setTimeout(() => {
+          scrollToItem(objectItemId);
+        }, 100); // A few ms is enough for a new render to be done.
+
+        // We focus it so the user can edit the name directly.
+        onSelectEventsBasedObject(newEventsBasedObject);
+        editName(objectItemId);
       },
       [
-        onAddEventsBasedObject,
-        eventsFunctionsExtension,
-        unsavedChanges,
-        forceUpdate,
-        onSelectEventsBasedObject,
         editName,
+        eventsFunctionsExtension,
+        forceUpdate,
         scrollToItem,
+        onSelectEventsBasedObject,
+        unsavedChanges,
       ]
     );
 
@@ -998,12 +858,10 @@ const EventsFunctionsList = React.forwardRef<
         onDeleteEventsBasedObject,
         onRenameEventsBasedObject,
         onEventsBasedObjectRenamed,
-        onAddEventsBasedObject,
         addNewEventsFunction,
         selectedEventsBasedBehavior,
         selectedEventsBasedObject,
         selectedEventsFunction,
-        onOpenCustomObjectEditor,
       }),
       [
         project,
@@ -1022,12 +880,10 @@ const EventsFunctionsList = React.forwardRef<
         onDeleteEventsBasedObject,
         onRenameEventsBasedObject,
         onEventsBasedObjectRenamed,
-        onAddEventsBasedObject,
         addNewEventsFunction,
         selectedEventsBasedBehavior,
         selectedEventsBasedObject,
         selectedEventsFunction,
-        onOpenCustomObjectEditor,
       ]
     );
 
@@ -1054,41 +910,6 @@ const EventsFunctionsList = React.forwardRef<
     const getTreeViewData = React.useCallback(
       (i18n: I18nType): Array<TreeViewItem> => {
         return [
-          {
-            isRoot: true,
-            content: new LabelTreeViewItemContent(
-              extensionConfigurationRootFolderId,
-              i18n._(t`Extension`)
-            ),
-            getChildren(i18n: I18nType): ?Array<TreeViewItem> {
-              return [
-                new LeafTreeViewItem(
-                  new ActionTreeViewItemContent(
-                    extensionPropertiesItemId,
-                    i18n._(t`Properties`),
-                    onSelectExtensionProperties,
-                    'res/icons_default/properties_black.svg'
-                  )
-                ),
-                new LeafTreeViewItem(
-                  new ActionTreeViewItemContent(
-                    extensionGlobalVariablesItemId,
-                    i18n._(t`Extension global variables`),
-                    onSelectExtensionGlobalVariables,
-                    'res/icons_default/global_variable24_black.svg'
-                  )
-                ),
-                new LeafTreeViewItem(
-                  new ActionTreeViewItemContent(
-                    extensionSceneVariablesItemId,
-                    i18n._(t`Extension scene variables`),
-                    onSelectExtensionSceneVariables,
-                    'res/icons_default/scene_variable24_black.svg'
-                  )
-                ),
-              ];
-            },
-          },
           getShowEventBasedObjectsEditor()
             ? {
                 isRoot: true,
@@ -1193,9 +1014,6 @@ const EventsFunctionsList = React.forwardRef<
         getShowEventBasedObjectsEditor,
         addNewEventsBasedObject,
         addNewEventsBehavior,
-        onSelectExtensionProperties,
-        onSelectExtensionGlobalVariables,
-        onSelectExtensionSceneVariables,
         objectTreeViewItems,
         behaviorTreeViewItems,
         selectedEventsBasedBehavior,
@@ -1274,7 +1092,6 @@ const EventsFunctionsList = React.forwardRef<
       extensionObjectsRootFolderId,
       extensionBehaviorsRootFolderId,
       extensionFunctionsRootFolderId,
-      extensionConfigurationRootFolderId,
       ...objectTreeViewItems.map(item => item.content.getId()),
       ...behaviorTreeViewItems.map(item => item.content.getId()),
     ];
@@ -1382,7 +1199,6 @@ const EventsFunctionsList = React.forwardRef<
                         itemToSelect.content.onSelect();
                         setSelectedItems(items);
                       }}
-                      onClickItem={onClickItem}
                       onRenameItem={renameItem}
                       buildMenuTemplate={buildMenuTemplate(i18n)}
                       getItemRightButton={getTreeViewItemRightButton(i18n)}

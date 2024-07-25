@@ -1,6 +1,5 @@
 // @flow
 import React, { Component } from 'react';
-import debounce from 'lodash/debounce';
 import panable, { type PanMoveEvent } from '../Utils/PixiSimpleGesture/pan';
 import KeyboardShortcuts, { MID_MOUSE_BUTTON } from '../UI/KeyboardShortcuts';
 import InstancesRenderer from './InstancesRenderer';
@@ -41,19 +40,6 @@ import {
   clampInstancesEditorZoom,
   getWheelStepZoomFactor,
 } from '../Utils/ZoomUtils';
-import Background from './Background';
-import TileMapTilePreview, {
-  getTileSet,
-  getTilesGridCoordinatesFromPointerSceneCoordinates,
-  updateSceneToTileMapTransformation,
-} from './TileMapTilePreview';
-import {
-  getTileIdFromGridCoordinates,
-  type TileMapTileSelection,
-} from './TileSetVisualizer';
-import ClickInterceptor from './ClickInterceptor';
-import getObjectByName from '../Utils/GetObjectByName';
-import { AffineTransformation } from '../Utils/AffineTransformation';
 const gd: libGDevelop = global.gd;
 
 export const instancesEditorId = 'instances-editor-canvas';
@@ -81,11 +67,7 @@ export type InstancesEditorShortcutsCallbacks = {|
 
 export type InstancesEditorPropsWithoutSizeAndScroll = {|
   project: gdProject,
-  layout: gdLayout | null,
-  eventsBasedObject: gdEventsBasedObject | null,
-  layersContainer: gdLayersContainer,
-  globalObjectsContainer: gdObjectsContainer | null,
-  objectsContainer: gdObjectsContainer,
+  layout: gdLayout,
   selectedLayer: string,
   initialInstances: gdInitialInstancesContainer,
   instancesEditorSettings: InstancesEditorSettings,
@@ -108,8 +90,6 @@ export type InstancesEditorPropsWithoutSizeAndScroll = {|
   ) => void,
   pauseRendering: boolean,
   instancesEditorShortcutsCallbacks: InstancesEditorShortcutsCallbacks,
-  tileMapTileSelection: ?TileMapTileSelection,
-  onSelectTileMapTile: (?TileMapTileSelection) => void,
 |};
 
 type Props = {|
@@ -138,8 +118,6 @@ export default class InstancesEditor extends Component<Props> {
   _instancesAdder: InstancesAdder;
   selectionRectangle: SelectionRectangle;
   selectedInstances: SelectedInstances;
-  tileMapTilePreview: TileMapTilePreview;
-  clickInterceptor: ClickInterceptor;
   highlightedInstance: HighlightedInstance;
   instancesResizer: InstancesResizer;
   instancesRotator: InstancesRotator;
@@ -147,14 +125,12 @@ export default class InstancesEditor extends Component<Props> {
   windowBorder: WindowBorder;
   windowMask: WindowMask;
   statusBar: StatusBar;
-  uiPixiContainer: PIXI.Container;
-  backgroundPixiContainer: PIXI.Container;
+  pixiContainer: PIXI.Container;
   backgroundArea: PIXI.Container;
   instancesRenderer: InstancesRenderer;
   viewPosition: ViewPosition;
   longTouchHandler: LongTouchHandler;
   grid: Grid;
-  background: Background;
   _unmounted = false;
   _renderingPaused = false;
   nextFrame: AnimationFrameID;
@@ -185,12 +161,11 @@ export default class InstancesEditor extends Component<Props> {
     // project can be used here for initializing stuff, but don't keep references to it.
     // Instead, create editors in _mountEditorComponents (as they will be destroyed/recreated
     // if the project changes).
-    const { onMouseMove, onMouseLeave } = this.props;
+    const { project, onMouseMove, onMouseLeave } = this.props;
 
     this.keyboardShortcuts = new KeyboardShortcuts({
       shortcutCallbacks: {
         onMove: this.moveSelection,
-        onEscape: this.onPressEscape,
         ...this.props.instancesEditorShortcutsCallbacks,
       },
     });
@@ -305,8 +280,7 @@ export default class InstancesEditor extends Component<Props> {
       }
     });
 
-    this.uiPixiContainer = new PIXI.Container();
-    this.backgroundPixiContainer = new PIXI.Container();
+    this.pixiContainer = new PIXI.Container(); // TODO (3D): rename this container.
 
     this.backgroundArea = new PIXI.Container();
     this.backgroundArea.hitArea = new PIXI.Rectangle(
@@ -367,12 +341,11 @@ export default class InstancesEditor extends Component<Props> {
       )
     );
     this.backgroundArea.addEventListener('panend', event => this._onPanEnd());
-    this.uiPixiContainer.addChild(this.backgroundArea);
+    this.pixiContainer.addChild(this.backgroundArea);
 
-    const areaRectangle = this._getAreaRectangle();
     this.viewPosition = new ViewPosition({
-      initialViewX: areaRectangle.centerX(),
-      initialViewY: areaRectangle.centerY(),
+      initialViewX: project ? project.getGameResolutionWidth() / 2 : 0,
+      initialViewY: project ? project.getGameResolutionHeight() / 2 : 0,
       width: this.props.width,
       height: this.props.height,
       instancesEditorSettings: this.props.instancesEditorSettings,
@@ -382,7 +355,7 @@ export default class InstancesEditor extends Component<Props> {
       viewPosition: this.viewPosition,
       instancesEditorSettings: this.props.instancesEditorSettings,
     });
-    this.uiPixiContainer.addChild(this.grid.getPixiObject());
+    this.pixiContainer.addChild(this.grid.getPixiObject());
 
     this.pinchHandler = new PinchHandler({
       canvas: this.pixiRenderer.view,
@@ -423,50 +396,32 @@ export default class InstancesEditor extends Component<Props> {
   _mountEditorComponents(props: Props) {
     //Remove and delete any existing editor component
     if (this.highlightedInstance) {
-      this.uiPixiContainer.removeChild(
-        this.highlightedInstance.getPixiObject()
-      );
-    }
-    if (this.tileMapTilePreview) {
-      this.uiPixiContainer.removeChild(this.tileMapTilePreview.getPixiObject());
-    }
-    if (this.clickInterceptor) {
-      this.uiPixiContainer.removeChild(this.clickInterceptor.getPixiObject());
+      this.pixiContainer.removeChild(this.highlightedInstance.getPixiObject());
     }
     if (this.selectedInstances) {
-      this.uiPixiContainer.removeChild(
-        this.selectedInstances.getPixiContainer()
-      );
+      this.pixiContainer.removeChild(this.selectedInstances.getPixiContainer());
     }
     if (this.instancesRenderer) {
-      this.uiPixiContainer.removeChild(
-        this.instancesRenderer.getPixiContainer()
-      );
+      this.pixiContainer.removeChild(this.instancesRenderer.getPixiContainer());
       this.instancesRenderer.delete();
     }
     if (this.selectionRectangle) {
-      this.uiPixiContainer.removeChild(this.selectionRectangle.getPixiObject());
+      this.pixiContainer.removeChild(this.selectionRectangle.getPixiObject());
       this.selectionRectangle.delete();
     }
     if (this.windowBorder) {
-      this.uiPixiContainer.removeChild(this.windowBorder.getPixiObject());
+      this.pixiContainer.removeChild(this.windowBorder.getPixiObject());
     }
     if (this.windowMask) {
-      this.uiPixiContainer.removeChild(this.windowMask.getPixiObject());
+      this.pixiContainer.removeChild(this.windowMask.getPixiObject());
     }
     if (this.statusBar) {
-      this.uiPixiContainer.removeChild(this.statusBar.getPixiObject());
-    }
-    if (this.background) {
-      this.backgroundPixiContainer.removeChild(this.background.getPixiObject());
+      this.pixiContainer.removeChild(this.statusBar.getPixiObject());
     }
 
     this.instancesRenderer = new InstancesRenderer({
       project: props.project,
-      layout: props.layout || null,
-      layersContainer: props.layersContainer,
-      globalObjectsContainer: props.globalObjectsContainer,
-      objectsContainer: props.objectsContainer,
+      layout: props.layout,
       instances: props.initialInstances,
       viewPosition: this.viewPosition,
       onOverInstance: this._onOverInstance,
@@ -493,25 +448,10 @@ export default class InstancesEditor extends Component<Props> {
       onRotateEnd: this._onRotateEnd,
       instanceMeasurer: this.instancesRenderer.getInstanceMeasurer(),
       toCanvasCoordinates: this.viewPosition.toCanvasCoordinates,
-      getFillColor: this.getSelectedInstancesObjectFillColor,
       screenType: this.props.screenType,
       keyboardShortcuts: this.keyboardShortcuts,
       onPanMove: this._onPanMove,
       onPanEnd: this._onPanEnd,
-    });
-    this.tileMapTilePreview = new TileMapTilePreview({
-      instancesSelection: this.props.instancesSelection,
-      project: props.project,
-      layout: props.layout,
-      getTileMapTileSelection: this.getTileMapTileSelection,
-      getRendererOfInstance: this.getRendererOfInstance,
-      getCoordinatesToRender: this.getCoordinatesToRenderTileMapPreview,
-      viewPosition: this.viewPosition,
-    });
-    this.clickInterceptor = new ClickInterceptor({
-      getTileMapTileSelection: this.getTileMapTileSelection,
-      viewPosition: this.viewPosition,
-      onClick: this._onInterceptClick,
     });
     this.highlightedInstance = new HighlightedInstance({
       instanceMeasurer: this.instancesRenderer.getInstanceMeasurer(),
@@ -532,7 +472,6 @@ export default class InstancesEditor extends Component<Props> {
     this.windowBorder = new WindowBorder({
       project: props.project,
       layout: props.layout,
-      eventsBasedObject: props.eventsBasedObject,
       toCanvasCoordinates: this.viewPosition.toCanvasCoordinates,
     });
     this.windowMask = new WindowMask({
@@ -546,22 +485,13 @@ export default class InstancesEditor extends Component<Props> {
       getLastCursorSceneCoordinates: this.getLastCursorSceneCoordinates,
     });
 
-    this.uiPixiContainer.addChild(this.selectionRectangle.getPixiObject());
-    this.uiPixiContainer.addChild(this.instancesRenderer.getPixiContainer());
-    this.uiPixiContainer.addChild(this.windowBorder.getPixiObject());
-    this.uiPixiContainer.addChild(this.windowMask.getPixiObject());
-    this.uiPixiContainer.addChild(this.selectedInstances.getPixiContainer());
-    this.uiPixiContainer.addChild(this.highlightedInstance.getPixiObject());
-    this.uiPixiContainer.addChild(this.statusBar.getPixiObject());
-    this.uiPixiContainer.addChild(this.tileMapTilePreview.getPixiObject());
-    this.uiPixiContainer.addChild(this.clickInterceptor.getPixiObject());
-
-    this.background = new Background({
-      width: this.props.width,
-      height: this.props.height,
-      layout: props.layout || null,
-    });
-    this.backgroundPixiContainer.addChild(this.background.getPixiObject());
+    this.pixiContainer.addChild(this.selectionRectangle.getPixiObject());
+    this.pixiContainer.addChild(this.instancesRenderer.getPixiContainer());
+    this.pixiContainer.addChild(this.windowBorder.getPixiObject());
+    this.pixiContainer.addChild(this.windowMask.getPixiObject());
+    this.pixiContainer.addChild(this.selectedInstances.getPixiContainer());
+    this.pixiContainer.addChild(this.highlightedInstance.getPixiObject());
+    this.pixiContainer.addChild(this.statusBar.getPixiObject());
   }
 
   componentWillUnmount() {
@@ -588,11 +518,8 @@ export default class InstancesEditor extends Component<Props> {
     }
     if (this.nextFrame) cancelAnimationFrame(this.nextFrame);
     stopPIXITicker();
-    if (this.uiPixiContainer) {
-      this.uiPixiContainer.destroy();
-    }
-    if (this.backgroundPixiContainer) {
-      this.backgroundPixiContainer.destroy();
+    if (this.pixiContainer) {
+      this.pixiContainer.destroy();
     }
     if (this.pixiRenderer) {
       this.pixiRenderer.destroy();
@@ -617,7 +544,6 @@ export default class InstancesEditor extends Component<Props> {
         nextProps.width,
         nextProps.height
       );
-      this.background.resize(nextProps.width, nextProps.height);
 
       // Avoid flickering that could happen while waiting for next animation frame.
       this.fpsLimiter.forceNextUpdate();
@@ -651,8 +577,6 @@ export default class InstancesEditor extends Component<Props> {
 
     if (
       this.props.layout !== nextProps.layout ||
-      this.props.layersContainer !== nextProps.layersContainer ||
-      this.props.objectsContainer !== nextProps.objectsContainer ||
       this.props.initialInstances !== nextProps.initialInstances ||
       this.props.project !== nextProps.project
     ) {
@@ -698,17 +622,6 @@ export default class InstancesEditor extends Component<Props> {
     );
   }
 
-  getTileMapTileSelection = () => {
-    return this.props.tileMapTileSelection;
-  };
-
-  getSelectedInstancesObjectFillColor = (
-    isLocked: boolean
-  ): {| color: number, alpha: number |} => {
-    if (this.props.tileMapTileSelection) return { color: 0xfff, alpha: 0 };
-    return { color: isLocked ? 0xbc5753 : 0x6868e8, alpha: 1 };
-  };
-
   getZoomFactor = () => {
     return this.props.instancesEditorSettings.zoomFactor;
   };
@@ -752,207 +665,6 @@ export default class InstancesEditor extends Component<Props> {
   _onMouseMove = (x: number, y: number) => {
     this.lastCursorX = x;
     this.lastCursorY = y;
-  };
-
-  _onInterceptClick = (sceneCoordinates: Array<{| x: number, y: number |}>) => {
-    const {
-      tileMapTileSelection,
-      instancesSelection,
-      project,
-      layout,
-    } = this.props;
-    if (!tileMapTileSelection) {
-      return;
-    }
-    const selectedInstances = instancesSelection.getSelectedInstances();
-    if (selectedInstances.length !== 1) return;
-    const selectedInstance = selectedInstances[0];
-    const object = getObjectByName(
-      project.getObjects(),
-      layout ? layout.getObjects() : null,
-      selectedInstance.getObjectName()
-    );
-    if (!object) return;
-    const renderedInstance = this.getRendererOfInstance(selectedInstance);
-    if (
-      object.getType() === 'TileMap::SimpleTileMap' &&
-      renderedInstance &&
-      renderedInstance.constructor.name === 'RenderedSimpleTileMapInstance'
-    ) {
-      // $FlowIgnore
-      const editableTileMap = renderedInstance.getEditableTileMap();
-      if (!editableTileMap) {
-        console.error(
-          `Could not find the editable tile map for instance of object ${selectedInstance.getObjectName()}`
-        );
-        return;
-      }
-      const sceneToTileMapTransformation = new AffineTransformation();
-      const tileMapToSceneTransformation = new AffineTransformation();
-      const scales = updateSceneToTileMapTransformation(
-        selectedInstance,
-        renderedInstance,
-        sceneToTileMapTransformation,
-        tileMapToSceneTransformation
-      );
-      if (!scales) return;
-      const { scaleX, scaleY } = scales;
-      const tileSet = getTileSet(object);
-      const tileMapGridCoordinates = getTilesGridCoordinatesFromPointerSceneCoordinates(
-        {
-          coordinates: sceneCoordinates,
-          tileSize: tileSet.tileSize,
-          sceneToTileMapTransformation,
-        }
-      );
-
-      let shouldTrimAfterOperations = false;
-
-      if (tileMapTileSelection.kind === 'single') {
-        shouldTrimAfterOperations = editableTileMap.isEmpty();
-        // TODO: Optimize list execution to make sure the most important size changing operations are done first.
-        let cumulatedUnshiftedRows = 0,
-          cumulatedUnshiftedColumns = 0;
-        const tileId = getTileIdFromGridCoordinates({
-          rowCount: tileSet.rowCount,
-          ...tileMapTileSelection.coordinates,
-        });
-
-        const tileDefinition = editableTileMap.getTileDefinition(tileId);
-        if (!tileDefinition) return;
-
-        const layer = editableTileMap.getTileLayer(0);
-        if (!layer) return;
-
-        tileMapGridCoordinates.forEach(({ x: gridX, y: gridY }) => {
-          // If rows or columns have been unshifted in the previous tile setting operations,
-          // we have to take them into account for the current coordinates.
-          const x = gridX + cumulatedUnshiftedColumns;
-          const y = gridY + cumulatedUnshiftedRows;
-          const rowsToAppend = Math.max(
-            0,
-            y - (editableTileMap.getDimensionY() - 1)
-          );
-          const columnsToAppend = Math.max(
-            0,
-            x - (editableTileMap.getDimensionX() - 1)
-          );
-          const rowsToUnshift = Math.abs(Math.min(0, y));
-          const columnsToUnshift = Math.abs(Math.min(0, x));
-          if (
-            rowsToAppend > 0 ||
-            columnsToAppend > 0 ||
-            rowsToUnshift > 0 ||
-            columnsToUnshift > 0
-          ) {
-            editableTileMap.increaseDimensions(
-              columnsToAppend,
-              columnsToUnshift,
-              rowsToAppend,
-              rowsToUnshift
-            );
-          }
-          const newX = x + columnsToUnshift;
-          const newY = y + rowsToUnshift;
-
-          editableTileMap.setTile(newX, newY, 0, tileId);
-          editableTileMap.flipTileOnX(
-            newX,
-            newY,
-            0,
-            tileMapTileSelection.flipHorizontally
-          );
-          editableTileMap.flipTileOnY(
-            newX,
-            newY,
-            0,
-            tileMapTileSelection.flipVertically
-          );
-
-          cumulatedUnshiftedRows += rowsToUnshift;
-          cumulatedUnshiftedColumns += columnsToUnshift;
-          // The instance angle is not considered when moving the instance after
-          // rows/columns were added/removed because the instance position does not
-          // include the rotation transformation. Otherwise, we could have used
-          // tileMapToSceneTransformation to get the new position.
-          selectedInstance.setX(
-            selectedInstance.getX() -
-              columnsToUnshift * (tileSet.tileSize * scaleX)
-          );
-          selectedInstance.setY(
-            selectedInstance.getY() -
-              rowsToUnshift * (tileSet.tileSize * scaleY)
-          );
-          if (selectedInstance.hasCustomSize()) {
-            selectedInstance.setCustomWidth(
-              selectedInstance.getCustomWidth() +
-                tileSet.tileSize * scaleX * (columnsToAppend + columnsToUnshift)
-            );
-            selectedInstance.setCustomHeight(
-              selectedInstance.getCustomHeight() +
-                tileSet.tileSize * scaleY * (rowsToAppend + rowsToUnshift)
-            );
-          }
-        });
-
-        this.props.onInstancesResized([selectedInstance]);
-      } else if (tileMapTileSelection.kind === 'erase') {
-        tileMapGridCoordinates.forEach(({ x: gridX, y: gridY }) => {
-          editableTileMap.removeTile(gridX, gridY, 0);
-        });
-        shouldTrimAfterOperations = true;
-
-        this.props.onInstancesResized([selectedInstance]);
-      } else {
-        return;
-      }
-
-      if (shouldTrimAfterOperations) {
-        const trimData = editableTileMap.trimEmptyColumnsAndRowToFitLayer(0);
-        if (trimData) {
-          const {
-            shiftedRows,
-            shiftedColumns,
-            poppedRows,
-            poppedColumns,
-          } = trimData;
-          // The instance angle is not considered when moving the instance after
-          // rows/columns were added/removed because the instance position does not
-          // include the rotation transformation. Otherwise, we could have used
-          // tileMapToSceneTransformation to get the new position.
-          selectedInstance.setX(
-            selectedInstance.getX() +
-              shiftedColumns * (tileSet.tileSize * scaleX)
-          );
-          selectedInstance.setY(
-            selectedInstance.getY() + shiftedRows * (tileSet.tileSize * scaleY)
-          );
-          if (selectedInstance.hasCustomSize()) {
-            selectedInstance.setCustomWidth(
-              selectedInstance.getCustomWidth() -
-                tileSet.tileSize * scaleX * (poppedColumns + shiftedColumns)
-            );
-            selectedInstance.setCustomHeight(
-              selectedInstance.getCustomHeight() -
-                tileSet.tileSize * scaleY * (poppedRows + shiftedRows)
-            );
-          }
-        }
-      }
-      // $FlowIgnore
-      renderedInstance.updatePixiTileMap();
-      selectedInstance.setRawStringProperty(
-        'tilemap',
-        JSON.stringify(editableTileMap.toJSObject())
-      );
-    }
-  };
-
-  getRendererOfInstance = (instance: gdInitialInstance) => {
-    return this.instancesRenderer.getRendererOfInstance(
-      instance.getLayer(),
-      instance
-    );
   };
 
   _onDownBackground = (x: number, y: number, event?: PointerEvent) => {
@@ -1004,11 +716,11 @@ export default class InstancesEditor extends Component<Props> {
   };
 
   _getLayersLocks = () => {
-    const { layersContainer } = this.props;
+    const { layout } = this.props;
     const layersLocks = {};
-    for (let i = 0; i < layersContainer.getLayersCount(); i++) {
-      const layer = layersContainer.getLayerAt(i);
-      layersLocks[layersContainer.getLayerAt(i).getName()] =
+    for (let i = 0; i < layout.getLayersCount(); i++) {
+      const layer = layout.getLayerAt(i);
+      layersLocks[layout.getLayerAt(i).getName()] =
         !layer.getVisibility() || layer.isLocked();
     }
     return layersLocks;
@@ -1301,12 +1013,6 @@ export default class InstancesEditor extends Component<Props> {
     this.highlightedInstance.setInstance(null);
   };
 
-  // Debounce function to avoid storing history for each pixel move when user
-  // keeps pressing an arrow key.
-  onInstancesMovedDebounced = debounce(this.props.onInstancesMoved, 50, {
-    trailing: true,
-  });
-
   moveSelection = (x: number, y: number) => {
     this.fpsLimiter.notifyInteractionHappened();
     const selectedInstances = this.props.instancesSelection.getSelectedInstances();
@@ -1317,15 +1023,7 @@ export default class InstancesEditor extends Component<Props> {
       instance.setX(instance.getX() + x);
       instance.setY(instance.getY() + y);
     });
-    this.onInstancesMovedDebounced(unlockedSelectedInstances);
-  };
-
-  onPressEscape = () => {
-    if (this.clickInterceptor && this.clickInterceptor.isIntercepting()) {
-      this.clickInterceptor.cancelClickInterception();
-    } else if (this.props.tileMapTileSelection) {
-      this.props.onSelectTileMapTile(null);
-    }
+    this.props.onInstancesMoved(unlockedSelectedInstances);
   };
 
   scrollBy(x: number, y: number) {
@@ -1361,12 +1059,12 @@ export default class InstancesEditor extends Component<Props> {
     return this.canvasArea.getBoundingClientRect();
   }
 
-  getContentAABB = (): Rectangle | null => {
+  zoomToFitContent = () => {
     const { initialInstances } = this.props;
-    if (initialInstances.getInstancesCount() === 0) return null;
+    if (initialInstances.getInstancesCount() === 0) return;
 
     const instanceMeasurer = this.instancesRenderer.getInstanceMeasurer();
-    let contentAABB: Rectangle | null = null;
+    let contentAABB: ?Rectangle;
     const getInstanceRectangle = new gd.InitialInstanceJSFunctor();
     // $FlowFixMe - invoke is not writable
     getInstanceRectangle.invoke = instancePtr => {
@@ -1389,39 +1087,18 @@ export default class InstancesEditor extends Component<Props> {
     // $FlowFixMe - JSFunctor is incompatible with Functor
     initialInstances.iterateOverInstances(getInstanceRectangle);
     getInstanceRectangle.delete();
-    return contentAABB;
-  };
-
-  zoomToFitContent = () => {
-    const contentAABB = this.getContentAABB();
     if (contentAABB) this.fitViewToRectangle(contentAABB, { adaptZoom: true });
   };
 
-  _getAreaRectangle = (): Rectangle => {
-    const { eventsBasedObject, project } = this.props;
-    return eventsBasedObject
-      ? new Rectangle(
-          eventsBasedObject.getAreaMinX(),
-          eventsBasedObject.getAreaMinY(),
-          eventsBasedObject.getAreaMaxX(),
-          eventsBasedObject.getAreaMaxY()
-        )
-      : new Rectangle(
-          0,
-          0,
-          project.getGameResolutionWidth(),
-          project.getGameResolutionHeight()
-        );
-  };
-
   zoomToInitialPosition = () => {
-    const areaRectangle = this._getAreaRectangle();
+    const width = this.props.project.getGameResolutionWidth();
+    const height = this.props.project.getGameResolutionHeight();
+    const x = width / 2;
+    const y = height / 2;
     this.setZoomFactor(
-      getRecommendedInitialZoomFactor(
-        Math.max(areaRectangle.width(), areaRectangle.height())
-      )
+      getRecommendedInitialZoomFactor(Math.max(height, width))
     );
-    this.scrollTo(areaRectangle.centerX(), areaRectangle.centerY());
+    this.scrollTo(x, y);
   };
 
   zoomToFitSelection = (instances: Array<gdInitialInstance>) => {
@@ -1469,17 +1146,6 @@ export default class InstancesEditor extends Component<Props> {
     );
   };
 
-  getCoordinatesToRenderTileMapPreview = () => {
-    const clickInterceptorPointerPathCoordinates = this.clickInterceptor.getPointerPathCoordinates();
-    if (clickInterceptorPointerPathCoordinates) {
-      return clickInterceptorPointerPathCoordinates;
-    }
-    const lastCursorSceneCoordinates = this.getLastCursorSceneCoordinates();
-    return [
-      { x: lastCursorSceneCoordinates[0], y: lastCursorSceneCoordinates[1] },
-    ];
-  };
-
   getViewPosition = (): ?ViewPosition => {
     return this.viewPosition;
   };
@@ -1497,21 +1163,17 @@ export default class InstancesEditor extends Component<Props> {
       this.canvasCursor.render();
       this.grid.render();
       this.highlightedInstance.render();
-      this.tileMapTilePreview.render();
-      this.clickInterceptor.render();
       this.selectedInstances.render();
       this.selectionRectangle.render();
       this.windowBorder.render();
       this.windowMask.render();
       this.statusBar.render();
-      this.background.render();
 
       this.instancesRenderer.render(
         this.pixiRenderer,
         this.threeRenderer,
         this.viewPosition,
-        this.uiPixiContainer,
-        this.backgroundPixiContainer
+        this.pixiContainer
       );
     }
     this.nextFrame = requestAnimationFrame(this._renderScene);

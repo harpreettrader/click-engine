@@ -139,8 +139,6 @@ type DropContainerProps = {|
 
   // Computes drop areas and drop indicator indent.
   windowSize: WindowSizeType,
-  // The Indent Scale used for the Events Sheet.
-  indentScale: number,
   // Used only for the node just above dragged node if it is an only child,
   // so that drop area covers the whole dragged node's row in height.
   draggedNodeHeight: number,
@@ -227,7 +225,6 @@ export function DropContainer({
   onDrop,
   activateTargets,
   windowSize,
-  indentScale,
   draggedNodeHeight,
   getNodeAtPath,
 }: DropContainerProps) {
@@ -237,7 +234,7 @@ export function DropContainer({
   // child of the event is the dragged one.
   const canHaveSubEvents = !!node.event && node.event.canHaveSubEvents();
 
-  const indentWidth = getIndentWidth(windowSize) * indentScale;
+  const indentWidth = getIndentWidth(windowSize);
   const dropAreaStyles = getTargetPositionStyles(
     indentWidth,
     draggedNodeHeight,

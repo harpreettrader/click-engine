@@ -6,28 +6,23 @@ import * as React from 'react';
 import TextField from '../UI/TextField';
 import SemiControlledTextField from '../UI/SemiControlledTextField';
 import DismissableAlertMessage from '../UI/DismissableAlertMessage';
+import AlertMessage from '../UI/AlertMessage';
 import { ColumnStackLayout } from '../UI/Layout';
 import useForceUpdate from '../Utils/UseForceUpdate';
 import Checkbox from '../UI/Checkbox';
 import HelpButton from '../UI/HelpButton';
 import { Line } from '../UI/Grid';
 import { type UnsavedChanges } from '../MainFrame/UnsavedChangesContext';
-import RaisedButton from '../UI/RaisedButton';
-import Window from '../Utils/Window';
 
 const gd: libGDevelop = global.gd;
 
-const isDev = Window.isDev();
-
 type Props = {|
   eventsBasedObject: gdEventsBasedObject,
-  onOpenCustomObjectEditor: () => void,
   unsavedChanges?: ?UnsavedChanges,
 |};
 
 export default function EventsBasedObjectEditor({
   eventsBasedObject,
-  onOpenCustomObjectEditor,
   unsavedChanges,
 }: Props) {
   const forceUpdate = useForceUpdate();
@@ -44,13 +39,21 @@ export default function EventsBasedObjectEditor({
 
   return (
     <ColumnStackLayout expand noMargin>
+      <AlertMessage kind="warning">
+        <Trans>
+          The custom object editor is at a very early stage. A lot of features
+          are missing or broken. Extensions written with it may no longer work
+          in future GDevelop releases.
+        </Trans>
+      </AlertMessage>
       <DismissableAlertMessage
         identifier="events-based-object-explanation"
         kind="info"
       >
         <Trans>
           This is the configuration of your object. Make sure to choose a proper
-          internal name as it's hard to change it later.
+          internal name as it's hard to change it later. Enter a description
+          explaining how the object works.
         </Trans>
       </DismissableAlertMessage>
       <TextField
@@ -119,20 +122,20 @@ export default function EventsBasedObjectEditor({
           onChange();
         }}
       />
-      {isDev && (
-        <Line noMargin justifyContent="center">
-          <RaisedButton
-            label={<Trans>Open visual editor for the object</Trans>}
-            primary
-            onClick={onOpenCustomObjectEditor}
-          />
-        </Line>
+      {eventsBasedObject.getEventsFunctions().getEventsFunctionsCount() ===
+        0 && (
+        <DismissableAlertMessage
+          identifier="empty-events-based-object-explanation"
+          kind="info"
+        >
+          <Trans>
+            Once you're done, start adding some functions to the object. Then,
+            test the object by adding it to a scene.
+          </Trans>
+        </DismissableAlertMessage>
       )}
       <Line noMargin>
-        <HelpButton
-          key="help"
-          helpPagePath="/objects/custom-objects-prefab-template"
-        />
+        <HelpButton key="help" helpPagePath="/objects/events-based-objects" />
       </Line>
     </ColumnStackLayout>
   );

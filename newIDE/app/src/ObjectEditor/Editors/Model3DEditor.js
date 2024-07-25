@@ -102,8 +102,6 @@ const Model3DEditor = ({
   objectConfiguration,
   project,
   layout,
-  eventsFunctionsExtension,
-  eventsBasedObject,
   object,
   onSizeUpdated,
   onObjectUpdated,
@@ -431,25 +429,15 @@ const Model3DEditor = ({
       }
 
       animation.setName(newName);
-      if (object) {
-        if (layout) {
-          gd.WholeProjectRefactorer.renameObjectAnimationInScene(
-            project,
-            layout,
-            object,
-            currentName,
-            newName
-          );
-        } else if (eventsFunctionsExtension && eventsBasedObject) {
-          gd.WholeProjectRefactorer.renameObjectAnimationInEventsBasedObject(
-            project,
-            eventsFunctionsExtension,
-            eventsBasedObject,
-            object,
-            currentName,
-            newName
-          );
-        }
+      // TODO EBO Refactor event-based object events when an animation is renamed.
+      if (layout && object) {
+        gd.WholeProjectRefactorer.renameObjectAnimation(
+          project,
+          layout,
+          object,
+          currentName,
+          newName
+        );
       }
       forceUpdate();
       if (onObjectUpdated) onObjectUpdated();
@@ -458,8 +446,6 @@ const Model3DEditor = ({
       model3DConfiguration,
       layout,
       object,
-      eventsFunctionsExtension,
-      eventsBasedObject,
       forceUpdate,
       onObjectUpdated,
       nameErrors,

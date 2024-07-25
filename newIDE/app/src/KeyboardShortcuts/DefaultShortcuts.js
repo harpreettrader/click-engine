@@ -40,6 +40,7 @@ const defaultShortcuts: ShortcutMap = {
   OPEN_PROPERTIES_PANEL: 'KeyP',
   TOGGLE_INSTANCES_PANEL: 'KeyI',
   TOGGLE_LAYERS_PANEL: 'KeyL',
+  RENAME_SCENE_OBJECT: 'F2',
   TOGGLE_WINDOW_MASK: 'KeyM',
   TOGGLE_GRID: 'Alt+KeyG',
   OPEN_SETUP_GRID: 'CmdOrCtrl+Shift+KeyG',
@@ -51,7 +52,6 @@ const defaultShortcuts: ShortcutMap = {
 
   ADD_STANDARD_EVENT: 'Shift+KeyA',
   ADD_SUBEVENT: 'Shift+KeyD',
-  ADD_LOCAL_VARIABLE: 'Shift+KeyL',
   ADD_COMMENT_EVENT: '',
   TOGGLE_EVENT_DISABLED: 'KeyD',
   TOGGLE_CONDITION_INVERTED: 'KeyJ',

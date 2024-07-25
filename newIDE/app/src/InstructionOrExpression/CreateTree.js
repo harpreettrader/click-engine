@@ -6,7 +6,6 @@ import {
   type EnumeratedInstructionMetadata,
   type EnumeratedExpressionMetadata,
 } from './EnumeratedInstructionOrExpressionMetadata';
-import { getInstructionType } from '../EventsSheet/InstructionEditor/SelectorListItems/Keys';
 
 const GROUP_DELIMITER = '/';
 
@@ -47,7 +46,7 @@ export const createTree = <T: EnumeratedInstructionOrExpressionMetadata>(
   return tree;
 };
 
-const doFindInTree = <T: Object>(
+export const findInTree = <T: Object>(
   instructionTreeNode: TreeNode<T>,
   instructionType: ?string
 ): ?Array<string> => {
@@ -68,7 +67,7 @@ const doFindInTree = <T: Object>(
       // $FlowFixMe - see above
       const instructionMetadata: EnumeratedInstructionOrExpressionMetadata = instructionOrGroup;
 
-      if (instructionMetadata.type === getInstructionType(instructionType)) {
+      if (instructionMetadata.type === instructionType) {
         return [];
       }
     } else {
@@ -86,12 +85,3 @@ const doFindInTree = <T: Object>(
 
   return null;
 };
-
-export const findInTree = <T: Object>(
-  instructionTreeNode: TreeNode<T>,
-  instructionType: ?string
-): ?Array<string> =>
-  doFindInTree(
-    instructionTreeNode,
-    instructionType && getInstructionType(instructionType)
-  );

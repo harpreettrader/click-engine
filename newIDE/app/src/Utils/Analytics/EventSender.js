@@ -354,7 +354,6 @@ export type SubscriptionDialogDisplayReason =
   | 'Version history'
   | 'Add collaborators on project'
   | 'Claim asset pack'
-  | 'Callout in Classroom tab'
   | 'Unlock build type';
 
 export const sendSubscriptionDialogShown = (metadata: {|
@@ -453,13 +452,6 @@ export const sendEventsExtractedAsFunction = (metadata: {|
     | 'external-events-editor',
 |}) => {
   recordEvent('events-extracted-as-function', metadata);
-};
-
-export const sendSocialFollowUpdated = (
-  achievementId: string,
-  metadata: {| code: string |}
-) => {
-  recordEvent(`${achievementId}-updated`, metadata);
 };
 
 const inAppTutorialProgressLastFiredEvents: {

@@ -28,10 +28,6 @@ const styles = {
     alignItems: 'stretch',
     marginTop: 30,
   },
-  icon: {
-    width: 16,
-    height: 16,
-  },
 };
 
 export const accountsAlreadyExistsWithDifferentProviderCopy = (
@@ -139,7 +135,7 @@ const LoginForm = ({
                 primary
                 fullWidth
                 label="Google"
-                leftIcon={<Google style={styles.icon} />}
+                leftIcon={<Google />}
                 onClick={() => {
                   onLoginWithProvider('google');
                 }}
@@ -149,7 +145,7 @@ const LoginForm = ({
                 primary
                 fullWidth
                 label="GitHub"
-                leftIcon={<GitHub style={styles.icon} />}
+                leftIcon={<GitHub />}
                 onClick={() => {
                   onLoginWithProvider('github');
                 }}
@@ -159,7 +155,7 @@ const LoginForm = ({
                 primary
                 fullWidth
                 label="Apple"
-                leftIcon={<Apple style={styles.icon} />}
+                leftIcon={<Apple />}
                 onClick={() => {
                   onLoginWithProvider('apple');
                 }}

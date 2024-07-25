@@ -38,14 +38,12 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       focus,
     }));
 
-    const { scope } = props;
-    const { layout, eventsFunctionsExtension, eventsBasedObject } = scope;
-
     // We don't memo/callback this, as we want to recompute it every time something changes.
     // Because of the function getLastObjectParameterValue.
     const getEffectParameterNames = (): Array<string> => {
       const {
         project,
+        scope,
         instructionMetadata,
         instruction,
         expressionMetadata,
@@ -72,11 +70,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       }
 
       let effectType: string | null = null;
-      const object = getObjectByName(
-        project.getObjects(),
-        layout ? layout.getObjects() : null,
-        objectOrGroupName
-      );
+      const object = getObjectByName(project, scope.layout, objectOrGroupName);
       if (object && object.getEffects().hasEffectNamed(effectName)) {
         effectType = object
           .getEffects()
@@ -86,8 +80,8 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
 
       if (!effectType) {
         const group = getObjectGroupByName(
-          project.getObjects(),
-          layout ? layout.getObjects() : null,
+          project,
+          scope.layout,
           objectOrGroupName
         );
         if (group) {
@@ -96,11 +90,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
           const effectTypes: Array<string | null> = mapVector(
             group.getAllObjectsNames(),
             objectName => {
-              const object = getObjectByName(
-                project.getObjects(),
-                layout ? layout.getObjects() : null,
-                objectName
-              );
+              const object = getObjectByName(project, scope.layout, objectName);
               if (!object) {
                 // If object not found, we consider this as an error.
                 return null;
@@ -141,12 +131,10 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       effectParameterName => `"${effectParameterName}"` === props.value
     );
 
-    const canAutocomplete = !eventsFunctionsExtension || eventsBasedObject;
-
     // If the current value is not in the list, display an expression field.
     const [isExpressionField, setIsExpressionField] = React.useState(
       (!!props.value && !isCurrentValueInEffectParameterNamesList) ||
-        !canAutocomplete
+        props.scope.eventsFunctionsExtension
     );
 
     const switchFieldType = () => {
@@ -220,27 +208,25 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
           )
         }
         renderButton={style =>
-          canAutocomplete ? (
-            isExpressionField ? (
-              <FlatButton
-                id="switch-expression-select"
-                leftIcon={<TypeCursorSelect />}
-                style={style}
-                primary
-                label={<Trans>Select an effect property</Trans>}
-                onClick={switchFieldType}
-              />
-            ) : (
-              <RaisedButton
-                id="switch-expression-select"
-                icon={<Functions />}
-                style={style}
-                primary
-                label={<Trans>Use an expression</Trans>}
-                onClick={switchFieldType}
-              />
-            )
-          ) : null
+          props.scope.eventsFunctionsExtension ? null : isExpressionField ? (
+            <FlatButton
+              id="switch-expression-select"
+              leftIcon={<TypeCursorSelect />}
+              style={style}
+              primary
+              label={<Trans>Select an effect property</Trans>}
+              onClick={switchFieldType}
+            />
+          ) : (
+            <RaisedButton
+              id="switch-expression-select"
+              icon={<Functions />}
+              style={style}
+              primary
+              label={<Trans>Use an expression</Trans>}
+              onClick={switchFieldType}
+            />
+          )
         }
       />
     );

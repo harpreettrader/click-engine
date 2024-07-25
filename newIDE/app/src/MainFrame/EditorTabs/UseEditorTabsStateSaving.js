@@ -22,7 +22,6 @@ type Props = {|
     kind: EditorKind,
     name: string,
     dontFocusTab?: boolean,
-    project?: ?gdProject,
   |}) => EditorOpeningOptions,
 |};
 
@@ -132,7 +131,6 @@ const useEditorTabsStateSaving = ({
               kind: editorMetadata.editorKind,
               name: editorMetadata.projectItemName || '',
               dontFocusTab: true,
-              project,
             });
           }
           // If the project does not contain the target item (it could happen if

@@ -19,9 +19,6 @@ export function getMuiOverrides({
   outlinedButtonBorderColor,
   alternateCanvasBackgroundColor,
   alternateCanvasLightBackgroundColor,
-  snackbarBackgroundColor,
-  snackbarBorderColor,
-  textDefaultColor,
 }: {|
   tabTextColor: string,
   tabSelectedTextColor: string,
@@ -34,9 +31,6 @@ export function getMuiOverrides({
   outlinedButtonBorderColor: string,
   alternateCanvasBackgroundColor: string,
   alternateCanvasLightBackgroundColor: string,
-  snackbarBackgroundColor: string,
-  snackbarBorderColor: string,
-  textDefaultColor: string,
 |}) {
   return {
     MuiTypography: {
@@ -299,16 +293,6 @@ export function getMuiOverrides({
       option: {
         // Avoid the default min-height of 48px, which is too big to display options.
         minHeight: 35,
-      },
-    },
-    MuiSnackbarContent: {
-      root: {
-        flexWrap: 'none', // To prevent action to be put under the text when it's long.
-        backgroundColor: snackbarBackgroundColor,
-        border: `1px solid ${snackbarBorderColor}`,
-      },
-      message: {
-        color: textDefaultColor,
       },
     },
   };
@@ -683,9 +667,6 @@ export function createGdevelopTheme({
           styles['ThemeSurfaceAlternateCanvasBackgroundColor'],
         alternateCanvasLightBackgroundColor:
           styles['ThemeSurfaceAlternateCanvasLightBackgroundColor'],
-        snackbarBackgroundColor: styles['ThemeSnackbarBackgroundColor'],
-        snackbarBorderColor: styles['ThemeSnackbarBorderColor'],
-        textDefaultColor: styles['ThemeTextDefaultColor'],
       }),
     },
   };

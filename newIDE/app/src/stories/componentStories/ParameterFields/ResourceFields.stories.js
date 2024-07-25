@@ -31,11 +31,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -54,11 +51,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -77,11 +71,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -100,11 +91,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -123,11 +111,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -146,11 +131,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -169,11 +151,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -192,11 +171,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -215,11 +191,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}
@@ -238,11 +211,8 @@ export const AllResourceFields = () => (
               project: testProject.project,
               layout: testProject.testLayout,
             }}
-            globalObjectsContainer={testProject.project.getObjects()}
-            objectsContainer={testProject.testLayout.getObjects()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
+            globalObjectsContainer={testProject.project}
+            objectsContainer={testProject.testLayout}
             value={value}
             onChange={onChange}
             parameterRenderingService={ParameterRenderingService}

@@ -146,11 +146,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       allowedBehaviorType !== '' ? (
         <Trans>
           The behavior is not attached to this object. Please select another
-          object or add this behavior:{' '}
-          {gd.MetadataProvider.getBehaviorMetadata(
-            gd.JsPlatform.get(),
-            allowedBehaviorType
-          ).getFullName() || allowedBehaviorType}
+          object or add this behavior.
         </Trans>
       ) : (
         <Trans>

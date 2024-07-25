@@ -16,11 +16,10 @@ import InAppTutorialContext from '../../InAppTutorial/InAppTutorialContext';
 
 const gd: libGDevelop = global.gd;
 
-const getRequiredBehaviorTypes = (
+export const getRequiredBehaviorTypes = (
   platform: gdPlatform,
   functionMetadata: gdInstructionMetadata | gdExpressionMetadata,
-  parameterIndex: number,
-  shouldBeHidden: boolean | null
+  parameterIndex: number
 ) => {
   const requiredBehaviorTypes: Array<string> = [];
   for (
@@ -33,41 +32,16 @@ const getRequiredBehaviorTypes = (
       break;
     }
     const behaviorType = behaviorParameter.getExtraInfo();
-    if (behaviorType.length === 0) {
-      continue;
-    }
     const behaviorMetadata = gd.MetadataProvider.getBehaviorMetadata(
       platform,
       behaviorType
     );
-    if (
-      shouldBeHidden === null ||
-      behaviorMetadata.isHidden() === shouldBeHidden
-    ) {
+    if (behaviorMetadata.isHidden()) {
       requiredBehaviorTypes.push(behaviorType);
     }
   }
   return requiredBehaviorTypes;
 };
-
-const getRequiredCapabilitiesBehaviorTypes = (
-  platform: gdPlatform,
-  functionMetadata: gdInstructionMetadata | gdExpressionMetadata,
-  parameterIndex: number
-) => getRequiredBehaviorTypes(platform, functionMetadata, parameterIndex, true);
-
-const getRequiredVisibleBehaviorTypes = (
-  platform: gdPlatform,
-  functionMetadata: gdInstructionMetadata | gdExpressionMetadata,
-  parameterIndex: number
-) =>
-  getRequiredBehaviorTypes(platform, functionMetadata, parameterIndex, false);
-
-export const getAllRequiredBehaviorTypes = (
-  platform: gdPlatform,
-  functionMetadata: gdInstructionMetadata | gdExpressionMetadata,
-  parameterIndex: number
-) => getRequiredBehaviorTypes(platform, functionMetadata, parameterIndex, null);
 
 export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
   function ObjectField(props: ParameterFieldProps, ref) {
@@ -106,28 +80,13 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       ? parameterMetadata.getExtraInfo()
       : undefined;
 
-    const requiredCapabilitiesBehaviorTypes = React.useMemo(
+    const requiredBehaviorTypes = React.useMemo(
       () => {
         const functionMetadata = instructionMetadata || expressionMetadata;
         if (!project || !functionMetadata || parameterIndex === undefined) {
           return [];
         }
-        return getRequiredCapabilitiesBehaviorTypes(
-          project.getCurrentPlatform(),
-          functionMetadata,
-          parameterIndex
-        );
-      },
-      [expressionMetadata, instructionMetadata, parameterIndex, project]
-    );
-
-    const requiredVisibleBehaviorTypes = React.useMemo(
-      () => {
-        const functionMetadata = instructionMetadata || expressionMetadata;
-        if (!project || !functionMetadata || parameterIndex === undefined) {
-          return [];
-        }
-        return getRequiredVisibleBehaviorTypes(
+        return getRequiredBehaviorTypes(
           project.getCurrentPlatform(),
           functionMetadata,
           parameterIndex
@@ -147,8 +106,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
         // Some instructions apply to all objects BUT not some objects
         // lacking a specific capability offered by a default behavior.
         allowedObjectType={allowedObjectType}
-        requiredCapabilitiesBehaviorTypes={requiredCapabilitiesBehaviorTypes}
-        requiredVisibleBehaviorTypes={requiredVisibleBehaviorTypes}
+        requiredBehaviorTypes={requiredBehaviorTypes}
         globalObjectsContainer={props.globalObjectsContainer}
         objectsContainer={props.objectsContainer}
         floatingLabelText={description}
@@ -160,7 +118,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
         }
         fullWidth
         errorTextIfInvalid={
-          allowedObjectType || requiredCapabilitiesBehaviorTypes.length > 0 ? (
+          allowedObjectType || requiredBehaviorTypes.length > 0 ? (
             <Trans>The object does not exist or can't be used here.</Trans>
           ) : (
             <Trans>Enter the name of an object.</Trans>

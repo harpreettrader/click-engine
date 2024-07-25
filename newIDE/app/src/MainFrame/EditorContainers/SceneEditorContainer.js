@@ -10,7 +10,6 @@ import {
   type RenderEditorContainerProps,
   type RenderEditorContainerPropsWithRef,
 } from './BaseEditor';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 export class SceneEditorContainer extends React.Component<RenderEditorContainerProps> {
   editor: ?SceneEditor;
@@ -86,13 +85,6 @@ export class SceneEditorContainer extends React.Component<RenderEditorContainerP
       return <div>No layout called {projectItemName} found!</div>;
     }
 
-    const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-      {
-        project,
-        layout,
-      }
-    );
-
     return (
       <SceneEditor
         setToolbar={this.props.setToolbar}
@@ -101,13 +93,7 @@ export class SceneEditorContainer extends React.Component<RenderEditorContainerP
         unsavedChanges={this.props.unsavedChanges}
         ref={editor => (this.editor = editor)}
         project={project}
-        projectScopedContainersAccessor={projectScopedContainersAccessor}
         layout={layout}
-        eventsFunctionsExtension={null}
-        eventsBasedObject={null}
-        globalObjectsContainer={project.getObjects()}
-        objectsContainer={layout.getObjects()}
-        layersContainer={layout.getLayers()}
         initialInstances={layout.getInitialInstances()}
         getInitialInstancesEditorSettings={() =>
           prepareInstancesEditorSettings(
@@ -122,7 +108,6 @@ export class SceneEditorContainer extends React.Component<RenderEditorContainerP
         isActive={isActive}
         hotReloadPreviewButtonProps={this.props.hotReloadPreviewButtonProps}
         openBehaviorEvents={this.props.openBehaviorEvents}
-        onExtractAsExternalLayout={this.props.onExtractAsExternalLayout}
       />
     );
   }

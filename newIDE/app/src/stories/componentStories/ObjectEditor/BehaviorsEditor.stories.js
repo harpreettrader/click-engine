@@ -21,7 +21,6 @@ export const Default = () => (
   <SerializedObjectDisplay object={testProject.spriteObjectWithBehaviors}>
     <BehaviorsEditor
       project={testProject.project}
-      eventsFunctionsExtension={null}
       object={testProject.spriteObjectWithBehaviors}
       resourceManagementProps={fakeResourceManagementProps}
       onUpdateBehaviorsSharedData={() => {}}
@@ -35,7 +34,6 @@ export const WithoutAnyBehaviors = () => (
   <SerializedObjectDisplay object={testProject.spriteObjectWithoutBehaviors}>
     <BehaviorsEditor
       project={testProject.project}
-      eventsFunctionsExtension={null}
       object={testProject.spriteObjectWithoutBehaviors}
       resourceManagementProps={fakeResourceManagementProps}
       onUpdateBehaviorsSharedData={() => {}}

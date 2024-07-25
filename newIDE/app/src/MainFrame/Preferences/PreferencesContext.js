@@ -194,7 +194,6 @@ export type PreferencesValues = {|
   autosaveOnPreview: boolean,
   useGDJSDevelopmentWatcher: boolean,
   eventsSheetUseAssignmentOperators: boolean,
-  eventsSheetIndentScale: number,
   eventsSheetZoomLevel: number,
   showEffectParameterNames: boolean,
   projectLastUsedPaths: { [string]: { [ResourceKind]: string } },
@@ -213,9 +212,7 @@ export type PreferencesValues = {|
   showCommunityExtensions: boolean,
   showGetStartedSectionByDefault: boolean,
   showEventBasedObjectsEditor: boolean,
-  showInAppTutorialDeveloperMode: boolean,
   showDeprecatedInstructionWarning: boolean,
-  openDiagnosticReportAutomatically: boolean,
   use3DEditor: boolean,
   inAppTutorialsProgress: InAppTutorialProgressDatabase,
   newProjectsDefaultFolder: string,
@@ -225,9 +222,7 @@ export type PreferencesValues = {|
   newFeaturesAcknowledgements: {
     [featureId: string]: {| dates: [number] |},
   },
-  displaySaveReminder: {| activated: boolean |}, // Store as object in case we need to add options.
   editorStateByProject: { [string]: { editorTabs: EditorTabsPersistedState } },
-  fetchPlayerTokenForPreviewAutomatically: boolean,
 |};
 
 /**
@@ -252,7 +247,6 @@ export type Preferences = {|
   setAutosaveOnPreview: (enabled: boolean) => void,
   setUseGDJSDevelopmentWatcher: (enabled: boolean) => void,
   setEventsSheetUseAssignmentOperators: (enabled: boolean) => void,
-  setEventsSheetIndentScale: (scale: number) => void,
   setEventsSheetZoomLevel: (zoomLevel: number) => void,
   setShowEffectParameterNames: (enabled: boolean) => void,
   getLastUsedPath: (project: gdProject, kind: ResourceKind) => string,
@@ -279,8 +273,13 @@ export type Preferences = {|
   setHasProjectOpened: (enabled: boolean) => void,
   resetShortcutsToDefault: () => void,
   setShortcutForCommand: (commandName: CommandName, shortcut: string) => void,
-  getNewObjectDialogDefaultTab: () => 'asset-store' | 'new-object',
-  setNewObjectDialogDefaultTab: ('asset-store' | 'new-object') => void,
+  getNewObjectDialogDefaultTab: () =>
+    | 'asset-store'
+    | 'new-object'
+    | 'fetch-nft',
+  setNewObjectDialogDefaultTab: (
+    'asset-store' | 'new-object' | 'fetch-nft'
+  ) => void,
   getShareDialogDefaultTab: () => 'invite' | 'publish',
   setShareDialogDefaultTab: ('invite' | 'publish') => void,
   getIsMenuBarHiddenInPreview: () => boolean,
@@ -294,9 +293,6 @@ export type Preferences = {|
   setShowGetStartedSectionByDefault: (enabled: boolean) => void,
   setShowEventBasedObjectsEditor: (enabled: boolean) => void,
   getShowEventBasedObjectsEditor: () => boolean,
-  setShowInAppTutorialDeveloperMode: (enabled: boolean) => void,
-  setOpenDiagnosticReportAutomatically: (enabled: boolean) => void,
-  getOpenDiagnosticReportAutomatically: () => boolean,
   setShowDeprecatedInstructionWarning: (enabled: boolean) => void,
   getShowDeprecatedInstructionWarning: () => boolean,
   setUse3DEditor: (enabled: boolean) => void,
@@ -317,7 +313,6 @@ export type Preferences = {|
   setNewFeaturesAcknowledgements: ({
     [featureId: string]: {| dates: [number] |},
   }) => void,
-  setDisplaySaveReminder: ({| activated: boolean |}) => void,
   getEditorStateForProject: (
     projectId: string
   ) => ?{| editorTabs: EditorTabsPersistedState |},
@@ -325,7 +320,6 @@ export type Preferences = {|
     projectId: string,
     editorState?: {| editorTabs: EditorTabsPersistedState |}
   ) => void,
-  setFetchPlayerTokenForPreviewAutomatically: (enabled: boolean) => void,
 |};
 
 export const initialPreferences = {
@@ -335,9 +329,9 @@ export const initialPreferences = {
     themeName:
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'GDevelop default Dark'
+        ? 'ClickEngine default Dark'
         : // TODO: Use the light theme back when it's adapted to the modern theme.
-          'GDevelop default Dark',
+          'ClickEngine default Dark',
     codeEditorThemeName: 'vs-dark',
     hiddenAlertMessages: {},
     hiddenTutorialHints: {},
@@ -349,7 +343,6 @@ export const initialPreferences = {
     useGDJSDevelopmentWatcher: true,
     eventsSheetUseAssignmentOperators: false,
     eventsSheetZoomLevel: 14,
-    eventsSheetIndentScale: 1,
     showEffectParameterNames: false,
     projectLastUsedPaths: {},
     defaultEditorMosaicNodes: {},
@@ -367,8 +360,6 @@ export const initialPreferences = {
     showCommunityExtensions: false,
     showGetStartedSectionByDefault: true,
     showEventBasedObjectsEditor: false,
-    showInAppTutorialDeveloperMode: false,
-    openDiagnosticReportAutomatically: true,
     showDeprecatedInstructionWarning: false,
     use3DEditor: isWebGLSupported(),
     inAppTutorialsProgress: {},
@@ -377,9 +368,7 @@ export const initialPreferences = {
     useShortcutToClosePreviewWindow: true,
     watchProjectFolderFilesForLocalProjects: true,
     newFeaturesAcknowledgements: {},
-    displaySaveReminder: { activated: true },
     editorStateByProject: {},
-    fetchPlayerTokenForPreviewAutomatically: true,
   },
   setLanguage: () => {},
   setThemeName: () => {},
@@ -398,7 +387,6 @@ export const initialPreferences = {
   setAutosaveOnPreview: () => {},
   setUseGDJSDevelopmentWatcher: (enabled: boolean) => {},
   setEventsSheetUseAssignmentOperators: (enabled: boolean) => {},
-  setEventsSheetIndentScale: (scale: number) => {},
   setEventsSheetZoomLevel: (zoomLevel: number) => {},
   setShowEffectParameterNames: (enabled: boolean) => {},
   getLastUsedPath: (project: gdProject, kind: ResourceKind) => '',
@@ -432,10 +420,7 @@ export const initialPreferences = {
   setShowGetStartedSectionByDefault: (enabled: boolean) => {},
   setShowEventBasedObjectsEditor: (enabled: boolean) => {},
   getShowEventBasedObjectsEditor: () => false,
-  setShowInAppTutorialDeveloperMode: (enabled: boolean) => {},
   setShowDeprecatedInstructionWarning: (enabled: boolean) => {},
-  getOpenDiagnosticReportAutomatically: () => true,
-  setOpenDiagnosticReportAutomatically: (enabled: boolean) => {},
   getShowDeprecatedInstructionWarning: () => false,
   setUse3DEditor: (enabled: boolean) => {},
   getUse3DEditor: () => false,
@@ -446,10 +431,8 @@ export const initialPreferences = {
   setUseShortcutToClosePreviewWindow: () => {},
   setWatchProjectFolderFilesForLocalProjects: () => {},
   setNewFeaturesAcknowledgements: () => {},
-  setDisplaySaveReminder: () => {},
   getEditorStateForProject: projectId => {},
   setEditorStateForProject: (projectId, editorState) => {},
-  setFetchPlayerTokenForPreviewAutomatically: (enabled: boolean) => {},
 };
 
 const PreferencesContext = React.createContext<Preferences>(initialPreferences);

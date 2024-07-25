@@ -23,8 +23,6 @@ export const Default = () => {
     <DragAndDropContextProvider>
       <LayersList
         project={testProject.project}
-        eventsFunctionsExtension={null}
-        eventsBasedObject={null}
         selectedLayer={selectedLayer}
         onSelectLayer={setSelectedLayer}
         onEditLayerEffects={action('onEditLayerEffects')}
@@ -34,8 +32,7 @@ export const Default = () => {
         }}
         onLayerRenamed={action('onLayerRenamed')}
         onCreateLayer={action('onCreateLayer')}
-        layout={testProject.testLayout}
-        layersContainer={testProject.testLayout.getLayers()}
+        layersContainer={testProject.testLayout}
         hotReloadPreviewButtonProps={fakeHotReloadPreviewButtonProps}
       />
     </DragAndDropContextProvider>
@@ -50,8 +47,6 @@ export const SmallWidthAndHeight = () => {
       <div style={{ width: 250, height: 200 }}>
         <LayersList
           project={testProject.project}
-          eventsFunctionsExtension={null}
-          eventsBasedObject={null}
           selectedLayer={selectedLayer}
           onSelectLayer={setSelectedLayer}
           onEditLayerEffects={action('onEditLayerEffects')}
@@ -61,8 +56,7 @@ export const SmallWidthAndHeight = () => {
           }}
           onLayerRenamed={action('onLayerRenamed')}
           onCreateLayer={action('onCreateLayer')}
-          layout={testProject.testLayout}
-          layersContainer={testProject.testLayout.getLayers()}
+          layersContainer={testProject.testLayout}
           hotReloadPreviewButtonProps={fakeHotReloadPreviewButtonProps}
         />
       </div>

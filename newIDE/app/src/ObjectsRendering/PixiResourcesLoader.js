@@ -89,10 +89,7 @@ const load3DModel = (
   project: gdProject,
   resourceName: string
 ): Promise<THREE.THREE_ADDONS.GLTF> => {
-  if (
-    resourceName.length === 0 ||
-    !project.getResourcesManager().hasResource(resourceName)
-  )
+  if (!project.getResourcesManager().hasResource(resourceName))
     return Promise.resolve(invalidModel);
 
   const resource = project.getResourcesManager().getResource(resourceName);
@@ -346,10 +343,16 @@ export default class PixiResourcesLoader {
 
     const imageResources = resourceNames
       .map(resourceName => {
+        console.log(
+          'resourcesManager.hasResource(resourceName): ',
+          resourcesManager.hasResource(resourceName)
+        );
         if (!resourcesManager.hasResource(resourceName)) {
           return null;
         }
         const resource = resourcesManager.getResource(resourceName);
+        console.log('resource: ', resource);
+        console.log('resource.getKind(): ', resource.getKind());
         if (resource.getKind() !== 'image') {
           return null;
         }
@@ -381,12 +384,17 @@ export default class PixiResourcesLoader {
               isResourceForPixi: true,
             }
           );
+
+          console.log('ResourcesLoader.getResourceFullUrl, url: ', url);
           PIXI.Assets.setPreferences({
             preferWorkers: false,
             preferCreateImageBitmap: false,
             crossOrigin: determineCrossOrigin(url),
           });
+          // Gola-k Not parsing the URL here:
+          // await PIXI.Assets.add({ alias: 'bunnyBooBoo', src: url });
           const loadedTexture = await PIXI.Assets.load(url);
+          console.log('loadedTexture: ', loadedTexture);
           loadedTextures[resourceName] = loadedTexture;
           // TODO What if 2 assets share the same file with different settings?
           applyPixiTextureSettings(resource, loadedTexture);
@@ -461,10 +469,7 @@ export default class PixiResourcesLoader {
       return loadedTextures[resourceName];
     }
 
-    if (
-      resourceName.length === 0 ||
-      !project.getResourcesManager().hasResource(resourceName)
-    )
+    if (!project.getResourcesManager().hasResource(resourceName))
       return invalidTexture;
 
     const resource = project.getResourcesManager().getResource(resourceName);
@@ -606,10 +611,7 @@ export default class PixiResourcesLoader {
     }
 
     const resourceManager = project.getResourcesManager();
-    if (
-      spineTextureAtlasName.length === 0 ||
-      !resourceManager.hasResource(spineTextureAtlasName)
-    ) {
+    if (!resourceManager.hasResource(spineTextureAtlasName)) {
       return {
         textureAtlas: null,
         loadingError: null,
@@ -733,7 +735,7 @@ export default class PixiResourcesLoader {
     }
 
     const resourceManager = project.getResourcesManager();
-    if (spineName.length === 0 || !resourceManager.hasResource(spineName)) {
+    if (!resourceManager.hasResource(spineName)) {
       return {
         skeleton: null,
         loadingError: null,
@@ -829,10 +831,7 @@ export default class PixiResourcesLoader {
       return loadedTextures[resourceName];
     }
 
-    if (
-      resourceName.length === 0 ||
-      !project.getResourcesManager().hasResource(resourceName)
-    )
+    if (!project.getResourcesManager().hasResource(resourceName))
       return invalidTexture;
 
     const resource = project.getResourcesManager().getResource(resourceName);
@@ -883,10 +882,7 @@ export default class PixiResourcesLoader {
 
     const fontFamily = slugs(resourceName);
     let fullFilename = null;
-    if (
-      resourceName.length > 0 &&
-      project.getResourcesManager().hasResource(resourceName)
-    ) {
+    if (project.getResourcesManager().hasResource(resourceName)) {
       const resource = project.getResourcesManager().getResource(resourceName);
       if (resource.getKind() === 'font') {
         fullFilename = ResourcesLoader.getResourceFullUrl(
@@ -944,10 +940,7 @@ export default class PixiResourcesLoader {
       return Promise.resolve(loadedBitmapFonts[resourceName].data);
     }
 
-    if (
-      resourceName.length === 0 ||
-      !project.getResourcesManager().hasResource(resourceName)
-    )
+    if (!project.getResourcesManager().hasResource(resourceName))
       return Promise.reject(
         new Error(`Can't find resource called ${resourceName}.`)
       );
@@ -992,10 +985,7 @@ export default class PixiResourcesLoader {
     project: gdProject,
     resourceName: string
   ): Promise<any> {
-    if (
-      resourceName.length === 0 ||
-      !project.getResourcesManager().hasResource(resourceName)
-    )
+    if (!project.getResourcesManager().hasResource(resourceName))
       return Promise.reject(
         new Error(`Can't find resource called ${resourceName}.`)
       );

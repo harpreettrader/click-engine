@@ -11,28 +11,7 @@ import IconButton from '../../UI/IconButton';
 import { type EditorId } from '..';
 import Paper from '../../UI/Paper';
 
-const iconSize = 24;
-/**
- * Padding bottom is added to toolbar to leave space for the Android/iOS
- * bottom navigation bar.
- */
-const toolbarPaddingBottom = 12;
-const iconButtonPadding = 8;
-const iconButtonLabelPadding = 2;
-const toolbarHeight =
-  iconSize + 2 * iconButtonLabelPadding + 2 * iconButtonPadding;
-
-const styles = {
-  iconButton: {
-    padding: iconButtonPadding,
-    fontSize: 'inherit',
-  },
-  buttonLabel: {
-    padding: iconButtonLabelPadding,
-    display: 'flex',
-  },
-  container: { fontSize: iconSize },
-};
+const styles = { container: { padding: 4, paddingBottom: 8 } };
 
 type Props = {|
   selectedEditorId: ?EditorId,
@@ -42,30 +21,30 @@ type Props = {|
 const editors = {
   'objects-list': {
     buttonId: 'toolbar-open-objects-panel-button',
-    icon: <ObjectIcon fontSize="inherit" />,
+    icon: <ObjectIcon />,
   },
   'object-groups-list': {
     buttonId: 'toolbar-open-object-groups-panel-button',
-    icon: <ObjectGroupIcon fontSize="inherit" />,
+    icon: <ObjectGroupIcon />,
   },
   properties: {
     buttonId: 'toolbar-open-properties-panel-button',
-    icon: <EditIcon fontSize="inherit" />,
+    icon: <EditIcon />,
   },
   'instances-list': {
     buttonId: 'toolbar-open-instances-list-panel-button',
-    icon: <InstancesListIcon fontSize="inherit" />,
+    icon: <InstancesListIcon />,
   },
   'layers-list': {
     buttonId: 'toolbar-open-layers-panel-button',
-    icon: <LayersIcon fontSize="inherit" />,
+    icon: <LayersIcon />,
   },
 };
 
 const BottomToolbar = React.memo<Props>((props: Props) => {
   return (
     <Paper background="medium" square style={styles.container}>
-      <Toolbar height={toolbarHeight} paddingBottom={toolbarPaddingBottom}>
+      <Toolbar>
         <ToolbarGroup>
           {Object.keys(editors).map(editorId => {
             const { icon, buttonId } = editors[editorId];
@@ -76,14 +55,13 @@ const BottomToolbar = React.memo<Props>((props: Props) => {
                 key={editorId}
                 disableRipple
                 disableFocusRipple
-                style={styles.iconButton}
                 id={buttonId}
                 onClick={() => {
                   props.onSelectEditor(editorId);
                 }}
                 selected={isSelected}
               >
-                <span style={styles.buttonLabel}>{icon}</span>
+                {icon}
               </IconButton>
             );
           })}

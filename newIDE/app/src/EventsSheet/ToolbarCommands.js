@@ -10,8 +10,6 @@ type Props = {|
   onAddStandardEvent: () => void,
   onAddSubEvent: () => void,
   canAddSubEvent: boolean,
-  onAddLocalVariable: () => void,
-  canAddLocalVariable: boolean,
   onAddCommentEvent: () => void,
   allEventsMetadata: Array<EventMetadata>,
   onAddEvent: (eventType: string) => Array<gdBaseEvent>,
@@ -29,7 +27,6 @@ type Props = {|
   onOpenSettings?: ?() => void,
   moveEventsIntoNewGroup: () => void,
   canMoveEventsIntoNewGroup: boolean,
-  onOpenSceneVariables: () => void,
 |};
 
 const ToolbarCommands = (props: Props) => {
@@ -41,10 +38,6 @@ const ToolbarCommands = (props: Props) => {
 
   useCommand('ADD_SUBEVENT', props.canAddSubEvent, {
     handler: props.onAddSubEvent,
-  });
-
-  useCommand('ADD_LOCAL_VARIABLE', props.canAddLocalVariable, {
-    handler: props.onAddLocalVariable,
   });
 
   useCommand('ADD_COMMENT_EVENT', true, {
@@ -94,10 +87,6 @@ const ToolbarCommands = (props: Props) => {
 
   useCommand('OPEN_EXTENSION_SETTINGS', !!props.onOpenSettings, {
     handler: props.onOpenSettings || (() => {}),
-  });
-
-  useCommand('OPEN_SCENE_VARIABLES', true, {
-    handler: props.onOpenSceneVariables,
   });
 
   return null;

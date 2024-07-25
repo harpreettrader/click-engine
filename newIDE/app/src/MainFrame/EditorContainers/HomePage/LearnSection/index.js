@@ -5,7 +5,6 @@ import { type HomeTab } from '../HomePageMenu';
 import {
   type TutorialCategory,
   type Tutorial,
-  canAccessTutorial,
 } from '../../../../Utils/GDevelopServices/Tutorial';
 import MainPage from './MainPage';
 import TutorialsCategoryPage from './TutorialsCategoryPage';
@@ -20,7 +19,6 @@ import { type ImageTileComponent } from '../../../../UI/ImageTileGrid';
 import Paper from '../../../../UI/Paper';
 import { selectMessageByLocale } from '../../../../Utils/i18n/MessageByLocale';
 import ErrorBoundary from '../../../../UI/ErrorBoundary';
-import { type Limits } from '../../../../Utils/GDevelopServices/Usage';
 
 export const TUTORIAL_CATEGORY_TEXTS = {
   'full-game': {
@@ -49,65 +47,30 @@ export const TUTORIAL_CATEGORY_TEXTS = {
     title: <Trans>Advanced course</Trans>,
     description: <Trans>The icing on the cake</Trans>,
   },
-  'education-curriculum': {
-    title: <Trans>Education curriculum and resources</Trans>,
-    description: (
-      <Trans>
-        For teachers and educators having the GDevelop Education subscription.
-        Ready to use resources for teaching.
-      </Trans>
-    ),
-  },
-  recommendations: {
-    title: <Trans>Recommendations</Trans>,
-    description: null,
-  },
 };
 
-type FormatTutorialToImageTileComponentProps = {|
+export const formatTutorialToImageTileComponent = (
   i18n: I18nType,
-  limits: ?Limits,
-  tutorial: Tutorial,
-  onSelectTutorial: (tutorial: Tutorial) => void,
-|};
-
-export const formatTutorialToImageTileComponent = ({
-  i18n,
-  tutorial,
-  limits,
-  onSelectTutorial,
-}: FormatTutorialToImageTileComponentProps): ImageTileComponent => {
-  const isLocked = !canAccessTutorial(
-    tutorial,
-    limits ? limits.capabilities : null
-  );
-  return {
-    title:
-      selectMessageByLocale(i18n, tutorial.titleByLocale) || tutorial.title,
-    description:
-      selectMessageByLocale(i18n, tutorial.descriptionByLocale) ||
-      tutorial.description,
-    isLocked,
-    onClick: () => {
-      if (tutorial.isPrivateTutorial) {
-        onSelectTutorial(tutorial);
-        return;
-      }
-
-      sendTutorialOpened(tutorial.id);
-      Window.openExternalURL(
-        selectMessageByLocale(i18n, tutorial.linkByLocale) || tutorial.link
-      );
-    },
-    imageUrl:
-      selectMessageByLocale(i18n, tutorial.thumbnailUrlByLocale) ||
-      tutorial.thumbnailUrl,
-    overlayText: tutorial.duration
-      ? secondsToMinutesAndSeconds(tutorial.duration)
-      : '\u{1F4D8}',
-    overlayTextPosition: 'bottomRight',
-  };
-};
+  tutorial: Tutorial
+): ImageTileComponent => ({
+  title: selectMessageByLocale(i18n, tutorial.titleByLocale) || tutorial.title,
+  description:
+    selectMessageByLocale(i18n, tutorial.descriptionByLocale) ||
+    tutorial.description,
+  onClick: () => {
+    sendTutorialOpened(tutorial.id);
+    Window.openExternalURL(
+      selectMessageByLocale(i18n, tutorial.linkByLocale) || tutorial.link
+    );
+  },
+  imageUrl:
+    selectMessageByLocale(i18n, tutorial.thumbnailUrlByLocale) ||
+    tutorial.thumbnailUrl,
+  overlayText: tutorial.duration
+    ? secondsToMinutesAndSeconds(tutorial.duration)
+    : '\u{1F4D8}',
+  overlayTextPosition: 'bottomRight',
+});
 
 const styles = {
   paper: {
@@ -120,14 +83,12 @@ type Props = {|
   onOpenExampleStore: () => void,
   onTabChange: (tab: HomeTab) => void,
   selectInAppTutorial: (tutorialId: string) => void,
-  initialCategory: TutorialCategory | null,
 |};
 
 const LearnSection = ({
   onOpenExampleStore,
   onTabChange,
   selectInAppTutorial,
-  initialCategory,
 }: Props) => {
   const {
     tutorials,
@@ -145,16 +106,7 @@ const LearnSection = ({
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = React.useState<?TutorialCategory>(initialCategory || null);
-
-  React.useEffect(
-    () => {
-      if (initialCategory) {
-        setSelectedCategory(initialCategory);
-      }
-    },
-    [initialCategory]
-  );
+  ] = React.useState<?TutorialCategory>(null);
 
   if (tutorialLoadingError)
     return (

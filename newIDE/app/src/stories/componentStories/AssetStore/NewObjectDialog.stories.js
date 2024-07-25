@@ -25,11 +25,10 @@ export const Default = () => {
           <NewObjectDialog
             project={testProject.project}
             layout={testProject.testLayout}
-            eventsBasedObject={null}
             onClose={action('onClose')}
             onCreateNewObject={action('onCreateNewObject')}
             onObjectsAddedFromAssets={action('onObjectsAddedFromAssets')}
-            objectsContainer={testProject.testLayout.getObjects()}
+            objectsContainer={testProject.testLayout}
             resourceManagementProps={fakeResourceManagementProps}
             canInstallPrivateAsset={() => false}
           />

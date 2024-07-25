@@ -141,8 +141,7 @@ const AssetPackInstallDialog = ({
     objectsContainer ||
     (project.hasLayoutNamed(selectedLayoutName)
       ? project.getLayout(selectedLayoutName)
-      : project
-    ).getObjects();
+      : project);
 
   const onInstallAssets = React.useCallback(
     async (assetShortHeaders: Array<AssetShortHeader>) => {

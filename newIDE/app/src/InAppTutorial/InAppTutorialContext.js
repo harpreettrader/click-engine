@@ -11,7 +11,6 @@ export type InAppTutorialState = {|
     tutorialId: string,
     initialStepIndex: number,
     initialProjectData: { [key: string]: string },
-    inAppTutorial?: InAppTutorial,
   |}) => Promise<void>,
   endTutorial: () => void,
   inAppTutorialShortHeaders: ?Array<InAppTutorialShortHeader>,
@@ -22,7 +21,6 @@ export type InAppTutorialState = {|
   startProjectData: { [key: string]: string },
   inAppTutorialsFetchingError: string | null,
   fetchInAppTutorials: () => Promise<void>,
-  onLoadInAppTutorialFromLocalFile: () => Promise<void>,
 |};
 
 export const initialInAppTutorialState: InAppTutorialState = {
@@ -35,7 +33,6 @@ export const initialInAppTutorialState: InAppTutorialState = {
   startProjectData: {},
   inAppTutorialsFetchingError: null,
   fetchInAppTutorials: async () => {},
-  onLoadInAppTutorialFromLocalFile: async () => {},
 };
 
 const InAppTutorialContext = React.createContext<InAppTutorialState>(

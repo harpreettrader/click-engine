@@ -33,7 +33,6 @@ import ExtensionsSearchDialog from '../../AssetStore/ExtensionStore/ExtensionsSe
 import { sendBehaviorAdded } from '../../Utils/Analytics/EventSender';
 import { useShouldAutofocusInput } from '../../UI/Responsive/ScreenTypeMeasurer';
 import ErrorBoundary from '../../UI/ErrorBoundary';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 const styles = {
   fullHeightSelector: {
@@ -53,7 +52,6 @@ type Props = {|
   scope: EventsScope,
   globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   instruction: gdInstruction,
   isCondition: boolean,
   resourceManagementProps: ResourceManagementProps,
@@ -93,7 +91,6 @@ const InstructionEditorDialog = ({
   project,
   globalObjectsContainer,
   objectsContainer,
-  projectScopedContainersAccessor,
   onCancel,
   open,
   instruction,
@@ -132,11 +129,7 @@ const InstructionEditorDialog = ({
   const hasObjectChosen =
     !!chosenObjectInstructionsInfo && !!chosenObjectInstructionsInfoTree;
   const chosenObject = chosenObjectName
-    ? getObjectByName(
-        project.getObjects(),
-        scope.layout ? scope.layout.getObjects() : null,
-        chosenObjectName
-      )
+    ? getObjectByName(project, scope.layout, chosenObjectName)
     : null;
   const freeInstructionComponentRef = React.useRef<?InstructionOrObjectSelector>(
     null
@@ -189,9 +182,6 @@ const InstructionEditorDialog = ({
         behaviorType: type,
         parentEditor: 'instruction-editor-dialog',
       });
-      if (scope.layout) {
-        scope.layout.updateBehaviorsSharedData(project);
-      }
     }
 
     // Re-choose the same object to force recomputation of chosenObjectInstructionsInfoTree
@@ -272,7 +262,6 @@ const InstructionEditorDialog = ({
       scope={scope}
       globalObjectsContainer={globalObjectsContainer}
       objectsContainer={objectsContainer}
-      projectScopedContainersAccessor={projectScopedContainersAccessor}
       objectName={chosenObjectName}
       isCondition={isCondition}
       instruction={instruction}
@@ -281,7 +270,6 @@ const InstructionEditorDialog = ({
       ref={instructionParametersEditor}
       focusOnMount={shouldAutofocusInput && !!instructionType}
       noHelpButton
-      id="object-instruction-parameters"
     />
   );
 
@@ -427,7 +415,7 @@ const InstructionEditorDialog = ({
       {newBehaviorDialogOpen && chosenObject && (
         <NewBehaviorDialog
           project={project}
-          eventsFunctionsExtension={scope.eventsFunctionsExtension || null}
+          eventsFunctionsExtension={scope.eventsFunctionsExtension}
           open={newBehaviorDialogOpen}
           objectType={chosenObject.getType()}
           objectBehaviorsTypes={listObjectBehaviorsTypes(chosenObject)}

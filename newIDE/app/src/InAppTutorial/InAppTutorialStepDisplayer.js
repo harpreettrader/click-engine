@@ -274,16 +274,7 @@ function InAppTutorialStepDisplayer({
 
   const getFillAutomaticallyFunction = React.useCallback(
     () => {
-      if (!nextStepTrigger || !('valueEquals' in nextStepTrigger)) {
-        return undefined;
-      }
-      // $FlowIgnore - checked above that valueEquals in in nextStepTrigger.
-      const { valueEquals } = nextStepTrigger;
-      if (
-        valueEquals === null ||
-        valueEquals === undefined ||
-        typeof valueEquals !== 'string'
-      ) {
+      if (!nextStepTrigger || !nextStepTrigger.valueEquals) {
         return undefined;
       }
 
@@ -302,7 +293,7 @@ function InAppTutorialStepDisplayer({
       const valueSetter = valuePropertyDescriptor.set;
       if (!valueSetter) return undefined;
       return () => {
-        valueSetter.call(elementWithId, valueEquals);
+        valueSetter.call(elementWithId, nextStepTrigger.valueEquals);
         // Trigger blur to make sure the value is taken into account
         // by the React input.
         elementWithId.dispatchEvent(new Event('blur', { bubbles: true }));

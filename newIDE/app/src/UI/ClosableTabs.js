@@ -5,6 +5,7 @@ import * as React from 'react';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import ContextMenu, { type ContextMenuInterface } from './Menu/ContextMenu';
 import { useLongTouch } from '../Utils/UseLongTouch';
+import { Spacer } from './Grid';
 import GDevelopThemeContext from './Theme/GDevelopThemeContext';
 import { dataObjectToProps, type HTMLDataset } from '../Utils/HTMLDataset';
 import Cross from './CustomSvgIcons/Cross';
@@ -25,17 +26,11 @@ const styles = {
     whiteSpace: 'nowrap',
     fontSize: '15px', // Same as in Mosaic.css (for mosaic-window-title)
   },
-  tabIcon: {
-    marginLeft: 4,
-    marginRight: 4,
-    display: 'flex',
-  },
   tabLabelAndIcon: {
     display: 'flex',
     alignItems: 'center',
     marginLeft: 10,
-    // 12 instead of 10 to even the perceived margin of the home tab (the only not-closable tab).
-    marginRight: 12,
+    marginRight: 10,
   },
   closeButton: {
     marginRight: 5,
@@ -118,7 +113,6 @@ export type ClosableTabProps = {|
   active: boolean,
   label: ?React.Node,
   icon: ?React.Node,
-  renderCustomIcon?: ?(brightness: number) => React.Node,
   closable: boolean,
   onClose: () => void,
   onCloseOthers: () => void,
@@ -136,7 +130,6 @@ export function ClosableTab({
   onCloseAll,
   label,
   icon,
-  renderCustomIcon,
   closable,
   onClick,
   onActivated,
@@ -180,18 +173,9 @@ export function ClosableTab({
   );
 
   const gdevelopTheme = React.useContext(GDevelopThemeContext);
-  const textColor = active
-    ? gdevelopTheme.closableTabs.selectedTextColor
-    : gdevelopTheme.closableTabs.textColor;
-
-  const brightness =
-    gdevelopTheme.palette.type === 'dark'
-      ? active
-        ? 0.978
-        : 0.776
-      : active
-      ? 0.022
-      : 0.224;
+  const textColor = !active
+    ? gdevelopTheme.closableTabs.textColor
+    : gdevelopTheme.closableTabs.selectedTextColor;
 
   return (
     <React.Fragment>
@@ -235,21 +219,10 @@ export function ClosableTab({
               height: gdevelopTheme.closableTabs.height,
               color: textColor,
               fontFamily: gdevelopTheme.closableTabs.fontFamily,
-              marginLeft:
-                icon || renderCustomIcon
-                  ? closable
-                    ? 0
-                    : styles.tabLabelAndIcon.marginLeft -
-                      styles.tabIcon.marginRight
-                  : styles.tabLabelAndIcon.marginLeft,
-              marginRight: closable ? 0 : styles.tabLabelAndIcon.marginRight,
             }}
           >
-            {icon || renderCustomIcon ? (
-              <span style={styles.tabIcon}>
-                {renderCustomIcon ? renderCustomIcon(brightness) : icon}
-              </span>
-            ) : null}
+            {icon}
+            {icon && label ? <Spacer /> : null}
             {label && <span style={styles.tabLabel}>{label}</span>}
           </span>
         </ButtonBase>

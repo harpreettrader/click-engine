@@ -25,6 +25,8 @@ import {
   type AssetShortHeader,
   getPublicAsset,
   isPrivateAsset,
+  isPublicAssetResourceUrl,
+  extractDecodedFilenameWithExtensionFromPublicAssetResourceUrl,
 } from '../Utils/GDevelopServices/Asset';
 import { type ExtensionShortHeader } from '../Utils/GDevelopServices/Extension';
 import EventsFunctionsExtensionsContext from '../EventsFunctionsExtensionsLoader/EventsFunctionsExtensionsContext';
@@ -34,15 +36,13 @@ import useAlertDialog from '../UI/Alert/useAlertDialog';
 import { useResponsiveWindowSize } from '../UI/Responsive/ResponsiveWindowMeasurer';
 import { enumerateAssetStoreIds } from './EnumerateAssetStoreIds';
 import PromisePool from '@supercharge/promise-pool';
-import NewObjectFromScratch, {
-  CustomObjectPackResults,
-} from './NewObjectFromScratch';
+import NewObjectFromScratch from './NewObjectFromScratch';
 import { getAssetShortHeadersToDisplay } from './AssetsList';
 import ErrorBoundary from '../UI/ErrorBoundary';
-import type { ObjectFolderOrObjectWithContext } from '../ObjectsList/EnumerateObjectFolderOrObject';
-import LoaderModal from '../UI/LoaderModal';
 
+const gd: libGDevelop = global.gd;
 const isDev = Window.isDev();
+
 
 export const useExtensionUpdateAlertDialog = () => {
   const { showConfirmation } = useAlertDialog();
@@ -85,6 +85,7 @@ export const useFetchAssets = () => {
             'Unable to install the asset because it could not be fetched.'
           );
         }
+
         return asset;
       });
     if (fetchedAssets.errors.length) {
@@ -98,30 +99,27 @@ export const useFetchAssets = () => {
   };
 };
 
+
 type Props = {|
   project: gdProject,
   layout: ?gdLayout,
-  eventsBasedObject: gdEventsBasedObject | null,
   objectsContainer: gdObjectsContainer,
   resourceManagementProps: ResourceManagementProps,
   onClose: () => void,
   onCreateNewObject: (type: string) => void,
   onObjectsAddedFromAssets: (Array<gdObject>) => void,
   canInstallPrivateAsset: () => boolean,
-  targetObjectFolderOrObjectWithContext?: ?ObjectFolderOrObjectWithContext,
 |};
 
 function NewObjectDialog({
   project,
   layout,
-  eventsBasedObject,
   objectsContainer,
   resourceManagementProps,
   onClose,
   onCreateNewObject,
   onObjectsAddedFromAssets,
   canInstallPrivateAsset,
-  targetObjectFolderOrObjectWithContext,
 }: Props) {
   const { isMobile } = useResponsiveWindowSize();
   const {
@@ -183,6 +181,7 @@ function NewObjectDialog({
   const onInstallAsset = React.useCallback(
     async (assetShortHeader): Promise<boolean> => {
       if (!assetShortHeader) return false;
+      console.log('assetShortHeader in onInstallAsset: ', assetShortHeader);
       setIsAssetBeingInstalled(true);
       try {
         const isPrivate = isPrivateAsset(assetShortHeader);
@@ -198,7 +197,16 @@ function NewObjectDialog({
           }
         }
         const assets = await fetchAssets([assetShortHeader]);
+
+        console.log(
+          '\n\n\n\n\\n%s\n\n\n\n\n',
+          JSON.stringify({ assets }, null, 2)
+        );
+
+        console.log('assets in new dialog: ', assets);
         const asset = assets[0];
+        console.log('asset in new dialog: ', asset);
+
         const requiredExtensionInstallation = await checkRequiredExtensionsUpdateForAssets(
           {
             assets,
@@ -222,25 +230,16 @@ function NewObjectDialog({
               asset,
               project,
               objectsContainer,
-              targetObjectFolderOrObject:
-                targetObjectFolderOrObjectWithContext &&
-                !targetObjectFolderOrObjectWithContext.global
-                  ? targetObjectFolderOrObjectWithContext.objectFolderOrObject
-                  : null,
             })
           : await installPublicAsset({
               asset,
               project,
               objectsContainer,
-              targetObjectFolderOrObject:
-                targetObjectFolderOrObjectWithContext &&
-                !targetObjectFolderOrObjectWithContext.global
-                  ? targetObjectFolderOrObjectWithContext.objectFolderOrObject
-                  : null,
             });
         if (!installOutput) {
           throw new Error('Unable to install private Asset.');
         }
+
         sendAssetAddedToProject({
           id: assetShortHeader.id,
           name: assetShortHeader.name,
@@ -280,14 +279,21 @@ function NewObjectDialog({
       canInstallPrivateAsset,
       showAlert,
       onObjectsAddedFromAssets,
-      targetObjectFolderOrObjectWithContext,
     ]
   );
 
   const onInstallEmptyCustomObject = React.useCallback(
-    async (enumeratedObjectMetadata: EnumeratedObjectMetadata) => {
-      const requiredExtensions = enumeratedObjectMetadata.requiredExtensions;
-      if (!requiredExtensions) return;
+    async () => {
+      const requiredExtensions =
+        selectedCustomObjectEnumeratedMetadata &&
+        selectedCustomObjectEnumeratedMetadata.requiredExtensions;
+      if (!selectedCustomObjectEnumeratedMetadata || !requiredExtensions)
+        return;
+      console.log('hola');
+      console.log(
+        'selectedCustomObjectEnumeratedMetadata: ',
+        selectedCustomObjectEnumeratedMetadata
+      );
       try {
         setIsAssetBeingInstalled(true);
         const requiredExtensionInstallation = await checkRequiredExtensionsUpdate(
@@ -309,13 +315,13 @@ function NewObjectDialog({
           project,
         });
 
-        onCreateNewObject(enumeratedObjectMetadata.name);
+        onCreateNewObject(selectedCustomObjectEnumeratedMetadata.name);
       } catch (error) {
         console.error('Error while creating the object:', error);
         showAlert({
           title: t`Could not create the object`,
           message: t`There was an error while creating the object "${
-            enumeratedObjectMetadata.fullName
+            selectedCustomObjectEnumeratedMetadata.fullName
           }". Verify your internet connection or try again later.`,
         });
       } finally {
@@ -323,6 +329,7 @@ function NewObjectDialog({
       }
     },
     [
+      selectedCustomObjectEnumeratedMetadata,
       onCreateNewObject,
       project,
       showExtensionUpdateConfirmation,
@@ -376,24 +383,10 @@ function NewObjectDialog({
             )
           }
           onClick={async () => {
-            onInstallAsset(openedAssetShortHeader);
+            await onInstallAsset(openedAssetShortHeader);
           }}
           disabled={isAssetBeingInstalled}
           id="add-asset-button"
-        />
-      ) : isDev ? (
-        <RaisedButton
-          key="show-dev-assets"
-          label={
-            environment === 'staging' ? (
-              <Trans>Show live assets</Trans>
-            ) : (
-              <Trans>Show staging assets</Trans>
-            )
-          }
-          onClick={() => {
-            setEnvironment(environment === 'staging' ? 'live' : 'staging');
-          }}
         />
       ) : null
     ) : !!selectedCustomObjectEnumeratedMetadata &&
@@ -408,10 +401,7 @@ function NewObjectDialog({
           )
         }
         primary
-        onClick={() =>
-          selectedCustomObjectEnumeratedMetadata &&
-          onInstallEmptyCustomObject(selectedCustomObjectEnumeratedMetadata)
-        }
+        onClick={onInstallEmptyCustomObject}
         id="skip-and-create-button"
         disabled={isAssetBeingInstalled}
       />
@@ -426,126 +416,106 @@ function NewObjectDialog({
     [onClose]
   );
 
-  const onObjectTypeSelected = React.useCallback(
-    (enumeratedObjectMetadata: EnumeratedObjectMetadata) => {
-      if (enumeratedObjectMetadata.assetStorePackTag) {
-        // When the object is from an asset store, display the objects from the pack
-        // so that the user can either pick a similar object or skip to create a new one.
-        setSelectedCustomObjectEnumeratedMetadata(enumeratedObjectMetadata);
-      } else if (enumeratedObjectMetadata.requiredExtensions) {
-        onInstallEmptyCustomObject(enumeratedObjectMetadata);
-      } else {
-        onCreateNewObject(enumeratedObjectMetadata.name);
-      }
-    },
-    [onCreateNewObject, onInstallEmptyCustomObject]
-  );
-
   return (
-    <I18n>
-      {({ i18n }) => (
-        <>
-          <Dialog
-            title={<Trans>New object</Trans>}
-            secondaryActions={[
-              <HelpButton helpPagePath="/objects" key="help" />,
-            ]}
-            actions={[
-              <FlatButton
-                key="close"
-                label={<Trans>Close</Trans>}
-                primary={false}
-                onClick={handleClose}
-                id="close-button"
-              />,
-              mainAction,
-            ]}
-            onRequestClose={handleClose}
-            onApply={
-              openedAssetPack
-                ? () => setIsAssetPackDialogInstallOpen(true)
-                : openedAssetShortHeader
-                ? async () => {
-                    await onInstallAsset(openedAssetShortHeader);
-                  }
-                : undefined
-            }
-            open
-            flexBody
-            fullHeight
-            id="new-object-dialog"
-            fixedContent={
-              <Tabs
-                value={currentTab}
-                onChange={setCurrentTab}
-                options={[
-                  {
-                    label: <Trans>Asset Store</Trans>,
-                    value: 'asset-store',
-                    id: 'asset-store-tab',
-                  },
-                  {
-                    label: <Trans>New object from scratch</Trans>,
-                    value: 'new-object',
-                    id: 'new-object-from-scratch-tab',
-                  },
-                ]}
-                // Enforce scroll on mobile, because the tabs have long names.
-                variant={isMobile ? 'scrollable' : undefined}
-              />
-            }
-          >
-            {currentTab === 'asset-store' && (
-              <AssetStore ref={assetStore} hideGameTemplates />
-            )}
-            {currentTab === 'new-object' &&
-              (selectedCustomObjectEnumeratedMetadata &&
-              selectedCustomObjectEnumeratedMetadata.assetStorePackTag ? (
-                <CustomObjectPackResults
-                  packTag={
-                    selectedCustomObjectEnumeratedMetadata.assetStorePackTag
-                  }
-                  onAssetSelect={async assetShortHeader => {
-                    const result = await onInstallAsset(assetShortHeader);
-                    if (result) {
-                      handleClose();
+            <I18n>
+              {({ i18n }) => (
+                <>
+                  <Dialog
+                    title={<Trans>New object</Trans>}
+                    secondaryActions={[
+                      <HelpButton helpPagePath="/objects" key="help" />,
+                    ]}
+                    actions={[
+                      <FlatButton
+                        key="close"
+                        label={<Trans>Close</Trans>}
+                        primary={false}
+                        onClick={handleClose}
+                        id="close-button"
+                      />,
+                      mainAction,
+                    ]}
+                    onRequestClose={handleClose}
+                    onApply={
+                      openedAssetPack
+                        ? () => setIsAssetPackDialogInstallOpen(true)
+                        : openedAssetShortHeader
+                        ? async () => {
+                            await onInstallAsset(openedAssetShortHeader);
+                          }
+                        : undefined
                     }
-                  }}
-                  isAssetBeingInstalled={isAssetBeingInstalled}
-                  onBack={() => setSelectedCustomObjectEnumeratedMetadata(null)}
-                />
-              ) : (
-                <NewObjectFromScratch
-                  project={project}
-                  eventsBasedObject={eventsBasedObject}
-                  onObjectTypeSelected={onObjectTypeSelected}
-                  i18n={i18n}
-                />
-              ))}
-          </Dialog>
-          {isAssetBeingInstalled && <LoaderModal show={true} />}
-          {isAssetPackDialogInstallOpen &&
-            displayedAssetShortHeaders &&
-            openedAssetPack && (
-              <AssetPackInstallDialog
-                assetPack={openedAssetPack}
-                assetShortHeaders={displayedAssetShortHeaders}
-                addedAssetIds={existingAssetStoreIds}
-                onClose={() => setIsAssetPackDialogInstallOpen(false)}
-                onAssetsAdded={() => {
-                  setIsAssetPackDialogInstallOpen(false);
-                }}
-                project={project}
-                objectsContainer={objectsContainer}
-                onObjectsAddedFromAssets={onObjectsAddedFromAssets}
-                canInstallPrivateAsset={canInstallPrivateAsset}
-                resourceManagementProps={resourceManagementProps}
-              />
-            )}
-        </>
-      )}
-    </I18n>
-  );
+                    open
+                    flexBody
+                    fullHeight
+                    id="new-object-dialog"
+                    fixedContent={
+                      <Tabs
+                        value={currentTab}
+                        onChange={setCurrentTab}
+                        options={[
+                          {
+                            label: <Trans>Asset Store</Trans>,
+                            value: 'asset-store',
+                            id: 'asset-store-tab',
+                          },
+                          {
+                            label: <Trans>New object And explore NFTs With Sprite</Trans>,
+                            value: 'new-object',
+                            id: 'new-object-from-scratch-tab',
+                          },
+                        ]}
+                        // Enforce scroll on mobile, because the tabs have long names.
+                        variant={isMobile ? 'scrollable' : undefined}
+                      >
+                      </Tabs>
+                    }
+                  >
+                    {currentTab === 'asset-store' && (
+                      <AssetStore ref={assetStore} hideGameTemplates />
+                    )}
+                    {currentTab === 'new-object' && (
+                      <NewObjectFromScratch
+                        onCreateNewObject={onCreateNewObject}
+                        onCustomObjectSelected={
+                          setSelectedCustomObjectEnumeratedMetadata
+                        }
+                        selectedCustomObject={selectedCustomObjectEnumeratedMetadata}
+                        onInstallAsset={async assetShortHeader => {
+                          const result = await onInstallAsset(assetShortHeader);
+                          if (result) {
+                            handleClose();
+                          }
+                        }}
+                        isAssetBeingInstalled={isAssetBeingInstalled}
+                        project={project}
+                        i18n={i18n}
+                      />
+                    )}
+                  
+                  </Dialog>
+                  {isAssetPackDialogInstallOpen &&
+                    displayedAssetShortHeaders &&
+                    openedAssetPack && (
+                      <AssetPackInstallDialog
+                        assetPack={openedAssetPack}
+                        assetShortHeaders={displayedAssetShortHeaders}
+                        addedAssetIds={existingAssetStoreIds}
+                        onClose={() => setIsAssetPackDialogInstallOpen(false)}
+                        onAssetsAdded={() => {
+                          setIsAssetPackDialogInstallOpen(false);
+                        }}
+                        project={project}
+                        objectsContainer={objectsContainer}
+                        onObjectsAddedFromAssets={onObjectsAddedFromAssets}
+                        canInstallPrivateAsset={canInstallPrivateAsset}
+                        resourceManagementProps={resourceManagementProps}
+                      />
+                    )}
+                </>
+              )}
+            </I18n>
+          );
 }
 
 const NewObjectDialogWithErrorBoundary = (props: Props) => (
@@ -559,3 +529,5 @@ const NewObjectDialogWithErrorBoundary = (props: Props) => (
 );
 
 export default NewObjectDialogWithErrorBoundary;
+
+

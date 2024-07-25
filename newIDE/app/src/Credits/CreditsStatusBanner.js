@@ -19,15 +19,9 @@ const styles = {
 
 type Props = {|
   displayPurchaseAction: boolean,
-  actionButtonLabel?: React.Node,
-  onActionButtonClick?: () => void,
 |};
 
-const CreditsStatusBanner = ({
-  displayPurchaseAction,
-  actionButtonLabel,
-  onActionButtonClick,
-}: Props) => {
+const CreditsStatusBanner = ({ displayPurchaseAction }: Props) => {
   const gdevelopTheme = React.useContext(GDevelopThemeContext);
   const { limits, onRefreshLimits } = React.useContext(
     AuthenticatedUserContext
@@ -79,18 +73,6 @@ const CreditsStatusBanner = ({
                 onClick={() =>
                   openCreditsPackageDialog({ showCalloutTip: true })
                 }
-                style={{
-                  color: gdevelopTheme.credits.color,
-                  borderColor: gdevelopTheme.credits.color,
-                }}
-              />
-            </Column>
-          )}
-          {actionButtonLabel && (
-            <Column>
-              <FlatButton
-                label={actionButtonLabel}
-                onClick={onActionButtonClick}
                 style={{
                   color: gdevelopTheme.credits.color,
                   borderColor: gdevelopTheme.credits.color,

@@ -2,7 +2,6 @@
 import axios from 'axios';
 import { GDevelopUserApi } from './ApiConfigs';
 import { type Profile } from './Authentication';
-import { type MessageByLocale } from '../i18n/MessageByLocale';
 
 import { type AuthenticatedUser } from '../../Profile/AuthenticatedUserContext';
 import { extractGDevelopApiErrorStatusAndCode } from './Errors';
@@ -24,21 +23,18 @@ export type Badge = {|
   achievementId: string,
 |};
 
-export type Achievement = {
+export type Achievement = {|
   id: string,
   category: string,
-  nameByLocale: MessageByLocale,
-  descriptionByLocale: MessageByLocale,
-  shortDescriptionByLocale: MessageByLocale,
-  rewardValueInCredits?: number,
-  iconUrl?: string,
-};
+  name: string,
+  description: string,
+|};
 
-export type AchievementWithBadgeData = {
+export type AchievementWithBadgeData = {|
   ...Achievement,
   seen?: boolean,
   unlockedAt: ?Date,
-};
+|};
 
 const isAchievementAlreadyClaimed = (
   badges: Badge[],

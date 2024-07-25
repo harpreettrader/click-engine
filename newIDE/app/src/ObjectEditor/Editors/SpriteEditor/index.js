@@ -30,8 +30,6 @@ import {
 
 const gd: libGDevelop = global.gd;
 
-const styles = { scrollView: { display: 'flex', flexDirection: 'column' } };
-
 type SpriteEditorProps = {|
   ...EditorProps,
   isAnimationListLocked?: boolean,
@@ -41,8 +39,6 @@ export default function SpriteEditor({
   objectConfiguration,
   project,
   layout,
-  eventsFunctionsExtension,
-  eventsBasedObject,
   object,
   objectName,
   resourceManagementProps,
@@ -122,27 +118,27 @@ export default function SpriteEditor({
     <I18n>
       {({ i18n }) => (
         <>
-          <ScrollView ref={scrollView} style={styles.scrollView}>
-            {renderObjectNameField && renderObjectNameField()}
-            <SpacedDismissableTutorialMessage />
-            <AnimationList
-              ref={animationList}
-              animations={animations}
-              project={project}
-              layout={layout}
-              eventsFunctionsExtension={eventsFunctionsExtension}
-              eventsBasedObject={eventsBasedObject}
-              object={object}
-              objectName={objectName}
-              resourceManagementProps={resourceManagementProps}
-              onSizeUpdated={onSizeUpdated}
-              onObjectUpdated={onObjectUpdated}
-              isAnimationListLocked={isChildObject}
-              scrollView={scrollView}
-              onCreateMatchingSpriteCollisionMask={
-                onCreateMatchingSpriteCollisionMask
-              }
-            />
+          <ScrollView ref={scrollView}>
+            <>
+              {renderObjectNameField && renderObjectNameField()}
+              <SpacedDismissableTutorialMessage />
+              <AnimationList
+                ref={animationList}
+                animations={animations}
+                project={project}
+                layout={layout}
+                object={object}
+                objectName={objectName}
+                resourceManagementProps={resourceManagementProps}
+                onSizeUpdated={onSizeUpdated}
+                onObjectUpdated={onObjectUpdated}
+                isAnimationListLocked={isChildObject}
+                scrollView={scrollView}
+                onCreateMatchingSpriteCollisionMask={
+                  onCreateMatchingSpriteCollisionMask
+                }
+              />
+            </>
           </ScrollView>
           <Column noMargin>
             <ResponsiveLineStackLayout
@@ -270,29 +266,18 @@ export default function SpriteEditor({
                 resourcesLoader={ResourcesLoader}
                 project={project}
                 onPointsUpdated={onObjectUpdated}
-                onRenamedPoint={(oldName, newName) => {
-                  if (!object) {
-                    return;
-                  }
-                  if (layout) {
-                    gd.WholeProjectRefactorer.renameObjectPointInScene(
-                      project,
-                      layout,
-                      object,
-                      oldName,
-                      newName
-                    );
-                  } else if (eventsFunctionsExtension && eventsBasedObject) {
-                    gd.WholeProjectRefactorer.renameObjectPointInEventsBasedObject(
-                      project,
-                      eventsFunctionsExtension,
-                      eventsBasedObject,
-                      object,
-                      oldName,
-                      newName
-                    );
-                  }
-                }}
+                onRenamedPoint={(oldName, newName) =>
+                  // TODO EBO Refactor event-based object events when a point is renamed.
+                  layout &&
+                  object &&
+                  gd.WholeProjectRefactorer.renameObjectPoint(
+                    project,
+                    layout,
+                    object,
+                    oldName,
+                    newName
+                  )
+                }
               />
             </Dialog>
           )}

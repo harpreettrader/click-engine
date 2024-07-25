@@ -13,34 +13,13 @@ import {
   icon,
 } from '../ClassNames';
 import InlinePopover from '../../InlinePopover';
-import AnyVariableField from '../../ParameterFields/AnyVariableField';
-import {
-  getVariableSourceIcon,
-  getVariablesContainerSourceType,
-} from '../../ParameterFields/VariableField';
+import SceneVariableField from '../../ParameterFields/SceneVariableField';
 import { type ParameterFieldInterface } from '../../ParameterFields/ParameterFieldCommons';
 import { type EventRendererProps } from './EventRenderer';
 import ConditionsActionsColumns from '../ConditionsActionsColumns';
 import { Trans } from '@lingui/macro';
 import { shouldActivate } from '../../../UI/KeyboardShortcuts/InteractionKeys';
-import { ProjectScopedContainersAccessor } from '../../../InstructionOrExpression/EventsScope.flow';
-
 const gd: libGDevelop = global.gd;
-
-export const getVariableSourceOrSceneIcon = (
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
-  variableName: string
-) => {
-  const variablesContainerSourceType = getVariablesContainerSourceType(
-    projectScopedContainersAccessor,
-    variableName
-  );
-  return getVariableSourceIcon(
-    variablesContainerSourceType === gd.VariablesContainer.Unknown
-      ? gd.VariablesContainer.Scene
-      : variablesContainerSourceType
-  );
-};
 
 const styles = {
   container: {
@@ -186,21 +165,6 @@ export default class ForEachChildVariableEvent extends React.Component<
     const keyIteratorName = forEachChildVariableEvent.getKeyIteratorVariableName();
     const iterableName = forEachChildVariableEvent.getIterableVariableName();
 
-    const ValueIteratorVariableIcon = getVariableSourceOrSceneIcon(
-      this.props.projectScopedContainersAccessor,
-      valueIteratorName
-    );
-
-    const KeyIteratorVariableIcon = getVariableSourceOrSceneIcon(
-      this.props.projectScopedContainersAccessor,
-      keyIteratorName
-    );
-
-    const IterableVariableIcon = getVariableSourceOrSceneIcon(
-      this.props.projectScopedContainersAccessor,
-      iterableName
-    );
-
     return (
       <div
         style={styles.container}
@@ -234,10 +198,10 @@ export default class ForEachChildVariableEvent extends React.Component<
                 }}
                 tabIndex={0}
               >
-                <IterableVariableIcon
-                  className={classNames({
-                    [icon]: true,
-                  })}
+                <img
+                  className={icon}
+                  src="res/types/scenevar.png"
+                  alt="Scene variable"
                 />
                 {iterableName.length !== 0 ? (
                   <span>{iterableName}</span>
@@ -264,10 +228,10 @@ export default class ForEachChildVariableEvent extends React.Component<
                 }}
                 tabIndex={0}
               >
-                <ValueIteratorVariableIcon
-                  className={classNames({
-                    [icon]: true,
-                  })}
+                <img
+                  className={icon}
+                  src="res/types/scenevar.png"
+                  alt="Scene variable"
                 />
                 {valueIteratorName.length !== 0 ? (
                   <span>{valueIteratorName}</span>
@@ -294,10 +258,10 @@ export default class ForEachChildVariableEvent extends React.Component<
                 }}
                 tabIndex={0}
               >
-                <KeyIteratorVariableIcon
-                  className={classNames({
-                    [icon]: true,
-                  })}
+                <img
+                  className={icon}
+                  src="res/types/scenevar.png"
+                  alt="Scene variable"
                 />
                 {keyIteratorName.length !== 0 ? (
                   <span>{keyIteratorName}</span>
@@ -341,9 +305,6 @@ export default class ForEachChildVariableEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -378,9 +339,6 @@ export default class ForEachChildVariableEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -391,14 +349,11 @@ export default class ForEachChildVariableEvent extends React.Component<
           onRequestClose={this.cancelEditing}
           onApply={this.endEditing}
         >
-          <AnyVariableField
+          <SceneVariableField
             project={this.props.project}
             scope={this.props.scope}
             globalObjectsContainer={this.props.globalObjectsContainer}
             objectsContainer={this.props.objectsContainer}
-            projectScopedContainersAccessor={
-              this.props.projectScopedContainersAccessor
-            }
             value={valueIteratorName}
             onChange={text => {
               forEachChildVariableEvent.setValueIteratorVariableName(text);
@@ -416,14 +371,11 @@ export default class ForEachChildVariableEvent extends React.Component<
           onRequestClose={this.cancelEditing}
           onApply={this.endEditing}
         >
-          <AnyVariableField
+          <SceneVariableField
             project={this.props.project}
             scope={this.props.scope}
             globalObjectsContainer={this.props.globalObjectsContainer}
             objectsContainer={this.props.objectsContainer}
-            projectScopedContainersAccessor={
-              this.props.projectScopedContainersAccessor
-            }
             value={keyIteratorName}
             onChange={text => {
               forEachChildVariableEvent.setKeyIteratorVariableName(text);
@@ -441,14 +393,11 @@ export default class ForEachChildVariableEvent extends React.Component<
           onRequestClose={this.cancelEditing}
           onApply={this.endEditing}
         >
-          <AnyVariableField
+          <SceneVariableField
             project={this.props.project}
             scope={this.props.scope}
             globalObjectsContainer={this.props.globalObjectsContainer}
             objectsContainer={this.props.objectsContainer}
-            projectScopedContainersAccessor={
-              this.props.projectScopedContainersAccessor
-            }
             value={iterableName}
             onChange={text => {
               forEachChildVariableEvent.setIterableVariableName(text);

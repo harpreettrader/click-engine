@@ -25,7 +25,6 @@ export const Default = () => (
         eventsFunctionsExtensionOpener={null}
       >
         <OptionsEditorDialog
-          project={testProject.project}
           eventsFunctionsExtension={testProject.testEventsFunctionsExtension}
           open
           onClose={action('close')}

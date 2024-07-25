@@ -29,10 +29,6 @@ const styles = {
     alignItems: 'stretch',
     marginTop: 30,
   },
-  icon: {
-    width: 16,
-    height: 16,
-  },
 };
 
 type Props = {|
@@ -124,10 +120,10 @@ const CreateAccountForm = ({
             disabled={createAccountInProgress}
           />
           <Checkbox
-            label={<Trans>I want to receive the GDevelop Newsletter</Trans>}
+            label={<Trans>I want to receive the ClickEngine Newsletter</Trans>}
             checked={optInNewsletterEmail}
             onCheck={(e, value) => {
-              onChangeOptInNewsletterEmail(value);
+              // onChangeOptInNewsletterEmail(value);
             }}
             disabled={createAccountInProgress}
           />
@@ -143,7 +139,7 @@ const CreateAccountForm = ({
                   primary
                   fullWidth
                   label="Google"
-                  leftIcon={<Google style={styles.icon} />}
+                  leftIcon={<Google />}
                   onClick={() => {
                     onLoginWithProvider('google');
                   }}
@@ -153,7 +149,7 @@ const CreateAccountForm = ({
                   primary
                   fullWidth
                   label="GitHub"
-                  leftIcon={<GitHub style={styles.icon} />}
+                  leftIcon={<GitHub />}
                   onClick={() => {
                     onLoginWithProvider('github');
                   }}
@@ -163,7 +159,7 @@ const CreateAccountForm = ({
                   primary
                   fullWidth
                   label="Apple"
-                  leftIcon={<Apple style={styles.icon} />}
+                  leftIcon={<Apple />}
                   onClick={() => {
                     onLoginWithProvider('apple');
                   }}

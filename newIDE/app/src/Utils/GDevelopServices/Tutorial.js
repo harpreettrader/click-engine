@@ -1,7 +1,6 @@
 // @flow
 import axios from 'axios';
 import { GDevelopAssetApi } from './ApiConfigs';
-import { type Capabilities } from './Usage';
 import { type MessageByLocale } from '../i18n/MessageByLocale';
 
 export type TutorialCategory =
@@ -9,9 +8,7 @@ export type TutorialCategory =
   | 'full-game'
   | 'official-beginner'
   | 'official-intermediate'
-  | 'official-advanced'
-  | 'recommendations'
-  | 'education-curriculum';
+  | 'official-advanced';
 
 export type Tutorial = {|
   id: string,
@@ -21,7 +18,7 @@ export type Tutorial = {|
   /** Deprecated - see `descriptionByLocale`. */
   description: string,
   descriptionByLocale: MessageByLocale,
-  type: 'video' | 'text' | 'pdf-tutorial',
+  type: 'video' | 'text',
   category: TutorialCategory,
   duration?: number,
   /** Deprecated - see `linkByLocale`. */
@@ -30,29 +27,7 @@ export type Tutorial = {|
   /** Deprecated - see `thumbnailUrlByLocale`. */
   thumbnailUrl: string,
   thumbnailUrlByLocale: MessageByLocale,
-
-  isPrivateTutorial?: boolean,
-  redeemHintByLocale?: MessageByLocale,
-  redeemLinkByLocale?: MessageByLocale,
 |};
-
-export const canAccessTutorial = (
-  tutorial: Tutorial,
-  capabilities: Capabilities | null
-): boolean => {
-  if (!tutorial.isPrivateTutorial) return true;
-
-  if (
-    capabilities &&
-    capabilities.privateTutorials &&
-    capabilities.privateTutorials.allowedIdPrefixes.some(prefix =>
-      tutorial.id.startsWith(prefix)
-    )
-  )
-    return true;
-
-  return false;
-};
 
 export const listAllTutorials = (): Promise<Array<Tutorial>> => {
   return axios

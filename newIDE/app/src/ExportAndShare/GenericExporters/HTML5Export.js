@@ -69,7 +69,7 @@ export const ExportFlow = ({
       <RaisedButton
         label={
           !isExporting ? (
-            <Trans>Export as a HTML5 game</Trans>
+            <Trans>Preview and Export as a HTML5 game</Trans>
           ) : (
             <Trans>Exporting...</Trans>
           )
@@ -105,7 +105,7 @@ export const DoneFooter = ({
       </LineStackLayout>
       <Text>
         <Trans>
-          You can now upload the game to a web hosting service to play it.
+          You can now upload the game to a web hosting to play to the game.
         </Trans>
       </Text>
       <Spacer />

@@ -22,8 +22,6 @@ export const Default = () => (
       objectConfiguration={testProject.particleEmitterConfiguration}
       project={testProject.project}
       layout={testProject.testLayout}
-      eventsFunctionsExtension={null}
-      eventsBasedObject={null}
       resourceManagementProps={fakeResourceManagementProps}
       onSizeUpdated={() => {}}
       // It would be used for refactoring but this kind of object has none.

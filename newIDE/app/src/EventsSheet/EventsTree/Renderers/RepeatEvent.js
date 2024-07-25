@@ -8,8 +8,6 @@ import {
   selectableArea,
   executableEventContainer,
   disabledText,
-  instructionParameter,
-  instructionInvalidParameter,
 } from '../ClassNames';
 import InlinePopover from '../../InlinePopover';
 import ExpressionField from '../../ParameterFields/ExpressionField';
@@ -47,7 +45,7 @@ export default class RepeatEvent extends React.Component<
 
   edit = (domEvent: any) => {
     const repeatEvent = gd.asRepeatEvent(this.props.event);
-    const expression = repeatEvent.getRepeatExpression().getPlainString();
+    const expression = repeatEvent.getRepeatExpression();
 
     // We should not need to use a timeout, but
     // if we don't do this, the InlinePopover's clickaway listener
@@ -79,7 +77,7 @@ export default class RepeatEvent extends React.Component<
     const repeatEvent = gd.asRepeatEvent(this.props.event);
     const { editingPreviousValue } = this.state;
     if (editingPreviousValue != null) {
-      repeatEvent.setRepeatExpressionPlainString(editingPreviousValue);
+      repeatEvent.setRepeatExpression(editingPreviousValue);
       this.forceUpdate();
     }
   };
@@ -101,17 +99,6 @@ export default class RepeatEvent extends React.Component<
   render() {
     const repeatEvent = gd.asRepeatEvent(this.props.event);
     const expression = repeatEvent.getRepeatExpression();
-    const expressionPlainString = expression.getPlainString();
-
-    const expressionValidator = new gd.ExpressionValidator(
-      gd.JsPlatform.get(),
-      this.props.projectScopedContainersAccessor.get(),
-      'number',
-      ''
-    );
-    expression.getRootNode().visit(expressionValidator);
-    const isExpressionValid = expressionValidator.getAllErrors().size() === 0;
-    expressionValidator.delete();
 
     return (
       <div
@@ -136,42 +123,13 @@ export default class RepeatEvent extends React.Component<
             }}
             tabIndex={0}
           >
-            <Trans>
-              Repeat{' '}
-              <span
-                className={classNames({
-                  [selectableArea]: true,
-                  [instructionParameter]: true,
-                  number: true,
-                })}
-                onClick={this.edit}
-                onKeyPress={event => {
-                  if (shouldActivate(event)) {
-                    this.edit(event);
-                  }
-                }}
-                tabIndex={0}
-              >
-                {expressionPlainString ? (
-                  <span>
-                    {isExpressionValid ? (
-                      expressionPlainString
-                    ) : (
-                      <span
-                        className={classNames({
-                          [instructionInvalidParameter]: true,
-                        })}
-                      >
-                        {expressionPlainString}
-                      </span>
-                    )}
-                  </span>
-                ) : (
-                  <span className="instruction-missing-parameter" />
-                )}
-              </span>{' '}
-              times:
-            </Trans>
+            {expression ? (
+              <Trans>Repeat {expression} times:</Trans>
+            ) : (
+              <i>
+                <Trans>Click to choose how many times will be repeated</Trans>
+              </i>
+            )}
           </span>
         </div>
         <ConditionsActionsColumns
@@ -204,9 +162,6 @@ export default class RepeatEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -241,9 +196,6 @@ export default class RepeatEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -259,12 +211,9 @@ export default class RepeatEvent extends React.Component<
             scope={this.props.scope}
             globalObjectsContainer={this.props.globalObjectsContainer}
             objectsContainer={this.props.objectsContainer}
-            projectScopedContainersAccessor={
-              this.props.projectScopedContainersAccessor
-            }
-            value={expressionPlainString}
+            value={expression}
             onChange={text => {
-              repeatEvent.setRepeatExpressionPlainString(text);
+              repeatEvent.setRepeatExpression(text);
               this.props.onUpdate();
             }}
             parameterRenderingService={ParameterRenderingService}

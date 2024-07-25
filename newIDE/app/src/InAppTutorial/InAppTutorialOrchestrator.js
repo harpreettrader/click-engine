@@ -11,6 +11,7 @@ import {
   type InAppTutorialFlowStepTrigger,
   type TranslatedText,
   type EditorIdentifier,
+  isMiniTutorial,
 } from '../Utils/GDevelopServices/InAppTutorial';
 import {
   createOrEnsureBadgeForUser,
@@ -120,24 +121,9 @@ const interpolateExpectedEditor = (
   data: { [key: string]: string }
 ): {| editor: EditorIdentifier, scene?: string |} | null => {
   if (!expectedEditor) return null;
-  let scene = undefined;
-  if (expectedEditor.scene) {
-    const sceneName = data[expectedEditor.scene];
-    if (!sceneName) {
-      console.warn(
-        `The user should now be focused on editor ${
-          expectedEditor.editor
-        } for scene with key ${
-          expectedEditor.scene
-        } but the scene name couldn't be found in project data:`,
-        data
-      );
-    }
-    scene = sceneName;
-  }
   return {
     ...expectedEditor,
-    scene,
+    scene: expectedEditor.scene ? data[expectedEditor.scene] : undefined,
   };
 };
 
@@ -171,7 +157,7 @@ const countObjectsInScene = ({
     ? project.getLayout(sceneName)
     : project.getLayoutAt(0);
 
-  return layout.getObjects().getObjectsCount();
+  return layout.getObjectsCount();
 };
 
 export const getEditorTabSelector = ({
@@ -360,15 +346,14 @@ const gatherProjectDataOnMultipleSteps = ({
               layoutName && project.hasLayoutNamed(layoutName)
                 ? project.getLayout(layoutName)
                 : project.getLayoutAt(0);
-            const layoutObjectsCount = layout.getObjects().getObjectsCount();
+            const layoutObjectsCount = layout.getObjectsCount();
             if (layoutObjectsCount === 0) {
               throw new Error(
                 `No object was found in layout after step ${index} of flow`
               );
             }
             newData[key] = layout
-              .getObjects()
-              .getObjectAt(layout.getObjects().getObjectsCount() - 1)
+              .getObjectAt(layout.getObjectsCount() - 1)
               .getName();
           }
         }
@@ -502,7 +487,7 @@ const InAppTutorialOrchestrator = React.forwardRef<
       elementWithValueToWatchIfEquals,
       setElementWithValueToWatchIfEquals,
     ] = React.useState<?string>(null);
-    const inputExpectedValueRef = React.useRef<?string | boolean>(null);
+    const inputExpectedValueRef = React.useRef<?string>(null);
     const [
       objectSceneInstancesToWatch,
       setObjectSceneInstancesToWatch,
@@ -858,11 +843,7 @@ const InAppTutorialOrchestrator = React.forwardRef<
       () => {
         if (!currentStep) return;
         const { nextStepTrigger, elementToHighlightId } = currentStep;
-        if (
-          nextStepTrigger &&
-          nextStepTrigger.valueEquals !== undefined &&
-          nextStepTrigger.valueEquals !== null
-        ) {
+        if (nextStepTrigger && nextStepTrigger.valueEquals) {
           if (!elementToHighlightId) return;
           inputExpectedValueRef.current = nextStepTrigger.valueEquals;
           setElementWithValueToWatchIfEquals(elementToHighlightId);
@@ -942,29 +923,17 @@ const InAppTutorialOrchestrator = React.forwardRef<
         const elementToWatch = document.querySelector(
           elementWithValueToWatchIfEquals
         );
-        if (!elementToWatch) return;
         const inputExpectedValue = inputExpectedValueRef.current;
-        if (inputExpectedValue === null) return;
+        if (!inputExpectedValue) return;
 
-        const inputValue = getInputValue(elementToWatch);
+        // We trim all spaces to not be picky about the user input inside expressions.
+        // Ex: "1 + 1" === "1+1"
         if (
-          typeof inputExpectedValue === 'boolean' &&
-          inputExpectedValue === inputValue
-        ) {
-          goToNextStep();
-          return;
-        }
-
-        if (
-          typeof inputExpectedValue === 'string' &&
-          typeof inputValue === 'string' &&
-          // We trim all spaces to not be picky about the user input inside expressions.
-          // Ex: "1 + 1" === "1+1"
-          inputValue.replace(/\s/g, '') ===
+          elementToWatch &&
+          getInputValue(elementToWatch).replace(/\s/g, '') ===
             inputExpectedValue.replace(/\s/g, '')
         ) {
           goToNextStep();
-          return;
         }
       },
       [goToNextStep, elementWithValueToWatchIfEquals]
@@ -1034,7 +1003,10 @@ const InAppTutorialOrchestrator = React.forwardRef<
       currentStep && currentStep.isTriggerFlickering ? 500 : null
     );
 
-    const isRunningMiniTutorial = tutorial.isMiniTutorial;
+    const isRunningMiniTutorial = React.useMemo(
+      () => isMiniTutorial(tutorial.id),
+      [tutorial.id]
+    );
 
     const isTouchScreen = useScreenType() === 'touch';
 

@@ -8,6 +8,7 @@ import { Column, Line } from '../../../UI/Grid';
 import { LineStackLayout } from '../../../UI/Layout';
 import UserChip from '../../../UI/User/UserChip';
 import ProjectManagerIcon from '../../../UI/CustomSvgIcons/ProjectManager';
+import FloppyIcon from '../../../UI/CustomSvgIcons/Floppy';
 import Window from '../../../Utils/Window';
 import optionalRequire from '../../../Utils/OptionalRequire';
 import TextButton from '../../../UI/TextButton';
@@ -15,7 +16,7 @@ import IconButton from '../../../UI/IconButton';
 import { isNativeMobileApp } from '../../../Utils/Platform';
 import NotificationChip from '../../../UI/User/NotificationChip';
 import { useResponsiveWindowSize } from '../../../UI/Responsive/ResponsiveWindowMeasurer';
-import SaveProjectIcon from '../../SaveProjectIcon';
+import { NFTContext } from '../../../context/NFTContext';
 const electron = optionalRequire('electron');
 
 type Props = {|
@@ -36,6 +37,7 @@ export const HomePageHeader = ({
   canSave,
 }: Props) => {
   const { isMobile } = useResponsiveWindowSize();
+  const { connectWallet, currentAccount } = React.useContext(NFTContext);
 
   return (
     <I18n>
@@ -59,24 +61,44 @@ export const HomePageHeader = ({
                 <ProjectManagerIcon />
               </IconButton>
               {!!hasProject && (
-                <SaveProjectIcon
+                <IconButton
+                  size="small"
                   id="main-toolbar-save-button"
-                  onSave={onSave}
-                  canSave={canSave}
-                />
+                  onClick={onSave}
+                  tooltip={t`Save project`}
+                  color="default"
+                  disabled={!canSave}
+                >
+                  <FloppyIcon />
+                </IconButton>
               )}
             </Line>
           </Column>
           <Column>
             <LineStackLayout noMargin alignItems="center">
-              {!electron && !isNativeMobileApp() && (
+              {/* {!electron && !isNativeMobileApp() && (
                 <FlatButton
                   label={<Trans>Get the app</Trans>}
                   onClick={() =>
                     Window.openExternalURL('https://gdevelop.io/download')
                   }
                 />
+              )} */}
+              {/* Gola-k Start */}
+              {/* Connect button */}
+              {currentAccount ? (
+                <FlatButton
+                  label={<Trans>Connected</Trans>}
+                  onClick={() => {}}
+                />
+              ) : (
+                <FlatButton
+                  label={<Trans>Connect</Trans>}
+                  onClick={connectWallet}
+                  // onClick={() => {}}
+                />
               )}
+              {/* Gola-k End */}
               <UserChip onOpenProfile={onOpenProfile} />
               <NotificationChip />
               {isMobile ? (

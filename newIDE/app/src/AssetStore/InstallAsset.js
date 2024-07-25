@@ -19,7 +19,6 @@ import {
 import { type EventsFunctionsExtensionsState } from '../EventsFunctionsExtensionsLoader/EventsFunctionsExtensionsContext';
 import { mapVector } from '../Utils/MapFor';
 import { toNewGdMapStringString } from '../Utils/MapStringString';
-import { getInsertionParentAndPositionFromSelection } from '../Utils/ObjectFolders';
 
 const gd: libGDevelop = global.gd;
 
@@ -162,14 +161,12 @@ export type InstallAssetArgs = {|
   asset: Asset,
   project: gdProject,
   objectsContainer: gdObjectsContainer,
-  targetObjectFolderOrObject?: ?gdObjectFolderOrObject,
 |};
 
 export const addAssetToProject = async ({
   asset,
   project,
   objectsContainer,
-  targetObjectFolderOrObject,
 }: InstallAssetArgs): Promise<InstallAssetOutput> => {
   const objectNewNames = {};
   const resourceNewNames = {};
@@ -185,27 +182,12 @@ export const addAssetToProject = async ({
     const newName = newNameGenerator(originalName, name =>
       objectsContainer.hasObjectNamed(name)
     );
-
-    let object: gdObject;
-    if (targetObjectFolderOrObject) {
-      const { folder, position } = getInsertionParentAndPositionFromSelection(
-        targetObjectFolderOrObject
-      );
-      object = objectsContainer.insertNewObjectInFolder(
-        project,
-        type,
-        newName,
-        folder,
-        position
-      );
-    } else {
-      object = objectsContainer.insertNewObject(
-        project,
-        type,
-        newName,
-        objectsContainer.getObjectsCount()
-      );
-    }
+    const object = objectsContainer.insertNewObject(
+      project,
+      type,
+      newName,
+      objectsContainer.getObjectsCount()
+    );
     objectNewNames[originalName] = newName;
 
     unserializeFromJSObject(

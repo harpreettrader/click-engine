@@ -12,7 +12,7 @@ type Props = {|
   group: gdObjectGroup,
   onApply: () => void,
   onCancel: () => void,
-  globalObjectsContainer: gdObjectsContainer | null,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
 |};
 

@@ -8,7 +8,7 @@ import Undo from '../UI/CustomSvgIcons/Undo';
 import Redo from '../UI/CustomSvgIcons/Redo';
 import Trash from '../UI/CustomSvgIcons/Trash';
 import Copy from '../UI/CustomSvgIcons/Copy';
-import Paste from '../UI/CustomSvgIcons/Paste';
+import Clipboard from '../UI/CustomSvgIcons/Clipboard';
 
 import { Column, Line, Spacer } from '../UI/Grid';
 import FlatButton from '../UI/FlatButton';
@@ -46,7 +46,7 @@ const VariablesListToolbar = React.memo<Props>((props: Props) => {
     },
     {
       key: 'paste',
-      Icon: Paste,
+      Icon: Clipboard,
       label: <Trans>Paste</Trans>,
       tooltip: t`Paste`,
       onClick: props.onPaste,

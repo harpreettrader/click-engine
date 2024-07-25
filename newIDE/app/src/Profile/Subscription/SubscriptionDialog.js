@@ -10,13 +10,13 @@ import {
   changeUserSubscription,
   getRedirectToCheckoutUrl,
   canSeamlesslyChangeSubscription,
+  canCancelAtEndOfPeriod,
   hasValidSubscriptionPlan,
   EDUCATION_PLAN_MAX_SEATS,
   EDUCATION_PLAN_MIN_SEATS,
   type SubscriptionPlanWithPricingSystems,
   type SubscriptionPlanPricingSystem,
   type Subscription,
-  hasMobileAppStoreSubscriptionPlan,
 } from '../../Utils/GDevelopServices/Usage';
 import EmptyMessage from '../../UI/EmptyMessage';
 import { showErrorBox } from '../../UI/Messages/MessageBox';
@@ -102,6 +102,13 @@ const cancelConfirmationTexts = {
   dismissButtonLabel: t`Keep subscription`,
   maxWidth: 'sm',
 };
+const cancelImmediatelyConfirmationTexts = {
+  title: t`Cancel your subscription?`,
+  message: t`By canceling your subscription you will lose all your premium features IMMEDIATELY. Continue?`,
+  confirmButtonLabel: t`Cancel my subscription now`,
+  dismissButtonLabel: t`Keep subscription`,
+  maxWidth: 'sm',
+};
 const seamlesslyChangeConfirmationTexts = {
   title: t`Update your subscription`,
   message: t`Are you sure you want to change your plan? Your next payment will be pro-rated.`,
@@ -111,14 +118,14 @@ const seamlesslyChangeConfirmationTexts = {
 };
 const cancelAndChangeConfirmationTexts = {
   title: t`Update your subscription`,
-  message: t`To get this new subscription, we need to stop your existing one before you can pay for the new one. This is immediate but your payment will NOT be pro-rated (you will pay the full price for the new subscription). You won't lose any project, game or other data.`,
-  confirmButtonLabel: t`Cancel and upgrade my subscription`,
+  message: t`To get this new subscription, we need to cancel your existing one before you can pay for the new one. The change will be immediate but your payment will NOT be pro-rated (you will have to pay as for a new subscription).`,
+  confirmButtonLabel: t`Cancel my subscription`,
   dismissButtonLabel: t`Go back`,
   maxWidth: 'sm',
 };
 const cancelAndChangeWithValidRedeemedCodeConfirmationTexts = {
   title: t`Update your subscription`,
-  message: t`To get this new subscription, we need to stop your existing one before you can pay for the new one. The change will be immediate. You will also lose your redeemed code.`,
+  message: t`To get this new subscription, we need to cancel your existing one before you can pay for the new one. The change will be immediate. You will also lose your redeemed code.`,
   confirmButtonLabel: t`Update my subscription`,
   dismissButtonLabel: t`Go back`,
   maxWidth: 'sm',
@@ -284,7 +291,11 @@ export default function SubscriptionDialog({
 
     if (!subscriptionPlanPricingSystem) {
       // Cancelling the existing subscription.
-      const answer = await showConfirmation(cancelConfirmationTexts);
+      const answer = await showConfirmation(
+        canCancelAtEndOfPeriod(subscription)
+          ? cancelConfirmationTexts
+          : cancelImmediatelyConfirmationTexts
+      );
       if (!answer) return;
 
       setCancelReasonDialogOpen(true);
@@ -746,39 +757,6 @@ export default function SubscriptionDialog({
               </EmptyMessage>
             </ColumnStackLayout>
           </Dialog>
-          {hasMobileAppStoreSubscriptionPlan(
-            authenticatedUser.subscription
-          ) && (
-            <Dialog
-              open
-              title={
-                <Trans>
-                  Subscription with the Apple App store or Google Play store
-                </Trans>
-              }
-              maxWidth="sm"
-              cannotBeDismissed
-              actions={[
-                <FlatButton
-                  key="close"
-                  label={
-                    <Trans>
-                      Understood, I'll check my Apple or Google account
-                    </Trans>
-                  }
-                  onClick={onClose}
-                />,
-              ]}
-            >
-              <Text>
-                <Trans>
-                  The subscription of this account was done using Apple or
-                  Google Play. Connect on your account on your Apple or Google
-                  device to manage it.
-                </Trans>
-              </Text>
-            </Dialog>
-          )}
           {!authenticatedUser.authenticated &&
             authenticatedUser.loginState !== 'loggingIn' && (
               <Dialog

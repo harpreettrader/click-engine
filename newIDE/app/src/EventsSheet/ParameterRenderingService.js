@@ -27,9 +27,6 @@ import ExpressionField from './ParameterFields/ExpressionField';
 import StringField from './ParameterFields/StringField';
 import StringWithSelectorField from './ParameterFields/StringWithSelectorField';
 import BehaviorField from './ParameterFields/BehaviorField';
-import AnyVariableField, {
-  renderInlineAnyVariable,
-} from './ParameterFields/AnyVariableField';
 import SceneVariableField, {
   renderInlineSceneVariable,
 } from './ParameterFields/SceneVariableField';
@@ -85,7 +82,6 @@ const components = {
   string: StringField,
   stringWithSelector: StringWithSelectorField,
   behavior: BehaviorField,
-  variable: AnyVariableField,
   scenevar: SceneVariableField,
   globalvar: GlobalVariableField,
   objectvar: ObjectVariableField,
@@ -122,7 +118,6 @@ const components = {
 const inlineRenderers: { [string]: ParameterInlineRenderer } = {
   default: renderInlineDefaultField,
   forceMultiplier: renderInlineForceMultiplier,
-  variable: renderInlineAnyVariable,
   globalvar: renderInlineGlobalVariable,
   scenevar: renderInlineSceneVariable,
   objectvar: renderInlineObjectVariable,
@@ -147,7 +142,6 @@ const userFriendlyTypeName: { [string]: MessageDescriptor } = {
   string: t`String`,
   stringWithSelector: t`String`,
   behavior: t`Behavior`,
-  anyvar: t`Variable`,
   scenevar: t`Scene variable`,
   globalvar: t`Global variable`,
   objectvar: t`Object variable`,

@@ -33,8 +33,6 @@ export const Default = () => (
         onDeleteEventsBasedObject={action('object deleted')}
         onRenameEventsBasedObject={action('rename object')}
         onEventsBasedObjectRenamed={action('object renamed')}
-        onOpenCustomObjectEditor={action('onOpenCustomObjectEditor')}
-        onAddEventsBasedObject={cb => cb({ isRenderedIn3D: false })}
         // Behaviors
         onSelectEventsBasedBehavior={action('behavior selected')}
         onDeleteEventsBasedBehavior={action('behavior deleted')}
@@ -50,9 +48,6 @@ export const Default = () => (
         onEventsFunctionAdded={action('function added')}
         onRenameEventsFunction={action('function renamed')}
         forceUpdateEditor={action('force editor update')}
-        onSelectExtensionProperties={action('open extension properties')}
-        onSelectExtensionGlobalVariables={action('open global variables')}
-        onSelectExtensionSceneVariables={action('open scene variables')}
       />
     </FixedHeightFlexContainer>
   </DragAndDropContextProvider>

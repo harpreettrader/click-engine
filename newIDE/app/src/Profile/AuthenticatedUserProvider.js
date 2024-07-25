@@ -10,9 +10,7 @@ import {
   getUserBadges,
   listDefaultRecommendations,
   listRecommendations,
-  type CommunityLinks,
 } from '../Utils/GDevelopServices/User';
-import { getAchievements } from '../Utils/GDevelopServices/Badge';
 import Authentication, {
   type LoginForm,
   type RegisterForm,
@@ -193,7 +191,6 @@ export default class AuthenticatedUserProvider extends React.Component<
 
   // This should be called only on the first mount of the provider.
   _initializeAuthenticatedUser() {
-    this._fetchAchievements();
     this.setState(({ authenticatedUser }) => ({
       authenticatedUser: {
         ...initialAuthenticatedUser,
@@ -518,7 +515,6 @@ export default class AuthenticatedUserProvider extends React.Component<
       }
     );
     this._fetchUserBadges();
-    this._fetchAchievements();
     this._fetchUserNotifications();
 
     // Load and wait for the user profile to be fetched.
@@ -849,23 +845,6 @@ export default class AuthenticatedUserProvider extends React.Component<
     }
   };
 
-  _fetchAchievements = async () => {
-    // Load achievements only once, as they are the same across all users.
-    if (this.state.authenticatedUser.achievements) return;
-
-    try {
-      const achievements = await getAchievements();
-      this.setState(({ authenticatedUser }) => ({
-        authenticatedUser: {
-          ...authenticatedUser,
-          achievements,
-        },
-      }));
-    } catch (error) {
-      console.error('Error while loading achievements:', error);
-    }
-  };
-
   _notifyUserAboutEmailVerification = () => {
     const { profile, firebaseUser } = this.state.authenticatedUser;
     if (!profile) return;
@@ -1012,7 +991,8 @@ export default class AuthenticatedUserProvider extends React.Component<
 
   _doEdit = async (
     payload: PatchUserPayload,
-    preferences: PreferencesValues
+    preferences: PreferencesValues,
+    { throwError }: {| throwError: boolean |}
   ) => {
     const { authentication } = this.props;
     if (!authentication) return;
@@ -1033,16 +1013,17 @@ export default class AuthenticatedUserProvider extends React.Component<
           appLanguage: preferences.language,
           donateLink: payload.donateLink,
           discordUsername: payload.discordUsername,
-          githubUsername: payload.githubUsername,
           communityLinks: payload.communityLinks,
           survey: payload.survey,
         }
       );
       await this._fetchUserProfileWithoutThrowingErrors();
+      this.openEditProfileDialog(false);
     } catch (apiCallError) {
       this.setState({ apiCallError });
-
-      throw apiCallError;
+      if (throwError) {
+        throw apiCallError;
+      }
     } finally {
       this.setState({
         editInProgress: false,
@@ -1092,9 +1073,9 @@ export default class AuthenticatedUserProvider extends React.Component<
       const username = profile ? profile.username : null;
       this.showUserSnackbar({
         message: username ? (
-          <Trans>👋 Welcome to GDevelop {username}!</Trans>
+          <Trans>👋 Welcome to ClickEngine {username}!</Trans>
         ) : (
-          <Trans>👋 Welcome to GDevelop!</Trans>
+          <Trans>👋 Welcome to ClickEngine!</Trans>
         ),
       });
     } catch (apiCallError) {
@@ -1278,96 +1259,6 @@ export default class AuthenticatedUserProvider extends React.Component<
     });
   };
 
-  _onUpdateGithubStar = async (
-    githubUsername: string,
-    preferences: PreferencesValues
-  ) => {
-    const { authentication } = this.props;
-
-    await this._doEdit(
-      {
-        githubUsername,
-      },
-      preferences
-    );
-
-    this.setState({
-      editInProgress: true,
-    });
-    try {
-      const response = await authentication.updateGitHubStar(
-        authentication.getAuthorizationHeader
-      );
-      this._fetchUserBadges();
-
-      return response;
-    } finally {
-      this.setState({
-        editInProgress: false,
-      });
-    }
-  };
-
-  _onUpdateTiktokFollow = async (
-    communityLinks: CommunityLinks,
-    preferences: PreferencesValues
-  ) => {
-    const { authentication } = this.props;
-
-    await this._doEdit(
-      {
-        communityLinks,
-      },
-      preferences
-    );
-
-    this.setState({
-      editInProgress: true,
-    });
-    try {
-      const response = await authentication.updateTiktokFollow(
-        authentication.getAuthorizationHeader
-      );
-      this._fetchUserBadges();
-
-      return response;
-    } finally {
-      this.setState({
-        editInProgress: false,
-      });
-    }
-  };
-
-  _onUpdateTwitterFollow = async (
-    communityLinks: CommunityLinks,
-    preferences: PreferencesValues
-  ) => {
-    const { authentication } = this.props;
-
-    await this._doEdit(
-      {
-        communityLinks,
-      },
-      preferences
-    );
-
-    this.setState({
-      editInProgress: true,
-    });
-    try {
-      const response = await authentication.updateTwitterFollow(
-        authentication.getAuthorizationHeader
-      );
-      this._fetchUserBadges();
-
-      return response;
-    } finally {
-      this.setState({
-        editInProgress: false,
-      });
-    }
-  };
-
   render() {
     return (
       <PreferencesContext.Consumer>
@@ -1397,26 +1288,10 @@ export default class AuthenticatedUserProvider extends React.Component<
               this.state.editProfileDialogOpen && (
                 <EditProfileDialog
                   profile={this.state.authenticatedUser.profile}
-                  achievements={this.state.authenticatedUser.achievements}
-                  badges={this.state.authenticatedUser.badges}
                   subscription={this.state.authenticatedUser.subscription}
                   onClose={() => this.openEditProfileDialog(false)}
-                  onEdit={async form => {
-                    try {
-                      await this._doEdit(form, preferences);
-                      this.openEditProfileDialog(false);
-                    } catch (error) {
-                      // Ignore errors, we will let the user retry in their profile.
-                    }
-                  }}
-                  onUpdateGitHubStar={githubUsername =>
-                    this._onUpdateGithubStar(githubUsername, preferences)
-                  }
-                  onUpdateTiktokFollow={communityLinks =>
-                    this._onUpdateTiktokFollow(communityLinks, preferences)
-                  }
-                  onUpdateTwitterFollow={communityLinks =>
-                    this._onUpdateTwitterFollow(communityLinks, preferences)
+                  onEdit={form =>
+                    this._doEdit(form, preferences, { throwError: false })
                   }
                   onDelete={this._doDeleteAccount}
                   actionInProgress={

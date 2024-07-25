@@ -25,11 +25,8 @@ export const OperatorFieldString = () => (
         scope={{ project: testProject.project }}
         value={value}
         onChange={onChange}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         parameterMetadata={
           testProject.stringRelationalOperatorParameterMetadata
         }
@@ -45,11 +42,8 @@ export const OperatorFieldNumber = () => (
         scope={{ project: testProject.project }}
         value={value}
         onChange={onChange}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         parameterMetadata={
           testProject.numberRelationalOperatorParameterMetadata
         }
@@ -65,11 +59,8 @@ export const OperatorFieldColor = () => (
         scope={{ project: testProject.project }}
         value={value}
         onChange={onChange}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         parameterMetadata={testProject.colorRelationalOperatorParameterMetadata}
       />
     )}
@@ -83,11 +74,8 @@ export const OperatorFieldUnknownType = () => (
         scope={{ project: testProject.project }}
         value={value}
         onChange={onChange}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         parameterMetadata={
           testProject.unknownRelationalOperatorParameterMetadata
         }

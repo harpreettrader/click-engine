@@ -16,7 +16,6 @@ export type EditorContainerExtraProps = {|
   // Events function extension editor
   initiallyFocusedFunctionName?: ?string,
   initiallyFocusedBehaviorName?: ?string,
-  initiallyFocusedObjectName?: ?string,
 
   // Homepage
   storageProviders?: Array<StorageProvider>,
@@ -54,11 +53,6 @@ export type RenderEditorContainerProps = {|
     extension: gdPlatformExtension,
     type: string
   ) => void,
-  onOpenCustomObjectEditor: (
-    gdEventsFunctionsExtension,
-    gdEventsBasedObject
-  ) => void,
-  openObjectEvents: (extensionName: string, objectName: string) => void,
 
   // Events function management:
   onLoadEventsFunctionsExtensions: () => Promise<void>,
@@ -112,8 +106,6 @@ export type RenderEditorContainerProps = {|
 
   // Object editing
   openBehaviorEvents: (extensionName: string, behaviorName: string) => void,
-
-  onExtractAsExternalLayout: (name: string) => void,
 |};
 
 export type RenderEditorContainerPropsWithRef = {|

@@ -17,7 +17,7 @@ describe('setupInstructionParameters', () => {
     const project = new gd.ProjectHelper.createNewGDJSProject();
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
-    layout.getObjects().insertNewObject(project, 'Sprite', objectName, 0);
+    layout.insertNewObject(project, 'Sprite', objectName, 0);
 
     // Simulate that we select an instruction
     const enumeratedInstructions = enumerateFreeInstructions(
@@ -34,8 +34,8 @@ describe('setupInstructionParameters', () => {
 
     const instruction = new gd.Instruction();
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       playMusicInstruction.metadata
     );
@@ -54,13 +54,13 @@ describe('setupInstructionParameters', () => {
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
     const behaviorName = 'Animation';
-    layout.getObjects().insertNewObject(project, 'Sprite', objectName, 0);
+    layout.insertNewObject(project, 'Sprite', objectName, 0);
 
     // Simulate that we select an instruction for the object
     const enumeratedInstructions = enumerateObjectAndBehaviorsInstructions(
       false,
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       objectName,
       makeFakeI18n()
     );
@@ -76,8 +76,8 @@ describe('setupInstructionParameters', () => {
 
     const instruction = new gd.Instruction();
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       setAnimationNameInstruction.metadata,
       objectName
@@ -97,9 +97,7 @@ describe('setupInstructionParameters', () => {
     const project = new gd.ProjectHelper.createNewGDJSProject();
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
-    const object = layout
-      .getObjects()
-      .insertNewObject(project, 'Sprite', objectName, 0);
+    const object = layout.insertNewObject(project, 'Sprite', objectName, 0);
     object.addNewBehavior(
       project,
       'PlatformBehavior::PlatformerObjectBehavior',
@@ -109,8 +107,8 @@ describe('setupInstructionParameters', () => {
     // Simulate that we select an instruction of the object behavior
     const enumeratedInstructions = enumerateObjectAndBehaviorsInstructions(
       false,
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       objectName,
       makeFakeI18n()
     );
@@ -125,8 +123,8 @@ describe('setupInstructionParameters', () => {
 
     const instruction = new gd.Instruction();
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       jumpSpeedInstruction.metadata,
       objectName
@@ -146,9 +144,7 @@ describe('setupInstructionParameters', () => {
     const project = new gd.ProjectHelper.createNewGDJSProject();
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
-    const object = layout
-      .getObjects()
-      .insertNewObject(project, 'Sprite', objectName, 0);
+    const object = layout.insertNewObject(project, 'Sprite', objectName, 0);
     object.addNewBehavior(
       project,
       'PlatformBehavior::PlatformerObjectBehavior',
@@ -163,8 +159,8 @@ describe('setupInstructionParameters', () => {
     // Simulate that we select an instruction of the object behavior
     const enumeratedInstructions = enumerateObjectAndBehaviorsInstructions(
       false,
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       objectName,
       makeFakeI18n()
     );
@@ -179,8 +175,8 @@ describe('setupInstructionParameters', () => {
 
     const instruction = new gd.Instruction();
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       jumpSpeedInstruction.metadata,
       objectName
@@ -198,9 +194,7 @@ describe('setupInstructionParameters', () => {
     const project = new gd.ProjectHelper.createNewGDJSProject();
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
-    const object = layout
-      .getObjects()
-      .insertNewObject(project, 'Sprite', objectName, 0);
+    const object = layout.insertNewObject(project, 'Sprite', objectName, 0);
     object.addNewBehavior(
       project,
       'PlatformBehavior::PlatformerObjectBehavior',
@@ -215,8 +209,8 @@ describe('setupInstructionParameters', () => {
     // Simulate that we select an instruction of the object behavior
     const enumeratedInstructions = enumerateObjectAndBehaviorsInstructions(
       false,
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       objectName,
       makeFakeI18n()
     );
@@ -234,8 +228,8 @@ describe('setupInstructionParameters', () => {
     instruction.setParameter(0, objectName);
     instruction.setParameter(1, 'WrongName');
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       jumpSpeedInstruction.metadata,
       objectName
@@ -253,9 +247,7 @@ describe('setupInstructionParameters', () => {
     const project = new gd.ProjectHelper.createNewGDJSProject();
     const layout = project.insertNewLayout('Scene', 0);
     const objectName = 'MySpriteObject';
-    const object = layout
-      .getObjects()
-      .insertNewObject(project, 'Sprite', objectName, 0);
+    const object = layout.insertNewObject(project, 'Sprite', objectName, 0);
     object.addNewBehavior(
       project,
       'PlatformBehavior::PlatformerObjectBehavior',
@@ -270,8 +262,8 @@ describe('setupInstructionParameters', () => {
     // Simulate that we select an instruction of the object behavior
     const enumeratedInstructions = enumerateObjectAndBehaviorsInstructions(
       false,
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       objectName,
       makeFakeI18n()
     );
@@ -289,8 +281,8 @@ describe('setupInstructionParameters', () => {
     instruction.setParameter(0, objectName);
     instruction.setParameter(1, 'OtherPlatformerObject');
     setupInstructionParameters(
-      project.getObjects(),
-      layout.getObjects(),
+      project,
+      layout,
       instruction,
       jumpSpeedInstruction.metadata,
       objectName

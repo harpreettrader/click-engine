@@ -23,14 +23,12 @@ import VariablesList, {
 import ShareExternal from '../../UI/CustomSvgIcons/ShareExternal';
 import useForceUpdate from '../../Utils/UseForceUpdate';
 import ErrorBoundary from '../../UI/ErrorBoundary';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 const gd: libGDevelop = global.gd;
 
 type Props = {|
   project: gdProject,
   layout: gdLayout,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   instances: Array<gdInitialInstance>,
   onEditObjectByName: string => void,
   onInstancesModified?: (Array<gdInitialInstance>) => void,
@@ -283,7 +281,6 @@ const InstancePropertiesEditor = ({
   i18n,
   project,
   layout,
-  projectScopedContainersAccessor,
   unsavedChanges,
   historyHandler,
   onEditObjectByName,
@@ -327,15 +324,8 @@ const InstancePropertiesEditor = ({
       if (!instance) return {};
 
       const associatedObjectName = instance.getObjectName();
-      const object = getObjectByName(
-        project.getObjects(),
-        layout.getObjects(),
-        associatedObjectName
-      );
-      const properties = instance.getCustomProperties(
-        project.getObjects(),
-        layout.getObjects()
-      );
+      const object = getObjectByName(project, layout, associatedObjectName);
+      const properties = instance.getCustomProperties(project, layout);
       if (!object) return {};
 
       const is3DInstance = gd.MetadataProvider.getObjectMetadata(
@@ -345,17 +335,9 @@ const InstancePropertiesEditor = ({
       const instanceSchemaForCustomProperties = propertiesMapToSchema(
         properties,
         (instance: gdInitialInstance) =>
-          instance.getCustomProperties(
-            project.getObjects(),
-            layout.getObjects()
-          ),
+          instance.getCustomProperties(project, layout),
         (instance: gdInitialInstance, name, value) =>
-          instance.updateCustomProperty(
-            name,
-            value,
-            project.getObjects(),
-            layout.getObjects()
-          )
+          instance.updateCustomProperty(name, value, project, layout)
       );
       return {
         object,
@@ -404,11 +386,9 @@ const InstancePropertiesEditor = ({
           </Column>
           {object ? (
             <VariablesList
-              projectScopedContainersAccessor={projectScopedContainersAccessor}
               directlyStoreValueChangesWhileEditing
               inheritedVariablesContainer={object.getVariables()}
               variablesContainer={instance.getVariables()}
-              areObjectVariables
               size="small"
               onComputeAllVariableNames={() =>
                 object
@@ -416,7 +396,7 @@ const InstancePropertiesEditor = ({
                       project.getCurrentPlatform(),
                       project,
                       layout,
-                      object.getName()
+                      object
                     )
                   : []
               }

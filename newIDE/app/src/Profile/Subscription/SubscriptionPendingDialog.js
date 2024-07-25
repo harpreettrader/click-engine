@@ -67,7 +67,8 @@ export default function SubscriptionPendingDialog({
           {
             discordUsername,
           },
-          preferences
+          preferences,
+          { throwError: false }
         );
       } catch (error) {
         console.error('Error while editing profile:', error);
@@ -197,7 +198,7 @@ export default function SubscriptionPendingDialog({
                     disabled={isLoading}
                     maxLength={discordUsernameConfig.maxLength}
                     helperMarkdownText={i18n._(
-                      t`Add your Discord username to get access to a dedicated channel! Join the [GDevelop Discord](https://discord.gg/gdevelop).`
+                      t`Add your Discord username to get access to a dedicated channel! Join the [ClickEngine Discord]().`
                     )}
                   />
                 </Line>

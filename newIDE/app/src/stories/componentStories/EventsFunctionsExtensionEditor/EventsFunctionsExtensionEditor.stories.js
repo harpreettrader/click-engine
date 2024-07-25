@@ -31,9 +31,7 @@ export const Default = () => (
         openInstructionOrExpression={action('open instruction or expression')}
         initiallyFocusedFunctionName={null}
         initiallyFocusedBehaviorName={null}
-        initiallyFocusedObjectName={null}
         onCreateEventsFunction={action('on create events function')}
-        onOpenCustomObjectEditor={action('onOpenCustomObjectEditor')}
       />
     </FixedHeightFlexContainer>
   </DragAndDropContextProvider>
@@ -59,9 +57,7 @@ export const WithObjectEditor = () => {
             )}
             initiallyFocusedFunctionName={null}
             initiallyFocusedBehaviorName={null}
-            initiallyFocusedObjectName={null}
             onCreateEventsFunction={action('on create events function')}
-            onOpenCustomObjectEditor={action('onOpenCustomObjectEditor')}
           />
         </FixedHeightFlexContainer>
       </DragAndDropContextProvider>

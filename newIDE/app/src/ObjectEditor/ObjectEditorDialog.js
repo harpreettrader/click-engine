@@ -24,8 +24,7 @@ import { sendBehaviorsEditorShown } from '../Utils/Analytics/EventSender';
 import useDismissableTutorialMessage from '../Hints/useDismissableTutorialMessage';
 import useAlertDialog from '../UI/Alert/useAlertDialog';
 import ErrorBoundary from '../UI/ErrorBoundary';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
-
+import { NFTContext } from '../context/NFTContext';
 const gd: libGDevelop = global.gd;
 
 export type ObjectEditorTab =
@@ -47,15 +46,15 @@ type Props = {|
 
   // Passed down to object editors:
   project: gdProject,
-  layout: gdLayout | null,
-  eventsFunctionsExtension: gdEventsFunctionsExtension | null,
-  eventsBasedObject: gdEventsBasedObject | null,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
+  layout?: gdLayout,
   onComputeAllVariableNames: () => Array<string>,
   resourceManagementProps: ResourceManagementProps,
   unsavedChanges?: UnsavedChanges,
   onUpdateBehaviorsSharedData: () => void,
   initialTab: ?ObjectEditorTab,
+
+  // Passed down to the behaviors editor:
+  eventsFunctionsExtension?: gdEventsFunctionsExtension,
 
   // Preview:
   hotReloadPreviewButtonProps: HotReloadPreviewButtonProps,
@@ -72,27 +71,12 @@ type InnerDialogProps = {|
 
 const InnerDialog = (props: InnerDialogProps) => {
   const { showConfirmation } = useAlertDialog();
-  const {
-    openBehaviorEvents,
-    object,
-    project,
-    layout,
-    eventsFunctionsExtension,
-    eventsBasedObject,
-    helpPagePath,
-    resourceManagementProps,
-    getValidatedObjectOrGroupName,
-    onCancel,
-    onRename,
-    initialTab,
-    projectScopedContainersAccessor,
-    onUpdateBehaviorsSharedData,
-    onComputeAllVariableNames,
-  } = props;
+  const { openBehaviorEvents } = props;
   const [currentTab, setCurrentTab] = React.useState<ObjectEditorTab>(
-    initialTab || 'properties'
+    props.initialTab || 'properties'
   );
   const [objectName, setObjectName] = React.useState(props.objectName);
+  const { fetchNFTs, fetchMyNFTs } = React.useContext(NFTContext);
   const forceUpdate = useForceUpdate();
   const {
     onCancelChanges,
@@ -100,9 +84,9 @@ const InnerDialog = (props: InnerDialogProps) => {
     hasUnsavedChanges,
     getOriginalContentSerializedElement,
   } = useSerializableObjectCancelableEditor({
-    serializableObject: object,
-    useProjectToUnserialize: project,
-    onCancel: onCancel,
+    serializableObject: props.object,
+    useProjectToUnserialize: props.project,
+    onCancel: props.onCancel,
     resetThenClearPersistentUuid: true,
   });
 
@@ -110,8 +94,8 @@ const InnerDialog = (props: InnerDialogProps) => {
   // from event-based object when extensions are refreshed after an extension
   // installation.
   const objectMetadata = gd.MetadataProvider.getObjectMetadata(
-    project.getCurrentPlatform(),
-    object.getType()
+    props.project.getCurrentPlatform(),
+    props.object.getType()
   );
 
   const EditorComponent: ?React.ComponentType<EditorProps> =
@@ -120,12 +104,10 @@ const InnerDialog = (props: InnerDialogProps) => {
   const onApply = async () => {
     props.onApply();
 
-    const originalSerializedVariables = getOriginalContentSerializedElement().getChild(
-      'variables'
-    );
     const changeset = gd.WholeProjectRefactorer.computeChangesetForVariablesContainer(
-      originalSerializedVariables,
-      object.getVariables()
+      props.project,
+      getOriginalContentSerializedElement().getChild('variables'),
+      props.object.getVariables()
     );
     if (changeset.hasRemovedVariables()) {
       // While we support refactoring that would remove all references (actions, conditions...)
@@ -136,17 +118,16 @@ const InnerDialog = (props: InnerDialogProps) => {
     }
 
     gd.WholeProjectRefactorer.applyRefactoringForVariablesContainer(
-      project,
-      object.getVariables(),
-      changeset,
-      originalSerializedVariables
+      props.project,
+      props.object.getVariables(),
+      changeset
     );
-    object.clearPersistentUuid();
+    props.object.clearPersistentUuid();
 
     // Do the renaming *after* applying changes, as "withSerializableObject"
     // HOC will unserialize the object to apply modifications, which will
     // override the name.
-    onRename(objectName);
+    props.onRename(objectName);
   };
 
   const { DismissableTutorialMessage } = useDismissableTutorialMessage(
@@ -182,7 +163,7 @@ const InnerDialog = (props: InnerDialogProps) => {
   return (
     <Dialog
       title={<Trans>Edit {objectName}</Trans>}
-      key={object && object.ptr}
+      key={props.object && props.object.ptr}
       actions={[
         <FlatButton
           key="cancel"
@@ -198,7 +179,7 @@ const InnerDialog = (props: InnerDialogProps) => {
         />,
       ]}
       secondaryActions={[
-        <HelpButton key="help-button" helpPagePath={helpPagePath} />,
+        <HelpButton key="help-button" helpPagePath={props.helpPagePath} />,
         <HotReloadPreviewButton
           key="hot-reload-preview-button"
           {...props.hotReloadPreviewButtonProps}
@@ -252,13 +233,11 @@ const InnerDialog = (props: InnerDialogProps) => {
           }
         >
           <EditorComponent
-            objectConfiguration={object.getConfiguration()}
-            project={project}
-            layout={layout}
-            eventsFunctionsExtension={eventsFunctionsExtension}
-            eventsBasedObject={eventsBasedObject}
-            object={object}
-            resourceManagementProps={resourceManagementProps}
+            objectConfiguration={props.object.getConfiguration()}
+            project={props.project}
+            layout={props.layout}
+            object={props.object}
+            resourceManagementProps={props.resourceManagementProps}
             onSizeUpdated={
               forceUpdate /*Force update to ensure dialog is properly positioned*/
             }
@@ -275,8 +254,9 @@ const InnerDialog = (props: InnerDialogProps) => {
                 translatableHintText={t`Object Name`}
                 onChange={newObjectName => {
                   if (newObjectName === objectName) return;
-
-                  setObjectName(getValidatedObjectOrGroupName(newObjectName));
+                  setObjectName(
+                    props.getValidatedObjectOrGroupName(newObjectName)
+                  );
                   notifyOfChange();
                 }}
                 autoFocus="desktop"
@@ -287,31 +267,30 @@ const InnerDialog = (props: InnerDialogProps) => {
       ) : null}
       {currentTab === 'behaviors' && (
         <BehaviorsEditor
-          object={object}
-          project={project}
-          eventsFunctionsExtension={eventsFunctionsExtension}
-          resourceManagementProps={resourceManagementProps}
+          object={props.object}
+          project={props.project}
+          eventsFunctionsExtension={props.eventsFunctionsExtension}
+          resourceManagementProps={props.resourceManagementProps}
           onSizeUpdated={
             forceUpdate /*Force update to ensure dialog is properly positioned*/
           }
-          onUpdateBehaviorsSharedData={onUpdateBehaviorsSharedData}
+          onUpdateBehaviorsSharedData={props.onUpdateBehaviorsSharedData}
           onBehaviorsUpdated={notifyOfChange}
           openBehaviorEvents={askConfirmationAndOpenBehaviorEvents}
         />
       )}
       {currentTab === 'variables' && (
         <Column expand noMargin>
-          {object.getVariables().count() > 0 && DismissableTutorialMessage && (
-            <Line>
-              <Column noMargin expand>
-                {DismissableTutorialMessage}
-              </Column>
-            </Line>
-          )}
+          {props.object.getVariables().count() > 0 &&
+            DismissableTutorialMessage && (
+              <Line>
+                <Column noMargin expand>
+                  {DismissableTutorialMessage}
+                </Column>
+              </Line>
+            )}
           <VariablesList
-            projectScopedContainersAccessor={projectScopedContainersAccessor}
-            variablesContainer={object.getVariables()}
-            areObjectVariables
+            variablesContainer={props.object.getVariables()}
             emptyPlaceholderTitle={
               <Trans>Add your first object variable</Trans>
             }
@@ -321,7 +300,7 @@ const InnerDialog = (props: InnerDialogProps) => {
               </Trans>
             }
             helpPagePath={'/all-features/variables/object-variables'}
-            onComputeAllVariableNames={onComputeAllVariableNames}
+            onComputeAllVariableNames={props.onComputeAllVariableNames}
             onVariablesUpdated={notifyOfChange}
           />
         </Column>
@@ -331,29 +310,20 @@ const InnerDialog = (props: InnerDialogProps) => {
           target="object"
           // TODO (3D): declare the renderer type in object metadata.
           layerRenderingType="2d"
-          project={project}
-          resourceManagementProps={resourceManagementProps}
-          effectsContainer={object.getEffects()}
-          onEffectsRenamed={(oldName, newName) => {
-            if (layout) {
-              gd.WholeProjectRefactorer.renameObjectEffectInScene(
-                project,
-                layout,
-                object,
-                oldName,
-                newName
-              );
-            } else if (eventsFunctionsExtension && eventsBasedObject) {
-              gd.WholeProjectRefactorer.renameObjectEffectInEventsBasedObject(
-                project,
-                eventsFunctionsExtension,
-                eventsBasedObject,
-                object,
-                oldName,
-                newName
-              );
-            }
-          }}
+          project={props.project}
+          resourceManagementProps={props.resourceManagementProps}
+          effectsContainer={props.object.getEffects()}
+          onEffectsRenamed={(oldName, newName) =>
+            // TODO EBO Refactor event-based object events when an effect is renamed.
+            props.layout &&
+            gd.WholeProjectRefactorer.renameObjectEffect(
+              props.project,
+              props.layout,
+              props.object,
+              oldName,
+              newName
+            )
+          }
           onEffectsUpdated={() => {
             forceUpdate(); /*Force update to ensure dialog is properly positioned*/
             notifyOfChange();

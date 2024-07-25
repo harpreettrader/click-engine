@@ -125,8 +125,6 @@ export class EventsBasedBehaviorTreeViewItemContent
     this.props.onSelectEventsBasedBehavior(this.eventsBasedBehavior);
   }
 
-  onClick(): void {}
-
   rename(newName: string): void {
     if (this.eventsBasedBehavior.getName() === newName) return;
 

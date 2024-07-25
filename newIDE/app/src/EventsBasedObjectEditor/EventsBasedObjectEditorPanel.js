@@ -8,29 +8,26 @@ import EventBasedObjectChildrenEditor from './EventBasedObjectChildrenEditor';
 import Background from '../UI/Background';
 import { Column, Line } from '../UI/Grid';
 import { type UnsavedChanges } from '../MainFrame/UnsavedChangesContext';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
 
 type TabName = 'configuration' | 'properties' | 'children';
 
 type Props = {|
   project: gdProject,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
+  globalObjectsContainer: gdObjectsContainer,
   eventsFunctionsExtension: gdEventsFunctionsExtension,
   eventsBasedObject: gdEventsBasedObject,
   onRenameProperty: (oldName: string, newName: string) => void,
   onEventsFunctionsAdded: () => void,
-  onOpenCustomObjectEditor: () => void,
   unsavedChanges?: ?UnsavedChanges,
 |};
 
 export default function EventsBasedObjectEditorPanel({
   project,
-  projectScopedContainersAccessor,
+  globalObjectsContainer,
   eventsFunctionsExtension,
   eventsBasedObject,
   onRenameProperty,
   onEventsFunctionsAdded,
-  onOpenCustomObjectEditor,
   unsavedChanges,
 }: Props) {
   const [currentTab, setCurrentTab] = React.useState<TabName>('configuration');
@@ -73,7 +70,6 @@ export default function EventsBasedObjectEditorPanel({
           <EventsBasedObjectEditor
             eventsBasedObject={eventsBasedObject}
             unsavedChanges={unsavedChanges}
-            onOpenCustomObjectEditor={onOpenCustomObjectEditor}
           />
         )}
         {currentTab === 'properties' && (
@@ -89,9 +85,9 @@ export default function EventsBasedObjectEditorPanel({
         {currentTab === 'children' && (
           <EventBasedObjectChildrenEditor
             project={project}
+            globalObjectsContainer={globalObjectsContainer}
             eventsFunctionsExtension={eventsFunctionsExtension}
             eventsBasedObject={eventsBasedObject}
-            projectScopedContainersAccessor={projectScopedContainersAccessor}
           />
         )}
       </Column>

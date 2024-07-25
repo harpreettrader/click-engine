@@ -44,7 +44,7 @@ type OnlineGameLinkProps = {|
   isSavingProject: boolean,
   errored: boolean,
   exportStep: BuildStep,
-  onRefreshGame: () => Promise<void>,
+  onGameUpdated: () => Promise<void>,
   automaticallyOpenGameProperties?: boolean,
 |};
 
@@ -58,7 +58,7 @@ const OnlineGameLink = ({
   isSavingProject,
   errored,
   exportStep,
-  onRefreshGame,
+  onGameUpdated,
   automaticallyOpenGameProperties,
 }: OnlineGameLinkProps) => {
   const [showCopiedInfoBar, setShowCopiedInfoBar] = React.useState<boolean>(
@@ -215,13 +215,13 @@ const OnlineGameLink = ({
           thumbnailUrl: getWebBuildThumbnailUrl(project, build.id),
           discoverable: partialGameChange.discoverable,
         });
-        // Then set authors and slug in parallel.
+        // Then set authors and slug in parrallel.
         const [authorsUpdated, slugUpdated] = await Promise.all([
           tryUpdateAuthors(i18n),
           tryUpdateSlug(partialGameChange, i18n),
         ]);
         // Update game again as cached values on the game entity might have changed.
-        await onRefreshGame();
+        await onGameUpdated();
         // If one of the update failed, return false so that the dialog is not closed.
         if (!authorsUpdated || !slugUpdated) {
           return false;
@@ -247,7 +247,7 @@ const OnlineGameLink = ({
       project,
       tryUpdateAuthors,
       tryUpdateSlug,
-      onRefreshGame,
+      onGameUpdated,
       showAlert,
     ]
   );

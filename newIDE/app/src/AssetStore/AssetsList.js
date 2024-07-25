@@ -224,7 +224,6 @@ const PageBreakNavigation = ({
 export type AssetsListInterface = {|
   getScrollPosition: () => number,
   scrollToPosition: (y: number) => void,
-  setPageBreakIndex: (index: number) => void,
 |};
 
 type Props = {|
@@ -253,7 +252,6 @@ type Props = {|
   // Or it can display arbitrary content, like the list of assets in a pack, or similar assets,
   // then currentPage is null.
   currentPage?: AssetStorePageState,
-  hideGameTemplates?: boolean,
 |};
 
 const AssetsList = React.forwardRef<Props, AssetsListInterface>(
@@ -272,7 +270,6 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
       onGoBackToFolderIndex,
       noScroll,
       currentPage,
-      hideGameTemplates,
     }: Props,
     ref
   ) => {
@@ -307,9 +304,6 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
       isNavigatingInsideFolder,
       setIsNavigatingInsideFolder,
     ] = React.useState<boolean>(false);
-    const [pageBreakIndex, setPageBreakIndex] = React.useState<number>(
-      (currentPage && currentPage.pageBreakIndex) || 0
-    );
     const { openedAssetPack, selectedFolders } = React.useMemo(
       () => {
         if (!currentPage) {
@@ -336,9 +330,6 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
         if (!scrollViewElement) return;
 
         scrollViewElement.scrollToPosition(y);
-      },
-      setPageBreakIndex: (index: number) => {
-        setPageBreakIndex(0);
       },
     }));
 
@@ -463,6 +454,10 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
         );
       },
       [allPrivateAssetPackListingDatas, openedAssetPack]
+    );
+
+    const [pageBreakIndex, setPageBreakIndex] = React.useState<number>(
+      (currentPage && currentPage.pageBreakIndex) || 0
     );
 
     const assetTiles = React.useMemo(
@@ -605,8 +600,7 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
           // Don't show private game templates if filtering on assets.
           hasAssetFiltersApplied ||
           // Don't show private game templates if filtering on asset packs.
-          hasAssetPackFiltersApplied ||
-          hideGameTemplates
+          hasAssetPackFiltersApplied
         )
           return [];
 
@@ -634,7 +628,6 @@ const AssetsList = React.forwardRef<Props, AssetsListInterface>(
         receivedGameTemplates,
         hasAssetFiltersApplied,
         hasAssetPackFiltersApplied,
-        hideGameTemplates,
       ]
     );
 

@@ -6,7 +6,6 @@ type ToolbarProps = {|
   children: React.Node,
   height?: number,
   borderBottomColor?: ?string,
-  paddingBottom?: number,
 |};
 
 const styles = {
@@ -21,12 +20,7 @@ const styles = {
 };
 
 export const Toolbar = React.memo<ToolbarProps>(
-  ({
-    children,
-    borderBottomColor,
-    height = 40,
-    paddingBottom,
-  }: ToolbarProps) => {
+  ({ children, borderBottomColor, height = 40 }: ToolbarProps) => {
     const gdevelopTheme = React.useContext(GDevelopThemeContext);
     return (
       <div
@@ -38,7 +32,6 @@ export const Toolbar = React.memo<ToolbarProps>(
           borderBottom: borderBottomColor
             ? `2px solid ${borderBottomColor}`
             : undefined,
-          ...(paddingBottom ? { paddingBottom } : undefined),
         }}
       >
         {children}

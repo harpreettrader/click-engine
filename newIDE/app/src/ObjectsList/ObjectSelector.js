@@ -20,7 +20,7 @@ const gd: libGDevelop = global.gd;
 
 type Props = {|
   project: ?gdProject,
-  globalObjectsContainer: gdObjectsContainer | null,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
 
   /** If specified, only this object type should be allowed to be selected. */
@@ -29,11 +29,7 @@ type Props = {|
    * If specified, an object without these behaviors won't be selectable.
    * Note that groups with at least 1 incompatible object won't be shown.
    */
-  requiredCapabilitiesBehaviorTypes?: Array<string>,
-  /**
-   * If specified, an object without these behaviors will show an error.
-   */
-  requiredVisibleBehaviorTypes?: Array<string>,
+  requiredBehaviorTypes?: Array<string>,
 
   noGroups?: boolean,
 
@@ -65,22 +61,22 @@ const getObjectsAndGroupsDataSource = ({
   objectsContainer,
   noGroups,
   allowedObjectType,
-  requiredCapabilitiesBehaviorTypes,
+  requiredBehaviorTypes,
   excludedObjectOrGroupNames,
 }: {|
   project: ?gdProject,
-  globalObjectsContainer: gdObjectsContainer | null,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
   noGroups: ?boolean,
   allowedObjectType: ?string,
-  requiredCapabilitiesBehaviorTypes?: Array<string>,
+  requiredBehaviorTypes?: Array<string>,
   excludedObjectOrGroupNames: ?Array<string>,
 |}): DataSource => {
   const { allObjectsList, allGroupsList } = enumerateObjectsAndGroups(
     globalObjectsContainer,
     objectsContainer,
     allowedObjectType || undefined,
-    requiredCapabilitiesBehaviorTypes || []
+    requiredBehaviorTypes || []
   );
   const objects = allObjectsList.map(({ object }) => {
     return {
@@ -121,38 +117,18 @@ const getObjectsAndGroupsDataSource = ({
     : fullList;
 };
 
-export const checkHasRequiredBehaviors = ({
+export const checkHasRequiredCapability = ({
   globalObjectsContainer,
   objectsContainer,
   requiredBehaviorTypes,
   objectName,
 }: {|
-  globalObjectsContainer: gdObjectsContainer | null,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
   objectName: string,
   requiredBehaviorTypes?: Array<string>,
-|}): boolean =>
-  getMissingBehaviors({
-    globalObjectsContainer,
-    objectsContainer,
-    requiredBehaviorTypes,
-    objectName,
-  }).length === 0;
-
-const getMissingBehaviors = ({
-  globalObjectsContainer,
-  objectsContainer,
-  requiredBehaviorTypes,
-  objectName,
-}: {|
-  globalObjectsContainer: gdObjectsContainer | null,
-  objectsContainer: gdObjectsContainer,
-  objectName: string,
-  requiredBehaviorTypes?: Array<string>,
-|}): Array<string> => {
-  if (!requiredBehaviorTypes || requiredBehaviorTypes.length === 0) {
-    return [];
-  }
+|}) => {
+  if (!requiredBehaviorTypes || requiredBehaviorTypes.length === 0) return true;
 
   const object = getObjectByName(
     globalObjectsContainer,
@@ -163,19 +139,20 @@ const getMissingBehaviors = ({
     // Either the object does not exist or it's a group - not a problem because:
     // - if the object does not exist, we can't know its capabilities, we assume it has all.
     // - a group is assumed to have all the capabilities.
-    return [];
+    return true;
   }
-  return requiredBehaviorTypes.filter(
+
+  return requiredBehaviorTypes.every(
     behaviorType =>
       gd
         .getBehaviorNamesInObjectOrGroup(
-          globalObjectsContainer || objectsContainer,
+          globalObjectsContainer,
           objectsContainer,
           objectName,
           behaviorType,
           false
         )
-        .size() === 0
+        .size() > 0
   );
 };
 
@@ -208,8 +185,7 @@ const ObjectSelector = React.forwardRef<Props, ObjectSelectorInterface>(
       id,
       excludedObjectOrGroupNames,
       hintText,
-      requiredCapabilitiesBehaviorTypes,
-      requiredVisibleBehaviorTypes,
+      requiredBehaviorTypes,
       ...otherProps
     } = props;
 
@@ -219,7 +195,7 @@ const ObjectSelector = React.forwardRef<Props, ObjectSelectorInterface>(
       objectsContainer,
       noGroups,
       allowedObjectType,
-      requiredCapabilitiesBehaviorTypes,
+      requiredBehaviorTypes,
       excludedObjectOrGroupNames,
     });
 
@@ -228,33 +204,14 @@ const ObjectSelector = React.forwardRef<Props, ObjectSelectorInterface>(
         choice => choice.text !== undefined && value === choice.text
       ).length !== 0;
 
-    const hasObjectWithRequiredCapability = checkHasRequiredBehaviors({
+    const hasObjectWithRequiredCapability = checkHasRequiredCapability({
       globalObjectsContainer,
       objectsContainer,
       objectName: value,
-      requiredBehaviorTypes: requiredCapabilitiesBehaviorTypes,
-    });
-    const missingVisibleBehaviors = getMissingBehaviors({
-      globalObjectsContainer,
-      objectsContainer,
-      objectName: value,
-      requiredBehaviorTypes: requiredVisibleBehaviorTypes,
+      requiredBehaviorTypes,
     });
     const errorText = !hasObjectWithRequiredCapability ? (
       <Trans>This object exists, but can't be used here.</Trans>
-    ) : missingVisibleBehaviors.length > 0 ? (
-      <Trans>
-        This object misses some behaviors:{' '}
-        {missingVisibleBehaviors
-          .map(
-            behaviorTypeName =>
-              gd.MetadataProvider.getBehaviorMetadata(
-                gd.JsPlatform.get(),
-                behaviorTypeName
-              ).getFullName() || behaviorTypeName
-          )
-          .join(', ')}
-      </Trans>
     ) : !hasValidChoice ? (
       errorTextIfInvalid
     ) : (

@@ -19,10 +19,6 @@ import {
   HEALTH_BAR_IN_APP_TUTORIAL_ID,
   JOYSTICK_IN_APP_TUTORIAL_ID,
   OBJECT_3D_IN_APP_TUTORIAL_ID,
-  KNIGHT_PLATFORMER_IN_APP_TUTORIAL_ID,
-  TOP_DOWN_RPG_MOVEMENT_ID,
-  FIRE_A_BULLET,
-  COOP_PLATFORMER,
   guidedLessonsIds,
 } from '../../../../Utils/GDevelopServices/InAppTutorial';
 import MultiplierScore from './Icons/MultiplierScore';
@@ -38,10 +34,6 @@ import Text from '../../../../UI/Text';
 import ColoredLinearProgress from '../../../../UI/ColoredLinearProgress';
 import Trophy from '../../../../UI/CustomSvgIcons/Trophy';
 import Object3D from './Icons/Object3D';
-import Platformer from './Icons/Platformer';
-import TopDownRPGMovement from './Icons/TopDownRPGMovement';
-import FireABullet from './Icons/FireAbullet';
-import CoopPlatformer from './Icons/CoopPlatformer';
 
 const getColumnsFromWindowSize = (
   windowSize: WindowSizeType,
@@ -162,34 +154,6 @@ const GuidedLessons = ({ selectInAppTutorial, lessonsIds }: Props) => {
       description: t`Learn how to manipulate a score by adding collectibles.`,
       durationInMinutes: 3,
       renderImage: props => <MultiplierScore {...props} />,
-    },
-    {
-      id: KNIGHT_PLATFORMER_IN_APP_TUTORIAL_ID,
-      title: t`Platformer`,
-      description: t`Learn how to use the behaviors to make a basic 2D platformer.`,
-      durationInMinutes: 1,
-      renderImage: props => <Platformer {...props} />,
-    },
-    {
-      id: TOP_DOWN_RPG_MOVEMENT_ID,
-      title: t`Top-Down RPG Pixel Perfect`,
-      description: t`Learn how to make a character move like in the retro Pokemon games.`,
-      durationInMinutes: 2,
-      renderImage: props => <TopDownRPGMovement {...props} />,
-    },
-    {
-      id: FIRE_A_BULLET,
-      title: t`Fire a Bullet`,
-      description: t`Learn how to fire bullets with the help of a behavior. Get ready for a Star Wars show.`,
-      durationInMinutes: 3,
-      renderImage: props => <FireABullet {...props} />,
-    },
-    {
-      id: COOP_PLATFORMER,
-      title: t`The basics of Multiplayer`,
-      description: t`Learn how to use the multiplayer behavior and the ownership system in this co-op platformer.`,
-      durationInMinutes: 3,
-      renderImage: props => <CoopPlatformer {...props} />,
     },
   ].filter(item => displayedGuidedLessonsIds.includes(item.id));
 

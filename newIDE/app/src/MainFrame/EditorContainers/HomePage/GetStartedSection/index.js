@@ -90,7 +90,6 @@ type Props = {|
   onUserSurveyHidden: () => void,
   selectInAppTutorial: (tutorialId: string) => void,
   subscriptionPlansWithPricingSystems: ?(SubscriptionPlanWithPricingSystems[]),
-  onOpenProfile: () => void,
 |};
 
 const GetStartedSection = ({
@@ -98,7 +97,6 @@ const GetStartedSection = ({
   onUserSurveyStarted,
   onUserSurveyHidden,
   subscriptionPlansWithPricingSystems,
-  onOpenProfile,
 }: Props) => {
   const isFillingOutSurvey = hasStartedUserSurvey();
   const isOnline = useOnlineStatus();
@@ -184,7 +182,7 @@ const GetStartedSection = ({
       // Artificial delay to build up expectations.
       recommendationsGettingDelayPromise.current = delay(2500);
       await Promise.all([
-        onEditProfile({ survey }, preferences),
+        onEditProfile({ survey }, preferences, { throwError: true }),
         recommendationsGettingDelayPromise.current,
       ]);
       sendUserSurveyCompleted();
@@ -505,7 +503,7 @@ const GetStartedSection = ({
           >
             <Text size="title" align="center">
               {!profile || isNewUser ? (
-                <Trans>Welcome to GDevelop!</Trans>
+                <Trans>Welcome to ClickEngine!</Trans>
               ) : profile && profile.username ? (
                 <Trans>Good to see you {profile.username}!</Trans>
               ) : (
@@ -641,7 +639,6 @@ const GetStartedSection = ({
             subscriptionPlansWithPricingSystems={
               subscriptionPlansWithPricingSystems
             }
-            onOpenProfile={onOpenProfile}
             onStartSurvey={
               profile
                 ? () => {

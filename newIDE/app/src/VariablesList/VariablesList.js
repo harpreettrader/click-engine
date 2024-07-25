@@ -53,10 +53,7 @@ import {
   getDirectParentVariable,
   getMovementTypeWithinVariablesContainer,
   getOldestAncestryVariable,
-  getNodeIdFromVariableName,
-  getNodeIdFromVariableContext,
   getVariableContextFromNodeId,
-  getParentVariableContext,
   inheritedPrefix,
   isAnAncestryOf,
   separator,
@@ -80,8 +77,6 @@ import Text from '../UI/Text';
 import { MultilineVariableEditorDialog } from './MultilineVariableEditorDialog';
 import { MarkdownText } from '../UI/MarkdownText';
 import Paper from '../UI/Paper';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
-
 const gd: libGDevelop = global.gd;
 
 const DragSourceAndDropTarget = makeDragSourceAndDropTarget('variable-editor');
@@ -100,11 +95,8 @@ export type HistoryHandler = {|
 |};
 
 type Props = {|
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   variablesContainer: gdVariablesContainer,
-  areObjectVariables?: boolean,
   inheritedVariablesContainer?: gdVariablesContainer,
-  initiallySelectedVariableName?: ?string,
   /** Callback executed at mount to compute suggestions. */
   onComputeAllVariableNames?: () => Array<string>,
   /** To specify if history should be handled by parent. */
@@ -118,7 +110,6 @@ type Props = {|
   size?: 'small',
   onVariablesUpdated?: () => void,
   toolbarIconStyle?: any,
-  onSelectedVariableChange?: (Array<string>) => void,
 |};
 
 const variableRowStyles = {
@@ -532,6 +523,13 @@ const VariablesList = (props: Props) => {
     })
   );
 
+  const [searchText, setSearchText] = React.useState<string>('');
+  const { onComputeAllVariableNames } = props;
+  const allVariablesNames = React.useMemo<?Array<string>>(
+    () => (onComputeAllVariableNames ? onComputeAllVariableNames() : null),
+    [onComputeAllVariableNames]
+  );
+  const [selectedNodes, setSelectedNodes] = React.useState<Array<string>>([]);
   const [searchMatchingNodes, setSearchMatchingNodes] = React.useState<
     Array<string>
   >([]);
@@ -549,48 +547,6 @@ const VariablesList = (props: Props) => {
   const gdevelopTheme = React.useContext(GDevelopThemeContext);
   const draggedNodeId = React.useRef<?string>(null);
   const forceUpdate = useForceUpdate();
-
-  const [searchText, setSearchText] = React.useState<string>('');
-  const { onComputeAllVariableNames, onSelectedVariableChange } = props;
-  const allVariablesNames = React.useMemo<?Array<string>>(
-    () => (onComputeAllVariableNames ? onComputeAllVariableNames() : null),
-    [onComputeAllVariableNames]
-  );
-  const [selectedNodes, doSetSelectedNodes] = React.useState<Array<string>>(
-    () => {
-      if (!props.initiallySelectedVariableName) {
-        return [];
-      }
-      let variableContext = getVariableContextFromNodeId(
-        getNodeIdFromVariableName(props.initiallySelectedVariableName),
-        props.variablesContainer
-      );
-      // When a child-variable is not declared, its direct parent is used.
-      if (!variableContext.variable) {
-        variableContext = getParentVariableContext(variableContext);
-      }
-      if (variableContext.variable) {
-        // TODO Add ref to child-variables to allow to focus them.
-        refocusNameField({ identifier: variableContext.variable.ptr });
-      }
-      const initialSelectedNodeId = variableContext.variable
-        ? getNodeIdFromVariableContext(variableContext)
-        : null;
-      return initialSelectedNodeId ? [initialSelectedNodeId] : [];
-    }
-  );
-  const setSelectedNodes = React.useCallback(
-    (nodes: Array<string> | ((nodes: Array<string>) => Array<string>)) => {
-      doSetSelectedNodes(selectedNodes => {
-        const newNodes = Array.isArray(nodes) ? nodes : nodes(selectedNodes);
-        if (onSelectedVariableChange) {
-          onSelectedVariableChange(newNodes);
-        }
-        return newNodes;
-      });
-    },
-    [onSelectedVariableChange]
-  );
 
   const triggerSearch = React.useCallback(
     () => {
@@ -672,7 +628,7 @@ const VariablesList = (props: Props) => {
         historyRef.current = undo(historyRef.current, props.variablesContainer);
       setSelectedNodes([]);
     },
-    [historyHandler, historyRef, props.variablesContainer, setSelectedNodes]
+    [historyRef, historyHandler, props.variablesContainer]
   );
 
   const _redo = React.useCallback(
@@ -682,7 +638,7 @@ const VariablesList = (props: Props) => {
         historyRef.current = redo(historyRef.current, props.variablesContainer);
       setSelectedNodes([]);
     },
-    [historyHandler, historyRef, props.variablesContainer, setSelectedNodes]
+    [historyRef, historyHandler, props.variablesContainer]
   );
 
   const _canUndo = (): boolean =>
@@ -857,7 +813,6 @@ const VariablesList = (props: Props) => {
       props.inheritedVariablesContainer,
       props.variablesContainer,
       selectedNodes,
-      setSelectedNodes,
     ]
   );
 
@@ -912,7 +867,7 @@ const VariablesList = (props: Props) => {
         setSelectedNodes([]);
       }
     },
-    [selectedNodes, _deleteNode, _onChange, setSelectedNodes]
+    [_onChange, _deleteNode, selectedNodes]
   );
 
   const updateExpandedAndSelectedNodesFollowingNameChange = React.useCallback(
@@ -930,7 +885,7 @@ const VariablesList = (props: Props) => {
         );
       }
     },
-    [searchText, setSelectedNodes]
+    [searchText]
   );
 
   const updateExpandedAndSelectedNodesFollowingNodeMove = React.useCallback(
@@ -942,7 +897,7 @@ const VariablesList = (props: Props) => {
         forceUpdate();
       }
     },
-    [forceUpdate, searchText, setSelectedNodes, triggerSearch]
+    [forceUpdate, searchText, triggerSearch]
   );
 
   const canDrop = React.useCallback(
@@ -1180,10 +1135,8 @@ const VariablesList = (props: Props) => {
         const name = newNameGenerator('ChildVariable', name =>
           variable.hasChild(name)
         );
-        variable.getChild(name);
-      } else if (type === gd.Variable.Array) {
-        variable.pushNew();
-      }
+        variable.getChild(name).setString('');
+      } else if (type === gd.Variable.Array) variable.pushNew();
       _onChange();
       if (variable.isFolded()) variable.setFolded(false);
       forceUpdate();
@@ -1217,12 +1170,7 @@ const VariablesList = (props: Props) => {
       setSelectedNodes([inheritedVariableName]);
       newVariable.delete();
     },
-    [
-      _onChange,
-      props.inheritedVariablesContainer,
-      props.variablesContainer,
-      setSelectedNodes,
-    ]
+    [_onChange, props.inheritedVariablesContainer, props.variablesContainer]
   );
 
   const onAdd = React.useCallback(
@@ -1276,7 +1224,6 @@ const VariablesList = (props: Props) => {
       props.variablesContainer,
       refocusNameField,
       selectedNodes,
-      setSelectedNodes,
     ]
   );
 
@@ -1302,7 +1249,7 @@ const VariablesList = (props: Props) => {
         }
       });
     },
-    [setSelectedNodes]
+    []
   );
 
   const renderVariableAndChildrenRows = (
@@ -1503,15 +1450,16 @@ const VariablesList = (props: Props) => {
             gd.Project.getSafeName(cleanedName)
           : // Child variables of structures must "just" be not empty.
             cleanedName || 'Unnamed',
-        tentativeNewName =>
-          (parentVariable && parentVariable.hasChild(tentativeNewName)) ||
-          (!parentVariable &&
-            (props.variablesContainer.has(tentativeNewName) ||
-              (!props.areObjectVariables &&
-                props.projectScopedContainersAccessor
-                  .get()
-                  .getObjectsContainersList()
-                  .hasObjectOrGroupNamed(tentativeNewName))))
+        tentativeNewName => {
+          if (
+            (parentVariable && parentVariable.hasChild(tentativeNewName)) ||
+            (!parentVariable && props.variablesContainer.has(tentativeNewName))
+          ) {
+            return true;
+          }
+
+          return false;
+        }
       );
 
       if (!parentVariable) {
@@ -1528,10 +1476,8 @@ const VariablesList = (props: Props) => {
       refocusNameField({ identifier: variable.ptr });
     },
     [
-      props.variablesContainer,
-      props.areObjectVariables,
-      props.projectScopedContainersAccessor,
       _onChange,
+      props.variablesContainer,
       updateExpandedAndSelectedNodesFollowingNameChange,
       refocusNameField,
     ]
@@ -1661,7 +1607,6 @@ const VariablesList = (props: Props) => {
       props.inheritedVariablesContainer,
       props.variablesContainer,
       refocusValueField,
-      setSelectedNodes,
     ]
   );
 

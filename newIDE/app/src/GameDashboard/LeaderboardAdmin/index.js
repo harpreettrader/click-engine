@@ -28,6 +28,8 @@ import Refresh from '../../UI/CustomSvgIcons/Refresh';
 import Trash from '../../UI/CustomSvgIcons/Trash';
 import Visibility from '../../UI/CustomSvgIcons/Visibility';
 import VisibilityOff from '../../UI/CustomSvgIcons/VisibilityOff';
+import Lock from '../../UI/CustomSvgIcons/Lock';
+import LockOpen from '../../UI/CustomSvgIcons/LockOpen';
 import Copy from '../../UI/CustomSvgIcons/Copy';
 
 import PlaceholderLoader from '../../UI/PlaceholderLoader';
@@ -60,9 +62,8 @@ import Text from '../../UI/Text';
 import { GameRegistration } from '../GameRegistration';
 import LeaderboardAppearanceDialog from './LeaderboardAppearanceDialog';
 import FlatButton from '../../UI/FlatButton';
-import LeaderboardOptionsDialog, {
-  type LeaderboardOptions,
-} from './LeaderboardOptionsDialog';
+import LeaderboardSortOptionsDialog from './LeaderboardSortOptionsDialog';
+import { type LeaderboardSortOption } from '../../Utils/GDevelopServices/Play';
 import { formatScore } from '../../Leaderboard/LeaderboardScoreFormatter';
 import Toggle from '../../UI/Toggle';
 import AuthenticatedUserContext from '../../Profile/AuthenticatedUserContext';
@@ -89,6 +90,8 @@ type ApiError = {|
     | 'leaderboardNameUpdate'
     | 'leaderboardSortUpdate'
     | 'leaderboardVisibilityUpdate'
+    | 'leaderboardAutoPlayerNamePrefixUpdate'
+    | 'leaderboardIgnoreCustomPlayerNamesUpdate'
     | 'leaderboardPrimaryUpdate'
     | 'leaderboardAppearanceUpdate'
     | 'leaderboardPlayerUnicityDisplayChoiceUpdate'
@@ -129,6 +132,10 @@ const getApiError = (payload: LeaderboardUpdatePayload): ApiError => ({
     ? 'leaderboardSortUpdate'
     : payload.visibility
     ? 'leaderboardVisibilityUpdate'
+    : payload.ignoreCustomPlayerNames !== undefined
+    ? 'leaderboardIgnoreCustomPlayerNamesUpdate'
+    : payload.autoPlayerNamePrefix !== undefined
+    ? 'leaderboardAutoPlayerNamePrefixUpdate'
     : payload.primary
     ? 'leaderboardPrimaryUpdate'
     : payload.customizationSettings
@@ -148,6 +155,16 @@ const getApiError = (payload: LeaderboardUpdatePayload): ApiError => ({
     <Trans>
       An error occurred when updating the visibility of the leaderboard, please
       close the dialog, come back and try again.
+    </Trans>
+  ) : payload.ignoreCustomPlayerNames !== undefined ? (
+    <Trans>
+      An error occurred when updating the handling of player names of the
+      leaderboard, please close the dialog, come back and try again.
+    </Trans>
+  ) : payload.autoPlayerNamePrefix !== undefined ? (
+    <Trans>
+      An error occurred when updating the handling of player names of the
+      leaderboard, please close the dialog, come back and try again.
     </Trans>
   ) : payload.primary ? (
     <Trans>
@@ -205,16 +222,28 @@ export const LeaderboardAdmin = ({
   const authenticatedUser = React.useContext(AuthenticatedUserContext);
   const { limits } = authenticatedUser;
 
-  const [isEditingOptions, setIsEditingOptions] = React.useState<boolean>(
-    false
-  );
+  const [
+    isEditingSortOptions,
+    setIsEditingSortOptions,
+  ] = React.useState<boolean>(false);
   const [isEditingName, setIsEditingName] = React.useState<boolean>(false);
+  const [
+    isEditingAutoPlayerNamePrefix,
+    setIsEditingAutoPlayerNamePrefix,
+  ] = React.useState<boolean>(false);
   const [isRequestPending, setIsRequestPending] = React.useState<boolean>(
     false
   );
   const [newName, setNewName] = React.useState<string>('');
   const [newNameError, setNewNameError] = React.useState<?string>(null);
+  const [
+    newAutoPlayerNamePrefix,
+    setNewAutoPlayerNamePrefix,
+  ] = React.useState<string>('');
   const newNameTextFieldRef = React.useRef<?TextFieldInterface>(null);
+  const newAutoPlayerNamePrefixTextFieldRef = React.useRef<?TextFieldInterface>(
+    null
+  );
   const [apiError, setApiError] = React.useState<?ApiError>(null);
   const [
     displayGameRegistration,
@@ -266,6 +295,8 @@ export const LeaderboardAdmin = ({
     try {
       await updateLeaderboard(payload);
       if (payload.name) setIsEditingName(false);
+      if (payload.autoPlayerNamePrefix !== undefined)
+        setIsEditingAutoPlayerNamePrefix(false);
     } catch (err) {
       console.error('An error occurred when updating leaderboard', err);
       setApiError(getApiError(payload));
@@ -741,7 +772,7 @@ export const LeaderboardAdmin = ({
         ) : null,
       secondaryAction: (
         <IconButton
-          onClick={() => setIsEditingOptions(true)}
+          onClick={() => setIsEditingSortOptions(true)}
           tooltip={t`Edit`}
           edge="end"
           disabled={isRequestPending || isEditingName}
@@ -804,22 +835,148 @@ export const LeaderboardAdmin = ({
       ),
     },
     {
-      key: 'options',
-      avatar: <Tag />,
-      text: (
-        <Text size="body2">
-          <Trans>Configuration</Trans>
-        </Text>
+      key: 'ignoreCustomPlayerNames',
+      avatar: currentLeaderboard.ignoreCustomPlayerNames ? (
+        <Lock />
+      ) : (
+        <LockOpen />
       ),
-      secondaryText: null,
+      text: (
+        <Tooltip
+          title={i18n._(
+            currentLeaderboard.ignoreCustomPlayerNames
+              ? t`Even if the action is used to send a score with a custom player username, this name will be ignored by the leaderboard.`
+              : t`The player name sent in the action to send a score will be used.`
+          )}
+        >
+          <Text size="body2">
+            {currentLeaderboard.ignoreCustomPlayerNames ? (
+              <Trans>Ignore unauthenticated player usernames</Trans>
+            ) : (
+              <Trans>Allow unauthenticated player usernames</Trans>
+            )}
+          </Text>
+        </Tooltip>
+      ),
+      secondaryText:
+        apiError &&
+        apiError.action === 'leaderboardIgnoreCustomPlayerNamesUpdate' ? (
+          <Text color="error" size="body2">
+            {apiError.message}
+          </Text>
+        ) : null,
       secondaryAction: (
         <IconButton
-          onClick={() => setIsEditingOptions(true)}
-          tooltip={t`Edit`}
+          onClick={async () => {
+            await onUpdateLeaderboard(i18n, {
+              ignoreCustomPlayerNames: !currentLeaderboard.ignoreCustomPlayerNames,
+            });
+          }}
+          tooltip={
+            currentLeaderboard.ignoreCustomPlayerNames
+              ? t`Change to allow custom player usernames`
+              : t`Change to ignore custom player usernames`
+          }
           edge="end"
           disabled={isRequestPending || isEditingName}
         >
-          <EditFile />
+          <SwitchHorizontal />
+        </IconButton>
+      ),
+    },
+    {
+      key: 'autoPlayerNamePrefix',
+      avatar: <Tag />,
+      text: isEditingAutoPlayerNamePrefix ? (
+        <Line alignItems="center" expand noMargin>
+          <TextField
+            id="edit-autoPlayerNamePrefix-field"
+            ref={newAutoPlayerNamePrefixTextFieldRef}
+            margin="none"
+            style={styles.leaderboardNameTextField}
+            maxLength={40}
+            value={newAutoPlayerNamePrefix}
+            onChange={(e, text) => setNewAutoPlayerNamePrefix(text)}
+            onKeyPress={event => {
+              if (shouldValidate(event) && !isRequestPending) {
+                onUpdateLeaderboard(i18n, {
+                  autoPlayerNamePrefix: newAutoPlayerNamePrefix,
+                });
+              }
+            }}
+            disabled={isRequestPending}
+          />
+          {!isRequestPending && (
+            <>
+              <Spacer />
+              <IconButton
+                tooltip={t`Cancel`}
+                style={{ padding: 0 }}
+                onClick={() => {
+                  setIsEditingAutoPlayerNamePrefix(false);
+                }}
+              >
+                <Cross />
+              </IconButton>
+            </>
+          )}
+        </Line>
+      ) : (
+        <Tooltip
+          title={
+            currentLeaderboard.autoPlayerNamePrefix ||
+            i18n._('No custom prefix for auto-generated player names')
+          }
+        >
+          <Text size="body2" style={styles.leaderboardNameText}>
+            {currentLeaderboard.autoPlayerNamePrefix ||
+              i18n._('No custom prefix for auto-generated player names')}
+          </Text>
+        </Tooltip>
+      ),
+      secondaryText:
+        apiError &&
+        apiError.action === 'leaderboardAutoPlayerNamePrefixUpdate' ? (
+          <Text color="error" size="body2">
+            {apiError.message}
+          </Text>
+        ) : null,
+      secondaryAction: (
+        <IconButton
+          onClick={() => {
+            if (isEditingAutoPlayerNamePrefix) {
+              onUpdateLeaderboard(i18n, {
+                autoPlayerNamePrefix: newAutoPlayerNamePrefix,
+              });
+            } else {
+              setNewAutoPlayerNamePrefix(
+                currentLeaderboard.autoPlayerNamePrefix || ''
+              );
+              setIsEditingAutoPlayerNamePrefix(true);
+            }
+          }}
+          tooltip={
+            isEditingAutoPlayerNamePrefix
+              ? t`Save`
+              : t`Change the default prefix for player names`
+          }
+          disabled={isRequestPending}
+          edge="end"
+          id={
+            isEditingAutoPlayerNamePrefix
+              ? 'save-autoPlayerNamePrefix-button'
+              : 'edit-autoPlayerNamePrefix-button'
+          }
+        >
+          {isEditingAutoPlayerNamePrefix ? (
+            isRequestPending ? (
+              <CircularProgress size={20} />
+            ) : (
+              <Save />
+            )
+          ) : (
+            <Edit />
+          )}
         </IconButton>
       ),
     },
@@ -828,7 +985,7 @@ export const LeaderboardAdmin = ({
       avatar: <TextFormat />,
       text: (
         <Text size="body2">
-          <Trans>Appearance</Trans>
+          <Trans>Leaderboard appearance</Trans>
         </Text>
       ),
       secondaryText:
@@ -1133,20 +1290,24 @@ export const LeaderboardAdmin = ({
               }}
             />
           ) : null}
-          {isEditingOptions && currentLeaderboard ? (
-            <LeaderboardOptionsDialog
+          {isEditingSortOptions && currentLeaderboard ? (
+            <LeaderboardSortOptionsDialog
               open
-              onClose={() => setIsEditingOptions(false)}
-              onSave={async (options: LeaderboardOptions) => {
+              onClose={() => setIsEditingSortOptions(false)}
+              onSave={async (sortOptions: {|
+                sort: LeaderboardSortOption,
+                extremeAllowedScore: ?number,
+              |}) => {
                 try {
                   await onUpdateLeaderboard(i18n, {
-                    ...options,
+                    ...sortOptions,
                   });
                 } finally {
-                  setIsEditingOptions(false);
+                  setIsEditingSortOptions(false);
                 }
               }}
-              leaderboard={currentLeaderboard}
+              sort={currentLeaderboard.sort}
+              extremeAllowedScore={currentLeaderboard.extremeAllowedScore}
             />
           ) : null}
         </>

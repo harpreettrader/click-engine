@@ -491,7 +491,7 @@ const ProjectPropertiesDialog = (props: Props) => {
                     onChange={value => {
                       const newResolutionWidth = Math.max(
                         1,
-                        parseInt(value, 10) || 0
+                        parseInt(value, 10)
                       );
                       if (newResolutionWidth === gameResolutionWidth) {
                         return;
@@ -509,7 +509,7 @@ const ProjectPropertiesDialog = (props: Props) => {
                     onChange={value => {
                       const newResolutionHeight = Math.max(
                         1,
-                        parseInt(value, 10) || 0
+                        parseInt(value, 10)
                       );
                       if (newResolutionHeight === gameResolutionHeight) {
                         return;
@@ -570,7 +570,7 @@ const ProjectPropertiesDialog = (props: Props) => {
                     type="number"
                     value={'' + minFPS}
                     onChange={value => {
-                      const newMinFPS = Math.max(0, parseInt(value, 10) || 0);
+                      const newMinFPS = Math.max(0, parseInt(value, 10));
                       if (newMinFPS === minFPS) {
                         return;
                       }
@@ -586,7 +586,7 @@ const ProjectPropertiesDialog = (props: Props) => {
                     type="number"
                     value={'' + maxFPS}
                     onChange={value => {
-                      const newMaxFPS = Math.max(0, parseInt(value, 10) || 0);
+                      const newMaxFPS = Math.max(0, parseInt(value, 10));
                       if (newMaxFPS === maxFPS) {
                         return;
                       }
@@ -727,7 +727,7 @@ const ProjectPropertiesDialog = (props: Props) => {
                     notifyOfChange();
                   }}
                   helperMarkdownText={i18n._(
-                    t`Note that this option will only have an effect when saving your project on your computer's filesystem from the desktop app. Read about [using Git or GitHub with projects in multiple files](https://wiki.gdevelop.io/gdevelop5/tutorials/using-github-desktop/).`
+                    t`Note that this option will only have an effect when saving your project on your computer's filesystem from the desktop app. Read about [using Git or GitHub with projects in multiple files]().`
                   )}
                 >
                   <SelectOption

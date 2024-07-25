@@ -33,7 +33,7 @@ const LocalNetworkPreviewDialog = ({
 }: Props) => {
   const { isMobile } = useResponsiveWindowSize();
   if (!open) return null;
-  const urlWithProtocol = url ? `http://${url}` : null;
+  const urlWithProtocol = url ? `http://${url}` : '';
 
   return (
     <Dialog
@@ -75,8 +75,8 @@ const LocalNetworkPreviewDialog = ({
           </Text>
         </Line>
       )}
-      {!error && !urlWithProtocol && <PlaceholderLoader />}
-      {!error && urlWithProtocol && (
+      {!error && !url && <PlaceholderLoader />}
+      {!error && url && (
         <div>
           <Line>
             <Text>
@@ -86,7 +86,7 @@ const LocalNetworkPreviewDialog = ({
               </Trans>
             </Text>
           </Line>
-          <ShareLink url={urlWithProtocol} />
+          <ShareLink url={url} />
           {urlWithProtocol && (
             <>
               <Line>

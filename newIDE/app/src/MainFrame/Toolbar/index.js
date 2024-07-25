@@ -6,6 +6,7 @@ import PreviewAndShareButtons, {
   type PreviewAndShareButtonsProps,
 } from './PreviewAndShareButtons';
 import ProjectManagerIcon from '../../UI/CustomSvgIcons/ProjectManager';
+import FloppyIcon from '../../UI/CustomSvgIcons/Floppy';
 import IconButton from '../../UI/IconButton';
 import { Spacer } from '../../UI/Grid';
 import HistoryIcon from '../../UI/CustomSvgIcons/History';
@@ -13,7 +14,6 @@ import OpenedVersionStatusChip from '../../VersionHistory/OpenedVersionStatusChi
 import type { OpenedVersionStatus } from '../../VersionHistory';
 import GDevelopThemeContext from '../../UI/Theme/GDevelopThemeContext';
 import { getStatusColor } from '../../VersionHistory/Utils';
-import SaveProjectIcon from '../SaveProjectIcon';
 
 export type MainFrameToolbarProps = {|
   showProjectButtons: boolean,
@@ -56,7 +56,7 @@ const LeftButtonsToolbarGroup = React.memo<LeftButtonsToolbarGroupProps>(
         >
           <ProjectManagerIcon />
         </IconButton>
-        <IconButton
+        {/* <IconButton
           size="small"
           id="toolbar-history-button"
           onClick={props.onOpenVersionHistory}
@@ -65,12 +65,17 @@ const LeftButtonsToolbarGroup = React.memo<LeftButtonsToolbarGroupProps>(
           disabled={false}
         >
           <HistoryIcon />
-        </IconButton>
-        <SaveProjectIcon
+        </IconButton> */}
+        <IconButton
+          size="small"
           id="toolbar-save-button"
-          onSave={props.onSave}
-          canSave={props.canSave}
-        />
+          onClick={props.onSave}
+          tooltip={t`Save project`}
+          color="default"
+          disabled={!props.canSave}
+        >
+          <FloppyIcon />
+        </IconButton>
         {props.checkedOutVersionStatus && (
           <div
             style={{
@@ -131,9 +136,6 @@ export default React.forwardRef<MainFrameToolbarProps, ToolbarInterface>(
                 onOpenDebugger={props.onOpenDebugger}
                 onNetworkPreview={props.onNetworkPreview}
                 onHotReloadPreview={props.onHotReloadPreview}
-                onLaunchPreviewWithDiagnosticReport={
-                  props.onLaunchPreviewWithDiagnosticReport
-                }
                 setPreviewOverride={props.setPreviewOverride}
                 canDoNetworkPreview={props.canDoNetworkPreview}
                 isPreviewEnabled={props.isPreviewEnabled}

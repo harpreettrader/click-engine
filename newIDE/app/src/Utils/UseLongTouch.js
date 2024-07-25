@@ -6,7 +6,6 @@ export type ClientCoordinates = {|
   +clientX: number,
   /* The Y position, relative to the viewport, not including scroll offset, of the long touch */
   +clientY: number,
-  +currentTarget: EventTarget,
 |};
 
 // Find the position of an event on the screen
@@ -15,14 +14,12 @@ const getClientXY = (event: TouchEvent): ClientCoordinates => {
     return {
       clientX: event.touches[0].clientX,
       clientY: event.touches[0].clientY,
-      currentTarget: event.currentTarget,
     };
   }
 
   return {
     clientX: 0,
     clientY: 0,
-    currentTarget: event.currentTarget,
   };
 };
 
@@ -52,7 +49,10 @@ export const useLongTouch = (
   const timeout = React.useRef<?TimeoutID>(null);
   const context = options && options.context ? options.context : null;
   const delay = options && options.delay ? options.delay : defaultDelay;
-  const currentClientCoordinates = React.useRef<?ClientCoordinates>(null);
+  const currentClientCoordinates = React.useRef<ClientCoordinates>({
+    clientX: 0,
+    clientY: 0,
+  });
   const clear = React.useCallback(
     () => {
       if (context) delete contextLocks[context];
@@ -98,10 +98,9 @@ export const useLongTouch = (
         contextLocks[context] = true;
       }
 
-      const clientCoordinates = getClientXY(event);
-      currentClientCoordinates.current = clientCoordinates;
+      currentClientCoordinates.current = getClientXY(event);
       timeout.current = setTimeout(() => {
-        callback(clientCoordinates);
+        callback(currentClientCoordinates.current);
       }, delay);
     },
     [callback, context, delay]
@@ -119,7 +118,6 @@ export const useLongTouch = (
       // If touch moved too far from the initial touch position,
       // it's not a long press anymore.
       const touch = event.touches[0];
-      if (!currentClientCoordinates.current) return;
       const { clientX, clientY } = currentClientCoordinates.current;
       if (
         Math.abs(touch.clientX - clientX) > moveTolerance ||

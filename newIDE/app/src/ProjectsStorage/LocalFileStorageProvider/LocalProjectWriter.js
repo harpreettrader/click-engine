@@ -24,32 +24,6 @@ export const splittedProjectFolderNames = [
   'eventsFunctionsExtensions',
 ];
 
-const deleteExistingFilesFromDirs = (
-  project: gdProject,
-  projectPath: string
-) => {
-  //If multiFile is not enabled in settings and directories do not exist.
-  if (!project.isFolderProject()) return;
-
-  const entries = fs.readdirSync(projectPath);
-  entries.forEach(entry => {
-    if (!splittedProjectFolderNames.includes(entry)) return;
-
-    const dirPath = path.join(projectPath, entry);
-    if (!fs.statSync(dirPath).isDirectory()) return;
-
-    const filenames = fs.readdirSync(dirPath);
-    filenames.forEach(file => {
-      const fileToRemovePath = path.join(dirPath, file);
-      try {
-        fs.unlinkSync(fileToRemovePath);
-      } catch (e) {
-        throw new Error(`Unable to remove file ${file}: ${e.message}`);
-      }
-    });
-  });
-};
-
 const checkFileContent = (filePath: string, expectedContent: string) => {
   const time = performance.now();
   return new Promise((resolve, reject) => {
@@ -145,7 +119,7 @@ const writeProjectFiles = (
   }
 };
 
-export const onSaveProject = async (
+export const onSaveProject = (
   project: gdProject,
   fileMetadata: FileMetadata
 ): Promise<{|
@@ -155,7 +129,9 @@ export const onSaveProject = async (
   const filePath = fileMetadata.fileIdentifier;
   const now = Date.now();
   if (!filePath) {
-    throw new Error('Unable to find file path before saving.');
+    return Promise.reject(
+      'Project file is empty, "Save as" should have been called?'
+    );
   }
   // Ensure we always pick the latest name and gameId.
   const newFileMetadata = {
@@ -166,18 +142,9 @@ export const onSaveProject = async (
   };
 
   const projectPath = path.dirname(filePath);
-
-  try {
-    deleteExistingFilesFromDirs(project, projectPath);
-  } catch (e) {
-    console.warn('Unable to clean project folder before saving project: ', e);
-  }
-
-  await writeProjectFiles(project, filePath, projectPath);
-  return {
-    wasSaved: true,
-    fileMetadata: newFileMetadata,
-  };
+  return writeProjectFiles(project, filePath, projectPath).then(() => {
+    return { wasSaved: true, fileMetadata: newFileMetadata }; // Save was properly done
+  });
 };
 
 export const onChooseSaveProjectAsLocation = async ({

@@ -30,8 +30,6 @@ export const Default = () => (
         objectConfiguration={testProject.spriteObjectConfiguration}
         project={testProject.project}
         layout={testProject.testLayout}
-        eventsFunctionsExtension={null}
-        eventsBasedObject={null}
         resourceManagementProps={fakeResourceManagementProps}
         onSizeUpdated={() => {}}
         object={testProject.spriteObject}
@@ -50,8 +48,6 @@ export const AnimationLocked = () => (
         objectConfiguration={testProject.spriteObjectConfiguration}
         project={testProject.project}
         layout={testProject.testLayout}
-        eventsFunctionsExtension={null}
-        eventsBasedObject={null}
         resourceManagementProps={fakeResourceManagementProps}
         onSizeUpdated={() => {}}
         object={testProject.spriteObject}
@@ -69,8 +65,6 @@ export const Empty = () => (
         objectConfiguration={testProject.emptySpriteObjectConfiguration}
         project={testProject.project}
         layout={testProject.testLayout}
-        eventsFunctionsExtension={null}
-        eventsBasedObject={null}
         resourceManagementProps={fakeResourceManagementProps}
         onSizeUpdated={() => {}}
         object={testProject.emptySpriteObject}

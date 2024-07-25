@@ -20,7 +20,6 @@ import { setupInstructionParameters } from '../../InstructionOrExpression/SetupI
 import TextButton from '../../UI/TextButton';
 import Paste from '../../UI/CustomSvgIcons/Paste';
 import { Column, Line } from '../../UI/Grid';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 const styles = {
   fullHeightSelector: {
@@ -39,7 +38,6 @@ type Props = {|
   scope: EventsScope,
   globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   instruction: gdInstruction,
   isCondition: boolean,
   resourceManagementProps: ResourceManagementProps,
@@ -66,7 +64,6 @@ const InstructionEditorMenu = ({
   project,
   globalObjectsContainer,
   objectsContainer,
-  projectScopedContainersAccessor,
   onCancel,
   open,
   instruction,

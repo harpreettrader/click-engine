@@ -24,6 +24,7 @@ export default class RenderedSprite3DInstance extends Rendered3DInstance {
 
   constructor(
     project: gdProject,
+    layout: gdLayout,
     instance: gdInitialInstance,
     associatedObjectConfiguration: gdObjectConfiguration,
     pixiContainer: PIXI.Container,
@@ -32,6 +33,7 @@ export default class RenderedSprite3DInstance extends Rendered3DInstance {
   ) {
     super(
       project,
+      layout,
       instance,
       associatedObjectConfiguration,
       pixiContainer,

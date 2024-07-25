@@ -19,9 +19,6 @@ export const CustomObject = () => (
   <DragAndDropContextProvider>
     <ObjectEditorDialog
       open={true}
-      projectScopedContainersAccessor={
-        testProject.testSceneProjectScopedContainersAccessor
-      }
       object={testProject.customObject}
       onApply={() => action('Apply changes')}
       onCancel={() => action('Cancel changes')}
@@ -29,8 +26,6 @@ export const CustomObject = () => (
       getValidatedObjectOrGroupName={newName => newName}
       project={testProject.project}
       layout={testProject.testLayout}
-      eventsFunctionsExtension={null}
-      eventsBasedObject={null}
       resourceManagementProps={fakeResourceManagementProps}
       onComputeAllVariableNames={() => []}
       onUpdateBehaviorsSharedData={() => {}}
@@ -49,9 +44,6 @@ export const StandardObject = () => (
   <DragAndDropContextProvider>
     <ObjectEditorDialog
       open={true}
-      projectScopedContainersAccessor={
-        testProject.testSceneProjectScopedContainersAccessor
-      }
       object={testProject.panelSpriteObject}
       onApply={() => action('Apply changes')}
       onCancel={() => action('Cancel changes')}
@@ -59,8 +51,6 @@ export const StandardObject = () => (
       getValidatedObjectOrGroupName={newName => newName}
       project={testProject.project}
       layout={testProject.testLayout}
-      eventsFunctionsExtension={null}
-      eventsBasedObject={null}
       resourceManagementProps={fakeResourceManagementProps}
       onComputeAllVariableNames={() => []}
       onUpdateBehaviorsSharedData={() => {}}

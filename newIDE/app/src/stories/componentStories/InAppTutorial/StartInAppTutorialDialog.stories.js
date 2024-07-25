@@ -12,24 +12,11 @@ export default {
   decorators: [inAppTutorialDecorator, paperDecorator],
 };
 
-export const MultichapterTutorial = () => {
-  return (
-    <StartInAppTutorialDialog
-      open
-      tutorialId="flingGame"
-      tutorialCompletionStatus={'notStarted'}
-      startTutorial={action('Start tutorial')}
-      onClose={() => action('On close dialog')()}
-      isProjectOpening={false}
-    />
-  );
-};
-
 export const Default = () => {
   return (
     <StartInAppTutorialDialog
       open
-      tutorialId="joystick"
+      tutorialId="flingGame"
       tutorialCompletionStatus={'notStarted'}
       startTutorial={action('Start tutorial')}
       onClose={() => action('On close dialog')()}

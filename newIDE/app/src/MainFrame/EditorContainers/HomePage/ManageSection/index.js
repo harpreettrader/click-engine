@@ -40,10 +40,9 @@ type Props = {|
   project: ?gdProject,
   games: ?Array<Game>,
   onRefreshGames: () => Promise<void>,
-  onGameUpdated: (game: Game) => void,
   gamesFetchingError: ?Error,
   openedGame: ?Game,
-  setOpenedGameId: (gameId: ?string) => void,
+  setOpenedGame: (?Game) => void,
   currentTab: GameDetailsTab,
   setCurrentTab: GameDetailsTab => void,
 |};
@@ -52,10 +51,9 @@ const ManageSection = ({
   project,
   games,
   onRefreshGames,
-  onGameUpdated,
   gamesFetchingError,
   openedGame,
-  setOpenedGameId,
+  setOpenedGame,
   currentTab,
   setCurrentTab,
 }: Props) => {
@@ -70,27 +68,17 @@ const ManageSection = ({
     () => {
       onRefreshGames();
     },
-    // Refresh the games when the callback changes (defined in useGamesList), that's
-    // to say when the user profile changes.
-    [onRefreshGames]
-  );
-
-  React.useEffect(
-    () => {
-      if (openedGame && !profile) {
-        setOpenedGameId(null);
-      }
-    },
-    // Close game view is user logs out.
-    [profile, openedGame, setOpenedGameId]
+    // Refresh the games when the section is opened, useful when a game gets registered.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   const onBack = React.useCallback(
     () => {
       setCurrentTab('details');
-      setOpenedGameId(null);
+      setOpenedGame(null);
     },
-    [setCurrentTab, setOpenedGameId]
+    [setCurrentTab, setOpenedGame]
   );
 
   if (openedGame) {
@@ -119,7 +107,7 @@ const ManageSection = ({
               <GameDetails
                 game={openedGame}
                 project={project}
-                onGameUpdated={onGameUpdated}
+                onGameUpdated={onRefreshGames}
                 onGameDeleted={() => {
                   onBack();
                   onRefreshGames();
@@ -226,7 +214,7 @@ const ManageSection = ({
               project={project}
               games={games}
               onRefreshGames={onRefreshGames}
-              onOpenGameId={setOpenedGameId}
+              onOpenGame={setOpenedGame}
             />
           )
         ) : gamesFetchingError ? (

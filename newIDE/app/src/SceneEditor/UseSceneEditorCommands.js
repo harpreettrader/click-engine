@@ -6,12 +6,11 @@ import useLayersListCommands from '../LayersList/UseLayersListCommands';
 
 type Props = {|
   project: gdProject,
-  layersContainer: gdLayersContainer,
-  globalObjectsContainer: gdObjectsContainer | null,
-  objectsContainer: gdObjectsContainer,
+  layout: gdLayout,
   onEditObject: (object: gdObject) => void,
   onEditObjectVariables: (object: gdObject) => void,
   onOpenSceneProperties: () => void,
+  onOpenSceneVariables: () => void,
   onEditObjectGroup: (group: gdObjectGroup) => void,
   onEditLayerEffects: (layer: gdLayer) => void,
   onEditLayer: (layer: gdLayer) => void,
@@ -20,12 +19,11 @@ type Props = {|
 const UseSceneEditorCommands = (props: Props) => {
   const {
     project,
-    layersContainer,
-    globalObjectsContainer,
-    objectsContainer,
+    layout,
     onEditObject,
     onEditObjectVariables,
     onOpenSceneProperties,
+    onOpenSceneVariables,
     onEditObjectGroup,
     onEditLayerEffects,
     onEditLayer,
@@ -35,22 +33,25 @@ const UseSceneEditorCommands = (props: Props) => {
     handler: onOpenSceneProperties,
   });
 
+  useCommand('OPEN_SCENE_VARIABLES', true, {
+    handler: onOpenSceneVariables,
+  });
+
   useObjectsListCommands({
     project,
-    globalObjectsContainer,
-    objectsContainer,
+    layout,
     onEditObject,
     onEditObjectVariables,
   });
 
   useObjectGroupsListCommands({
-    globalObjectsContainer,
-    objectsContainer,
+    project,
+    layout,
     onEditObjectGroup,
   });
 
   useLayersListCommands({
-    layersContainer,
+    layout,
     onEditLayerEffects,
     onEditLayer,
   });

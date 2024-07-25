@@ -60,14 +60,14 @@ describe('InstallAsset', () => {
 
       const output = await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
       expect(output.createdObjects).toHaveLength(1);
-      expect(layout.getObjects().hasObjectNamed('PlayerSpaceship')).toBe(true);
+      expect(layout.hasObjectNamed('PlayerSpaceship')).toBe(true);
       expect(output.createdObjects).toEqual([
-        layout.getObjects().getObject('PlayerSpaceship'),
+        layout.getObject('PlayerSpaceship'),
       ]);
       expect(
         project.getResourcesManager().hasResource('player-ship1.png')
@@ -80,19 +80,17 @@ describe('InstallAsset', () => {
     it('renames the object if name is already used', async () => {
       const { project } = makeTestProject(gd);
       const layout = project.insertNewLayout('MyTestLayout', 0);
-      layout
-        .getObjects()
-        .insertNewObject(project, 'Sprite', 'PlayerSpaceship', 0);
+      layout.insertNewObject(project, 'Sprite', 'PlayerSpaceship', 0);
 
       const output = await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
       expect(output.createdObjects).toHaveLength(1);
-      expect(layout.getObjects().hasObjectNamed('PlayerSpaceship')).toBe(true);
-      expect(layout.getObjects().hasObjectNamed('PlayerSpaceship2')).toBe(true);
+      expect(layout.hasObjectNamed('PlayerSpaceship')).toBe(true);
+      expect(layout.hasObjectNamed('PlayerSpaceship2')).toBe(true);
       expect(
         project.getResourcesManager().hasResource('player-ship1.png')
       ).toBe(true);
@@ -124,7 +122,7 @@ describe('InstallAsset', () => {
       // Install the spaceship
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
@@ -165,7 +163,7 @@ describe('InstallAsset', () => {
       // Install the spaceship
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
@@ -203,7 +201,7 @@ describe('InstallAsset', () => {
       // Install the spaceship
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
@@ -227,8 +225,8 @@ describe('InstallAsset', () => {
       ).toBe('https://example.com/player-ship1.png');
 
       // Verify the resource names used by the object
-      expect(layout.getObjects().hasObjectNamed('PlayerSpaceship')).toBe(true);
-      const object = layout.getObjects().getObject('PlayerSpaceship');
+      expect(layout.hasObjectNamed('PlayerSpaceship')).toBe(true);
+      const object = layout.getObject('PlayerSpaceship');
 
       const resourcesInUse = new gd.ResourcesInUseHelper(
         project.getResourcesManager()
@@ -252,7 +250,7 @@ describe('InstallAsset', () => {
 
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
@@ -285,7 +283,7 @@ describe('InstallAsset', () => {
 
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakePixelArtAsset1,
       });
 
@@ -318,7 +316,7 @@ describe('InstallAsset', () => {
 
       await addAssetToProject({
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
         asset: fakeAsset1,
       });
 
@@ -732,23 +730,15 @@ describe('InstallAsset', () => {
         // that is installed already.
         asset: fakeAssetWithCustomObject,
         project,
-        objectsContainer: layout.getObjects(),
+        objectsContainer: layout,
       });
 
       // Check that the object was created.
-      expect(layout.getObjects().getObjectsCount()).toBe(1);
-      expect(
-        layout
-          .getObjects()
-          .getObjectAt(0)
-          .getName()
-      ).toBe('YellowButton');
-      expect(
-        layout
-          .getObjects()
-          .getObjectAt(0)
-          .getType()
-      ).toEqual('Button::PanelSpriteButton');
+      expect(layout.getObjectsCount()).toBe(1);
+      expect(layout.getObjectAt(0).getName()).toBe('YellowButton');
+      expect(layout.getObjectAt(0).getType()).toEqual(
+        'Button::PanelSpriteButton'
+      );
     });
   });
 });

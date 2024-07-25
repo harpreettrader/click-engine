@@ -4,7 +4,7 @@ import { mapVector } from '../../Utils/MapFor';
 import { getFreeEventsFunctionType } from '../../EventsFunctionsExtensionsLoader';
 import getObjectGroupByName from '../../Utils/GetObjectGroupByName';
 import {
-  ProjectScopedContainersAccessor,
+  getProjectScopedContainersFromScope,
   type EventsScope,
 } from '../../InstructionOrExpression/EventsScope.flow';
 const gd: libGDevelop = global.gd;
@@ -40,9 +40,11 @@ export const setupFunctionFromEvents = ({
   );
 
   // Analyze events...
-  const projectScopedContainers = new ProjectScopedContainersAccessor(
-    scope
-  ).get();
+  const projectScopedContainers = getProjectScopedContainersFromScope(
+    scope,
+    globalObjectsContainer,
+    objectsContainer
+  );
   const eventsContextAnalyzer = new gd.EventsContextAnalyzer(
     gd.JsPlatform.get()
   );

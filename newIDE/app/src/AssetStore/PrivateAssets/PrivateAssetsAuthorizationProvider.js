@@ -114,7 +114,6 @@ const PrivateAssetsAuthorizationProvider = ({ children }: Props) => {
     asset,
     project,
     objectsContainer,
-    targetObjectFolderOrObject,
   }: InstallAssetArgs): Promise<?InstallAssetOutput> => {
     if (!profile) {
       throw new Error(
@@ -134,7 +133,6 @@ const PrivateAssetsAuthorizationProvider = ({ children }: Props) => {
       asset: assetWithAuthorizedResourceUrls,
       project,
       objectsContainer,
-      targetObjectFolderOrObject,
     });
   };
 

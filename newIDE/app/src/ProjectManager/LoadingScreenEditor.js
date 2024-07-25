@@ -97,7 +97,7 @@ export const LoadingScreenEditor = ({
                 <Checkbox
                   label={
                     <Trans>
-                      Display GDevelop logo at startup (in exported game)
+                      Display ClickEngine logo at startup (in exported game)
                     </Trans>
                   }
                   checked={loadingScreen.isGDevelopLogoShownDuringLoadingScreen()}
@@ -120,7 +120,7 @@ export const LoadingScreenEditor = ({
               <Column expand noMargin justifyContent="center">
                 <SelectField
                   fullWidth
-                  floatingLabelText={<Trans>GDevelop logo style</Trans>}
+                  floatingLabelText={<Trans>ClickEngine logo style</Trans>}
                   value={loadingScreen.getGDevelopLogoStyle()}
                   onChange={(e, i, newGdevelopLogoStyle: string) => {
                     const currentGDevelopLogoStyle = loadingScreen.getGDevelopLogoStyle();
@@ -147,27 +147,27 @@ export const LoadingScreenEditor = ({
               </Column>
             </ResponsiveLineStackLayout>
 
-            <ResponsiveLineStackLayout noMargin>
+            {/* <ResponsiveLineStackLayout noMargin>
               <Column expand noMargin justifyContent="center">
                 <Checkbox
                   label={
                     <Trans>
-                      Display GDevelop watermark after the game is loaded (in
+                      Display ClickEngine watermark after the game is loaded (in
                       exported game)
                     </Trans>
                   }
                   checked={watermark.isGDevelopWatermarkShown()}
                   onCheck={(e, checked) => {
-                    if (
-                      !checked &&
-                      !loadingScreen.isGDevelopLogoShownDuringLoadingScreen() &&
-                      subscriptionChecker.current &&
-                      !subscriptionChecker.current.checkUserHasSubscription()
-                    ) {
-                      // If user wants to deactivate watermark although GDevelop splash
-                      // screen is hidden, we don't allow it if they have no subscription.
-                      return;
-                    }
+                    // if (
+                    //   !checked &&
+                    //   !loadingScreen.isGDevelopLogoShownDuringLoadingScreen() &&
+                    //   subscriptionChecker.current &&
+                    //   !subscriptionChecker.current.checkUserHasSubscription()
+                    // ) {
+                    //   // If user wants to deactivate watermark although GDevelop splash
+                    //   // screen is hidden, we don't allow it if they have no subscription.
+                    //   return;
+                    // }
                     watermark.showGDevelopWatermark(checked);
                     if (checked) {
                       loadingScreen.setMinDuration(
@@ -213,7 +213,7 @@ export const LoadingScreenEditor = ({
                 <SelectField
                   fullWidth
                   floatingLabelText={
-                    <Trans>GDevelop watermark placement</Trans>
+                    <Trans>ClickEngine watermark placement</Trans>
                   }
                   value={watermark.getPlacement()}
                   onChange={(e, i, newPlacement: string) => {
@@ -233,17 +233,17 @@ export const LoadingScreenEditor = ({
                   ))}
                 </SelectField>
               </Column>
-            </ResponsiveLineStackLayout>
-            {shouldDisplayGetSubscriptionCard && (
+            </ResponsiveLineStackLayout> */}
+            {/* {shouldDisplayGetSubscriptionCard && (
               <GetSubscriptionCard subscriptionDialogOpeningReason="Disable GDevelop splash at startup">
                 <Text>
                   <Trans>
-                    Get a silver or gold subscription to disable GDevelop
+                    Get a silver or gold subscription to disable ClickEngine
                     branding.
                   </Trans>
                 </Text>
               </GetSubscriptionCard>
-            )}
+            )} */}
           </ColumnStackLayout>
           <Text size="section-title">
             <Trans>Loading screen</Trans>
@@ -328,7 +328,7 @@ export const LoadingScreenEditor = ({
                 const currentProgressBarMinWidth = loadingScreen.getProgressBarMinWidth();
                 const newProgressBarMinWidth = Math.max(
                   0,
-                  parseFloat(newValue) || 0
+                  parseFloat(newValue)
                 );
                 if (currentProgressBarMinWidth === newProgressBarMinWidth) {
                   return;
@@ -347,7 +347,7 @@ export const LoadingScreenEditor = ({
                 const currentProgressBarWidthPercent = loadingScreen.getProgressBarWidthPercent();
                 const newProgressBarWidthPercent = Math.min(
                   100,
-                  Math.max(1, parseFloat(newValue) || 0)
+                  Math.max(1, parseFloat(newValue))
                 );
                 if (
                   currentProgressBarWidthPercent === newProgressBarWidthPercent
@@ -371,7 +371,7 @@ export const LoadingScreenEditor = ({
                 const currentProgressBarMaxWidth = loadingScreen.getProgressBarMaxWidth();
                 const newProgressBarMaxWidth = Math.max(
                   0,
-                  parseFloat(newValue) || 0
+                  parseFloat(newValue)
                 );
                 if (currentProgressBarMaxWidth === newProgressBarMaxWidth) {
                   return;
@@ -390,10 +390,7 @@ export const LoadingScreenEditor = ({
               value={'' + loadingScreen.getProgressBarHeight()}
               onChange={newValue => {
                 const currentProgressBarHeight = loadingScreen.getProgressBarHeight();
-                const newProgressBarHeight = Math.max(
-                  1,
-                  parseFloat(newValue) || 0
-                );
+                const newProgressBarHeight = Math.max(1, parseFloat(newValue));
                 if (currentProgressBarHeight === newProgressBarHeight) {
                   return;
                 }
@@ -430,7 +427,7 @@ export const LoadingScreenEditor = ({
             type="number"
             value={'' + loadingScreen.getMinDuration()}
             onChange={newValue => {
-              const newMinDuration = Math.max(0, parseFloat(newValue) || 0);
+              const newMinDuration = Math.max(0, parseFloat(newValue));
               if (
                 newMinDuration < forcedLogo.minDuration &&
                 !watermark.isGDevelopWatermarkShown() &&
@@ -469,7 +466,7 @@ export const LoadingScreenEditor = ({
               onChange={newValue => {
                 const newLogoAndProgressLogoFadeInDelay = Math.max(
                   0,
-                  parseFloat(newValue) || 0
+                  parseFloat(newValue)
                 );
                 if (
                   newLogoAndProgressLogoFadeInDelay >
@@ -510,7 +507,7 @@ export const LoadingScreenEditor = ({
               onChange={newValue => {
                 const newLogoAndProgressFadeInDuration = Math.max(
                   0,
-                  parseFloat(newValue) || 0
+                  parseFloat(newValue)
                 );
                 if (
                   newLogoAndProgressFadeInDuration >
@@ -541,7 +538,7 @@ export const LoadingScreenEditor = ({
             <AlertMessage kind="info">
               <Trans>
                 Progress bar fade in delay and duration will be applied to
-                GDevelop logo.
+                ClickEngine logo.
               </Trans>
             </AlertMessage>
           ) : null}
@@ -551,7 +548,7 @@ export const LoadingScreenEditor = ({
             onChangeSubscription={onChangeSubscription}
             mode="mandatory"
             id="Disable GDevelop splash at startup"
-            title={<Trans>Disable GDevelop splash at startup</Trans>}
+            title={<Trans>Disable ClickEngine splash at startup</Trans>}
           />
         </ColumnStackLayout>
       )}

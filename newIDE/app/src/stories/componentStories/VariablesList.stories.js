@@ -12,9 +12,6 @@ export const Default = () => (
   <DragAndDropContextProvider>
     <FixedHeightFlexContainer height={600}>
       <VariablesList
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
         variablesContainer={testProject.testLayout.getVariables()}
         emptyPlaceholderDescription="Variables help you store data"
         emptyPlaceholderTitle="Variables"
@@ -33,11 +30,7 @@ export const InstanceWithObjectVariables = () => (
   <DragAndDropContextProvider>
     <FixedHeightFlexContainer height={600}>
       <VariablesList
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
         variablesContainer={testProject.testSpriteObjectInstance.getVariables()}
-        areObjectVariables
         emptyPlaceholderDescription="Variables help you store data"
         emptyPlaceholderTitle="Variables"
         helpPagePath="/variables"

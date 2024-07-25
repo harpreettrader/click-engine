@@ -16,14 +16,7 @@ export const setupAutocompletions = (monaco: any) => {
       }
 
       filenames.forEach(filename => {
-        const isDirectory = fs
-          .lstatSync(path.join(folderPath, filename))
-          .isDirectory();
-        if (
-          (filename.endsWith('.ts') || filename.endsWith('.js')) &&
-          // Dialogue tree uses a folder called `bondage.js` that should not be read as a file.
-          !isDirectory
-        ) {
+        if (filename.endsWith('.ts') || filename.endsWith('.js')) {
           const fullPath = path.join(folderPath, filename);
           fs.readFile(fullPath, 'utf8', (fileError, content) => {
             if (fileError) {
@@ -56,9 +49,14 @@ export const setupAutocompletions = (monaco: any) => {
     const runtimeTypesPath = path.join(runtimePath, 'types');
     const runtimeLibsPath = path.join(runtimePath, 'libs');
     const runtimePixiRenderersPath = path.join(runtimePath, 'pixi-renderers');
+    const runtimeCocosRenderersPath = path.join(runtimePath, 'cocos-renderers');
     const runtimeHowlerSoundManagerPath = path.join(
       runtimePath,
       'howler-sound-manager'
+    );
+    const runtimeCocosSoundManagerPath = path.join(
+      runtimePath,
+      'cocos-sound-manager'
     );
     const runtimeFontfaceobserverFontManagerPath = path.join(
       runtimePath,
@@ -71,7 +69,9 @@ export const setupAutocompletions = (monaco: any) => {
     importAllJsFilesFromFolder(runtimeTypesPath);
     importAllJsFilesFromFolder(runtimeLibsPath);
     importAllJsFilesFromFolder(runtimePixiRenderersPath);
+    importAllJsFilesFromFolder(runtimeCocosRenderersPath);
     importAllJsFilesFromFolder(runtimeHowlerSoundManagerPath);
+    importAllJsFilesFromFolder(runtimeCocosSoundManagerPath);
     importAllJsFilesFromFolder(runtimeFontfaceobserverFontManagerPath);
     importAllJsFilesFromFolder(eventToolsPath);
     fs.readdir(extensionsPath, (error: ?Error, folderNames: Array<string>) => {
@@ -89,7 +89,6 @@ export const setupAutocompletions = (monaco: any) => {
             !folderName.endsWith('.txt') &&
             !folderName.endsWith('.md') &&
             !folderName.endsWith('.flow.js') &&
-            !folderName.endsWith('.d.ts') &&
             !folderName.endsWith('.gitignore')
         )
         .forEach(folderName =>

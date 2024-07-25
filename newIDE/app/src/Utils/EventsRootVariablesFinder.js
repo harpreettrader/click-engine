@@ -48,13 +48,13 @@ export default class EventsRootVariablesFinder {
     platform: gdPlatform,
     project: gdProject,
     layout: gdLayout,
-    objectName: string
+    object: gdObject
   ): string[] {
     return gd.EventsVariablesFinder.findAllObjectVariables(
       project.getCurrentPlatform(),
       project,
       layout,
-      objectName
+      object
     )
       .toNewVectorString()
       .toJSArray()

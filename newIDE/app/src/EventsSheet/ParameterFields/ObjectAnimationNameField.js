@@ -43,8 +43,6 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       parameterIndex,
     } = props;
 
-    const { layout, eventsFunctionsExtension, eventsBasedObject } = scope;
-
     // We don't memo/callback this, as we want to recompute it every time something changes.
     // Because of the function getLastObjectParameterValue.
     const getAnimationNames = () => {
@@ -60,11 +58,7 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
         return [];
       }
 
-      const object = getObjectByName(
-        project.getObjects(),
-        layout ? layout.getObjects() : null,
-        objectName
-      );
+      const object = getObjectByName(project, scope.layout, objectName);
       if (!object) {
         return [];
       }
@@ -131,11 +125,10 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       animationName => `"${animationName}"` === props.value
     );
 
-    const canAutocomplete = !eventsFunctionsExtension || eventsBasedObject;
-
     // If the current value is not in the list of animation names, display an expression field.
     const [isExpressionField, setIsExpressionField] = React.useState(
-      (!!props.value && !isCurrentValueInAnimationNamesList) || !canAutocomplete
+      (!!props.value && !isCurrentValueInAnimationNamesList) ||
+        props.scope.eventsFunctionsExtension
     );
 
     const switchFieldType = () => {
@@ -205,27 +198,25 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
           )
         }
         renderButton={style =>
-          canAutocomplete ? (
-            isExpressionField ? (
-              <FlatButton
-                id="switch-expression-select"
-                leftIcon={<TypeCursorSelect />}
-                style={style}
-                primary
-                label={<Trans>Select an animation</Trans>}
-                onClick={switchFieldType}
-              />
-            ) : (
-              <RaisedButton
-                id="switch-expression-select"
-                icon={<Functions />}
-                style={style}
-                primary
-                label={<Trans>Use an expression</Trans>}
-                onClick={switchFieldType}
-              />
-            )
-          ) : null
+          props.scope.eventsFunctionsExtension ? null : isExpressionField ? (
+            <FlatButton
+              id="switch-expression-select"
+              leftIcon={<TypeCursorSelect />}
+              style={style}
+              primary
+              label={<Trans>Select an animation</Trans>}
+              onClick={switchFieldType}
+            />
+          ) : (
+            <RaisedButton
+              id="switch-expression-select"
+              icon={<Functions />}
+              style={style}
+              primary
+              label={<Trans>Use an expression</Trans>}
+              onClick={switchFieldType}
+            />
+          )
         }
       />
     );

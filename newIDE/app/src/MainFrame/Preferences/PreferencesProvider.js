@@ -61,7 +61,7 @@ export const loadPreferencesFromLocalStorage = (): ?PreferencesValues => {
 
     // Migrate renamed themes.
     if (values.themeName === 'GDevelop default') {
-      values.themeName = 'GDevelop default Light';
+      values.themeName = 'ClickEngine default Light';
     } else if (values.themeName === 'Dark') {
       values.themeName = 'Blue Dark';
     }
@@ -115,7 +115,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
     setEventsSheetUseAssignmentOperators: this._setEventsSheetUseAssignmentOperators.bind(
       this
     ),
-    setEventsSheetIndentScale: this._setEventsSheetIndentScale.bind(this),
     setEventsSheetZoomLevel: this._setEventsSheetZoomLevel.bind(this),
     setShowEffectParameterNames: this._setShowEffectParameterNames.bind(this),
     getLastUsedPath: this._getLastUsedPath.bind(this),
@@ -158,15 +157,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
     getShowEventBasedObjectsEditor: this._getShowEventBasedObjectsEditor.bind(
       this
     ),
-    setShowInAppTutorialDeveloperMode: this._setShowInAppTutorialDeveloperMode.bind(
-      this
-    ),
-    setOpenDiagnosticReportAutomatically: this._setOpenDiagnosticReportAutomatically.bind(
-      this
-    ),
-    getOpenDiagnosticReportAutomatically: this._getOpenDiagnosticReportAutomatically.bind(
-      this
-    ),
     setShowDeprecatedInstructionWarning: this._setShowDeprecatedInstructionWarning.bind(
       this
     ),
@@ -190,12 +180,8 @@ export default class PreferencesProvider extends React.Component<Props, State> {
     setNewFeaturesAcknowledgements: this._setNewFeaturesAcknowledgements.bind(
       this
     ),
-    setDisplaySaveReminder: this._setDisplaySaveReminder.bind(this),
     getEditorStateForProject: this._getEditorStateForProject.bind(this),
     setEditorStateForProject: this._setEditorStateForProject.bind(this),
-    setFetchPlayerTokenForPreviewAutomatically: this._setFetchPlayerTokenForPreviewAutomatically.bind(
-      this
-    ),
   };
 
   componentDidMount() {
@@ -308,18 +294,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
         values: {
           ...state.values,
           eventsSheetUseAssignmentOperators,
-        },
-      }),
-      () => this._persistValuesToLocalStorage(this.state)
-    );
-  }
-
-  _setEventsSheetIndentScale(eventsSheetIndentScale: number) {
-    this.setState(
-      state => ({
-        values: {
-          ...state.values,
-          eventsSheetIndentScale,
         },
       }),
       () => this._persistValuesToLocalStorage(this.state)
@@ -464,36 +438,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
 
   _getShowEventBasedObjectsEditor() {
     return this.state.values.showEventBasedObjectsEditor;
-  }
-
-  _setShowInAppTutorialDeveloperMode(showInAppTutorialDeveloperMode: boolean) {
-    this.setState(
-      state => ({
-        values: {
-          ...state.values,
-          showInAppTutorialDeveloperMode,
-        },
-      }),
-      () => this._persistValuesToLocalStorage(this.state)
-    );
-  }
-
-  _setOpenDiagnosticReportAutomatically(
-    openDiagnosticReportAutomatically: boolean
-  ) {
-    this.setState(
-      state => ({
-        values: {
-          ...state.values,
-          openDiagnosticReportAutomatically,
-        },
-      }),
-      () => this._persistValuesToLocalStorage(this.state)
-    );
-  }
-
-  _getOpenDiagnosticReportAutomatically() {
-    return this.state.values.openDiagnosticReportAutomatically;
   }
 
   _setShowDeprecatedInstructionWarning(
@@ -952,18 +896,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
     );
   }
 
-  _setDisplaySaveReminder(newValue: {| activated: boolean |}) {
-    this.setState(
-      state => ({
-        values: {
-          ...state.values,
-          displaySaveReminder: newValue,
-        },
-      }),
-      () => this._persistValuesToLocalStorage(this.state)
-    );
-  }
-
   _getEditorStateForProject(projectId: string) {
     return this.state.values.editorStateByProject[projectId];
   }
@@ -980,18 +912,6 @@ export default class PreferencesProvider extends React.Component<Props, State> {
             ...state.values.editorStateByProject,
             [projectId]: editorState,
           },
-        },
-      }),
-      () => this._persistValuesToLocalStorage(this.state)
-    );
-  }
-
-  _setFetchPlayerTokenForPreviewAutomatically(newValue: boolean) {
-    this.setState(
-      state => ({
-        values: {
-          ...state.values,
-          fetchPlayerTokenForPreviewAutomatically: newValue,
         },
       }),
       () => this._persistValuesToLocalStorage(this.state)

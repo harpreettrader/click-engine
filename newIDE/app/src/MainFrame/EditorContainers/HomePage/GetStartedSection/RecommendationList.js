@@ -18,7 +18,7 @@ import {
   type WindowSizeType,
 } from '../../../../UI/Responsive/ResponsiveWindowMeasurer';
 import Text from '../../../../UI/Text';
-import { Column, Line, Spacer } from '../../../../UI/Grid';
+import { Column, Spacer } from '../../../../UI/Grid';
 import { type Tutorial } from '../../../../Utils/GDevelopServices/Tutorial';
 import { type SubscriptionPlanWithPricingSystems } from '../../../../Utils/GDevelopServices/Usage';
 import { CardWidget } from '../CardWidget';
@@ -33,10 +33,6 @@ import PlanRecommendationRow from './PlanRecommendationRow';
 import { SurveyCard } from './SurveyCard';
 import PlaceholderLoader from '../../../../UI/PlaceholderLoader';
 import PromotionsSlideshow from '../../../../Promotions/PromotionsSlideshow';
-import { PrivateTutorialViewDialog } from '../../../../AssetStore/PrivateTutorials/PrivateTutorialViewDialog';
-import { EarnBadges } from './EarnBadges';
-import FlatButton from '../../../../UI/FlatButton';
-import InAppTutorialContext from '../../../../InAppTutorial/InAppTutorialContext';
 
 const styles = {
   textTutorialContent: {
@@ -181,7 +177,6 @@ type Props = {|
   subscriptionPlansWithPricingSystems: ?(SubscriptionPlanWithPricingSystems[]),
   onStartSurvey: null | (() => void),
   hasFilledSurveyAlready: boolean,
-  onOpenProfile: () => void,
 |};
 
 const RecommendationList = ({
@@ -190,28 +185,10 @@ const RecommendationList = ({
   subscriptionPlansWithPricingSystems,
   onStartSurvey,
   hasFilledSurveyAlready,
-  onOpenProfile,
 }: Props) => {
-  const {
-    recommendations,
-    subscription,
-    limits,
-    badges,
-    achievements,
-  } = authenticatedUser;
+  const { recommendations, subscription, profile } = authenticatedUser;
   const { tutorials } = React.useContext(TutorialContext);
-  const {
-    getTutorialProgress,
-    values: { showInAppTutorialDeveloperMode },
-  } = React.useContext(PreferencesContext);
-  const { onLoadInAppTutorialFromLocalFile } = React.useContext(
-    InAppTutorialContext
-  );
-
-  const [
-    selectedTutorial,
-    setSelectedTutorial,
-  ] = React.useState<Tutorial | null>(null);
+  const { getTutorialProgress } = React.useContext(PreferencesContext);
 
   if (!recommendations) return <PlaceholderLoader />;
 
@@ -245,11 +222,7 @@ const RecommendationList = ({
     recommendation => recommendation.type === 'plan'
   );
 
-  const getInAppTutorialPartProgress = ({
-    tutorialId,
-  }: {
-    tutorialId: string,
-  }) => {
+  const getTutorialPartProgress = ({ tutorialId }: { tutorialId: string }) => {
     const tutorialProgress = getTutorialProgress({
       tutorialId,
       userId: authenticatedUser.profile
@@ -278,23 +251,15 @@ const RecommendationList = ({
         if (guidedLessonsRecommendation) {
           const displayTextAfterGuidedLessons = guidedLessonsIds
             ? guidedLessonsIds
-                .map(tutorialId => getInAppTutorialPartProgress({ tutorialId }))
+                .map(tutorialId => getTutorialPartProgress({ tutorialId }))
                 .every(progress => progress === 100)
             : false;
 
           items.push(
             <SectionRow key="guided-lessons">
-              <Line justifyContent="space-between" noMargin>
-                <Text size="section-title" noMargin>
-                  <Trans>Build game mechanics</Trans>
-                </Text>
-                {showInAppTutorialDeveloperMode && (
-                  <FlatButton
-                    label={<Trans>Load local lesson</Trans>}
-                    onClick={onLoadInAppTutorialFromLocalFile}
-                  />
-                )}
-              </Line>
+              <Text size="section-title" noMargin>
+                <Trans>Build game mechanics</Trans>
+              </Text>
               <GuidedLessons
                 selectInAppTutorial={selectInAppTutorial}
                 lessonsIds={guidedLessonsIds}
@@ -310,27 +275,6 @@ const RecommendationList = ({
             </SectionRow>
           );
         }
-
-        if (
-          !limits ||
-          !limits.capabilities.classrooms ||
-          !limits.capabilities.classrooms.hidePlayTab
-        ) {
-          items.push(
-            <SectionRow key="earn-badges">
-              <Text size="section-title" noMargin>
-                <Trans>Earn badges and credits</Trans>
-              </Text>
-              <Spacer />
-              <EarnBadges
-                achievements={achievements}
-                badges={badges}
-                onOpenProfile={onOpenProfile}
-              />
-            </SectionRow>
-          );
-        }
-
         if (recommendedVideoTutorials.length) {
           items.push(
             <SectionRow key="videos">
@@ -338,12 +282,7 @@ const RecommendationList = ({
                 title={<Trans>Get started with game creation</Trans>}
                 margin="dense"
                 items={recommendedVideoTutorials.map(tutorial =>
-                  formatTutorialToImageTileComponent({
-                    i18n,
-                    limits,
-                    tutorial,
-                    onSelectTutorial: setSelectedTutorial,
-                  })
+                  formatTutorialToImageTileComponent(i18n, tutorial)
                 )}
                 getColumnsFromWindowSize={getVideoTutorialsColumnsFromWidth}
                 getLimitFromWindowSize={getTutorialsLimitsFromWidth}
@@ -381,11 +320,8 @@ const RecommendationList = ({
         }
         if (planRecommendation) {
           const shouldDisplayPlanRecommendation =
-            limits &&
-            !(
-              limits.capabilities.classrooms &&
-              limits.capabilities.classrooms.hideUpgradeNotice
-            ) &&
+            profile &&
+            !profile.isStudent &&
             (!subscription ||
               isPlanRecommendationRelevant(subscription, planRecommendation));
           if (
@@ -405,18 +341,7 @@ const RecommendationList = ({
             );
           }
         }
-
-        return (
-          <>
-            {items}
-            {selectedTutorial && (
-              <PrivateTutorialViewDialog
-                tutorial={selectedTutorial}
-                onClose={() => setSelectedTutorial(null)}
-              />
-            )}
-          </>
-        );
+        return items;
       }}
     </I18n>
   );

@@ -45,18 +45,13 @@ const GameMonetization = ({ game, onGameUpdated }: Props) => {
                 ? pendingDisplayAdsOnGamePage
                 : !!game.displayAdsOnGamePage
             }
-            disabled={pendingDisplayAdsOnGamePage !== null}
             onCheck={async (e, enable) => {
               setPendingDisplayAdsOnGamePage(enable);
+              const updatedGame = { ...game, displayAdsOnGamePage: enable };
               try {
-                const updatedGame = await updateGame(
-                  getAuthorizationHeader,
-                  profile.id,
-                  game.id,
-                  {
-                    displayAdsOnGamePage: enable,
-                  }
-                );
+                await updateGame(getAuthorizationHeader, profile.id, game.id, {
+                  displayAdsOnGamePage: enable,
+                });
                 onGameUpdated(updatedGame);
               } catch (error) {
                 showErrorBox({

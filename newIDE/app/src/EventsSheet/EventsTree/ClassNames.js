@@ -9,7 +9,6 @@ export const largeSelectedArea = 'large-selected';
 export const executableEventContainer = 'executable-event-container';
 export const actionsContainer = 'actions-container';
 export const conditionsContainer = 'conditions-container';
-export const localVariablesContainer = 'local-variables-container';
 export const subInstructionsContainer = 'sub-instructions-container';
 export const warningInstruction = 'warning-instruction';
 export const smallWidthContainer = 'small-width-container';

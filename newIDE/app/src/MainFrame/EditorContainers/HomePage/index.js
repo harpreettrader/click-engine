@@ -15,7 +15,6 @@ import PlaySection from './PlaySection';
 import ManageSection from './ManageSection';
 import CommunitySection from './CommunitySection';
 import StoreSection from './StoreSection';
-import { type TutorialCategory } from '../../../Utils/GDevelopServices/Tutorial';
 import { TutorialContext } from '../../../Tutorial/TutorialContext';
 import { ExampleStoreContext } from '../../../AssetStore/ExampleStore/ExampleStoreContext';
 import { HomePageHeader } from './HomePageHeader';
@@ -38,6 +37,7 @@ import {
 } from '../../../Utils/Analytics/EventSender';
 import RouterContext, { type RouteArguments } from '../../RouterContext';
 import { type GameDetailsTab } from '../../../GameDashboard/GameDetails';
+import { type Game } from '../../../Utils/GDevelopServices/Game';
 import useGamesList from '../../../GameDashboard/UseGamesList';
 import useDisplayNewFeature from '../../../Utils/UseDisplayNewFeature';
 import HighlightingTooltip from '../../../UI/HighlightingTooltip';
@@ -45,9 +45,6 @@ import Text from '../../../UI/Text';
 import Link from '../../../UI/Link';
 import Window from '../../../Utils/Window';
 import { getHelpLink } from '../../../Utils/HelpLink';
-import { canUseClassroomFeature } from '../../../Utils/GDevelopServices/Usage';
-import EducationMarketingSection from './EducationMarketingSection';
-import useEducationForm from './UseEducationForm';
 
 const gamesDashboardWikiArticle = getHelpLink('/interface/games-dashboard/');
 const isShopRequested = (routeArguments: RouteArguments): boolean =>
@@ -163,13 +160,9 @@ export const HomePage = React.memo<Props>(
       }: Props,
       ref
     ) => {
-      const authenticatedUser = React.useContext(AuthenticatedUserContext);
-      const {
-        authenticated,
-        onCloudProjectsChanged,
-        onOpenLoginDialog,
-        limits,
-      } = authenticatedUser;
+      const { authenticated, onCloudProjectsChanged } = React.useContext(
+        AuthenticatedUserContext
+      );
       const userSurveyStartedRef = React.useRef<boolean>(false);
       const userSurveyHiddenRef = React.useRef<boolean>(false);
       const { fetchTutorials } = React.useContext(TutorialContext);
@@ -178,7 +171,7 @@ export const HomePage = React.memo<Props>(
         fetchGameTemplates,
         shop: { setInitialGameTemplateUserFriendlySlug },
       } = React.useContext(PrivateGameTemplateStoreContext);
-      const [openedGameId, setOpenedGameId] = React.useState<?string>(null);
+      const [openedGame, setOpenedGame] = React.useState<?Game>(null);
       const [
         gameDetailsCurrentTab,
         setGameDetailsCurrentTab,
@@ -186,18 +179,11 @@ export const HomePage = React.memo<Props>(
       const { routeArguments, removeRouteArguments } = React.useContext(
         RouterContext
       );
-      const {
-        educationForm,
-        onChangeEducationForm,
-        onSendEducationForm,
-        educationFormError,
-        educationFormStatus,
-        onResetEducationForm,
-      } = useEducationForm({ authenticatedUser });
+
       const { isMobile } = useResponsiveWindowSize();
-      const {
-        values: { showGetStartedSectionByDefault },
-      } = React.useContext(PreferencesContext);
+      // const {
+      //   values: { showGetStartedSectionByDefault },
+      // } = React.useContext(PreferencesContext);
       const isShopRequestedAtOpening = React.useRef<boolean>(
         isShopRequested(routeArguments)
       );
@@ -208,15 +194,11 @@ export const HomePage = React.memo<Props>(
         ? 'shop'
         : isGamesDashboardRequestedAtOpening.current
         ? 'manage'
-        : showGetStartedSectionByDefault
-        ? 'get-started'
-        : 'build';
+        : // : showGetStartedSectionByDefault
+          // ? 'get-started'
+          'build';
 
       const [activeTab, setActiveTab] = React.useState<HomeTab>(initialTab);
-      const [
-        learnInitialCategory,
-        setLearnInitialCategory,
-      ] = React.useState<TutorialCategory | null>(null);
 
       const { setInitialPackUserFriendlySlug } = React.useContext(
         AssetStoreContext
@@ -225,16 +207,7 @@ export const HomePage = React.memo<Props>(
         displayTooltipDelayed,
         setDisplayTooltipDelayed,
       ] = React.useState<boolean>(false);
-      const {
-        games,
-        gamesFetchingError,
-        fetchGames,
-        onGameUpdated,
-      } = useGamesList();
-      const openedGame = React.useMemo(
-        () => (games && games.find(game => game.id === openedGameId)) || null,
-        [games, openedGameId]
-      );
+      const { games, gamesFetchingError, fetchGames } = useGamesList();
       const {
         shouldDisplayNewFeatureHighlighting,
         acknowledgeNewFeature,
@@ -350,17 +323,6 @@ export const HomePage = React.memo<Props>(
         [isActive, authenticated, onCloudProjectsChanged]
       );
 
-      // Refresh games list (as one could have been modified using the game dashboard
-      // in the project manager) when navigating to the "Manage" tab.
-      React.useEffect(
-        () => {
-          if (isActive && activeTab === 'manage' && authenticated) {
-            fetchGames();
-          }
-        },
-        [isActive, activeTab, authenticated, fetchGames]
-      );
-
       const getProject = React.useCallback(() => {
         return undefined;
       }, []);
@@ -409,6 +371,16 @@ export const HomePage = React.memo<Props>(
         forceUpdateEditor,
       }));
 
+      // If the user logs out and is on the team view section, go back to the build section.
+      React.useEffect(
+        () => {
+          if (activeTab === 'team-view' && !authenticated) {
+            setActiveTab('build');
+          }
+        },
+        [authenticated, activeTab]
+      );
+
       const onUserSurveyStarted = React.useCallback(() => {
         if (userSurveyStartedRef.current) return;
         sendUserSurveyStarted();
@@ -431,13 +403,19 @@ export const HomePage = React.memo<Props>(
         [authenticated]
       );
 
-      const onManageGame = React.useCallback((gameId: string) => {
-        setOpenedGameId(gameId);
-        setActiveTab('manage');
-      }, []);
+      const onManageGame = React.useCallback(
+        ({ gameId }: {| gameId: string |}) => {
+          if (!games) return;
+          const matchingGame = games.find(game => game.id === gameId);
+          if (!matchingGame) return;
+          setOpenedGame(matchingGame);
+          setActiveTab('manage');
+        },
+        [games]
+      );
 
       const canManageGame = React.useCallback(
-        (gameId: string): boolean => {
+        ({ gameId }: {| gameId: string |}): boolean => {
           if (!games) return false;
           const matchingGameIndex = games.findIndex(game => game.id === gameId);
           return matchingGameIndex > -1;
@@ -456,15 +434,14 @@ export const HomePage = React.memo<Props>(
                       project={project}
                       games={games}
                       onRefreshGames={fetchGames}
-                      onGameUpdated={onGameUpdated}
                       gamesFetchingError={gamesFetchingError}
                       openedGame={openedGame}
-                      setOpenedGameId={setOpenedGameId}
+                      setOpenedGame={setOpenedGame}
                       currentTab={gameDetailsCurrentTab}
                       setCurrentTab={setGameDetailsCurrentTab}
                     />
                   )}
-                  {activeTab === 'get-started' && (
+                  {/* {activeTab === 'get-started' && (
                     <GetStartedSection
                       selectInAppTutorial={selectInAppTutorial}
                       onUserSurveyStarted={onUserSurveyStarted}
@@ -472,9 +449,8 @@ export const HomePage = React.memo<Props>(
                       subscriptionPlansWithPricingSystems={
                         subscriptionPlansWithPricingSystems
                       }
-                      onOpenProfile={onOpenProfile}
                     />
-                  )}
+                  )} */}
                   {activeTab === 'build' && (
                     <BuildSection
                       project={project}
@@ -499,7 +475,6 @@ export const HomePage = React.memo<Props>(
                       onOpenExampleStore={onOpenExampleStore}
                       onTabChange={setActiveTab}
                       selectInAppTutorial={selectInAppTutorial}
-                      initialCategory={learnInitialCategory}
                     />
                   )}
                   {activeTab === 'play' && <PlaySection />}
@@ -512,32 +487,16 @@ export const HomePage = React.memo<Props>(
                       onOpenPrivateGameTemplateListingData={
                         onOpenPrivateGameTemplateListingData
                       }
-                      onOpenProfile={onOpenProfile}
                     />
                   )}
-                  {activeTab === 'team-view' &&
-                    (canUseClassroomFeature(limits) ? (
-                      <TeamSection
-                        project={project}
-                        onOpenRecentFile={onOpenRecentFile}
-                        storageProviders={storageProviders}
-                        currentFileMetadata={fileMetadata}
-                        onOpenTeachingResources={() => {
-                          setLearnInitialCategory('education-curriculum');
-                          setActiveTab('learn');
-                        }}
-                      />
-                    ) : (
-                      <EducationMarketingSection
-                        form={educationForm}
-                        onChangeForm={onChangeEducationForm}
-                        onSendForm={onSendEducationForm}
-                        formError={educationFormError}
-                        formStatus={educationFormStatus}
-                        onResetForm={onResetEducationForm}
-                        onLogin={onOpenLoginDialog}
-                      />
-                    ))}
+                  {activeTab === 'team-view' && (
+                    <TeamSection
+                      project={project}
+                      onOpenRecentFile={onOpenRecentFile}
+                      storageProviders={storageProviders}
+                      currentFileMetadata={fileMetadata}
+                    />
+                  )}
                 </div>
                 <HomePageMenu
                   activeTab={activeTab}

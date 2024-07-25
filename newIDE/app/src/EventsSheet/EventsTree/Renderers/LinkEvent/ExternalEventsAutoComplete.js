@@ -1,6 +1,9 @@
 // @flow
 import * as React from 'react';
-import { enumerateExternalEvents } from '../../../../ProjectManager/EnumerateProjectItems';
+import {
+  enumerateLayouts,
+  enumerateExternalEvents,
+} from '../../../../ProjectManager/EnumerateProjectItems';
 import SemiControlledAutoComplete, {
   type DataSource,
 } from '../../../../UI/SemiControlledAutoComplete';
@@ -14,31 +17,23 @@ const getList = (
     return [];
   }
 
-  const currentSceneExternalEvents = [];
-  const otherScenesExternalEvents = [];
-  for (const externalEvents of enumerateExternalEvents(project)) {
-    if (externalEvents.getName() === currentExternalEventName) {
-      continue;
-    }
-    if (externalEvents.getAssociatedLayout() === currentSceneName) {
-      currentSceneExternalEvents.push(externalEvents);
-    } else {
-      otherScenesExternalEvents.push(externalEvents);
-    }
-  }
-  const externalEvents = [
-    ...currentSceneExternalEvents.map(externalEvents => ({
+  const externalEvents = enumerateExternalEvents(project)
+    .filter(
+      externalEvents => externalEvents.getName() !== currentExternalEventName
+    )
+    .map(externalEvents => ({
       text: externalEvents.getName(),
       value: externalEvents.getName(),
-    })),
-    { type: 'separator' },
-    ...otherScenesExternalEvents.map(externalEvents => ({
-      text: externalEvents.getName(),
-      value: externalEvents.getName(),
-    })),
-  ];
+    }));
 
-  return externalEvents;
+  const layouts = enumerateLayouts(project)
+    .filter(layout => layout.getName() !== currentSceneName)
+    .map(layout => ({
+      text: layout.getName(),
+      value: layout.getName(),
+    }));
+
+  return [...externalEvents, { type: 'separator' }, ...layouts];
 };
 
 type Props = {|

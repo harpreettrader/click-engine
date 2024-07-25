@@ -47,7 +47,7 @@ export const Export = () => {
         errored={false}
         exportStep={'export'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -63,7 +63,7 @@ export const SavingProject = () => {
         errored={false}
         exportStep={'export'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject
         project={testProject.project}
       />
@@ -79,7 +79,7 @@ export const ResourcesDownload = () => {
         errored={false}
         exportStep={'resources-download'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -95,7 +95,7 @@ export const Compress = () => {
         errored={false}
         exportStep={'compress'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -111,7 +111,7 @@ export const Upload = () => {
         errored={false}
         exportStep={'upload'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -127,7 +127,7 @@ export const WaitingForBuild = () => {
         errored={false}
         exportStep={'waiting-for-build'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -143,7 +143,7 @@ export const Build = () => {
         errored={false}
         exportStep={'build'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -159,7 +159,7 @@ export const DoneWithPublicBuild = () => {
         errored={false}
         exportStep={'done'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />
@@ -175,7 +175,7 @@ export const DoneWithPrivateBuild = () => {
         errored={false}
         exportStep={'done'}
         onSaveProject={action('onSaveProject')}
-        onRefreshGame={action('onRefreshGame')}
+        onGameUpdated={action('onGameUpdated')}
         isSavingProject={false}
         project={testProject.project}
       />

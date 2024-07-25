@@ -66,7 +66,6 @@ export const generateOnOpen = (authenticatedUser: AuthenticatedUser) => async (
         `Could not find cache entry for project id ${cloudProjectId}.`
       );
     }
-    await getCredentialsForCloudProject(authenticatedUser, cloudProjectId);
     return { content: JSON.parse(project) };
   }
 

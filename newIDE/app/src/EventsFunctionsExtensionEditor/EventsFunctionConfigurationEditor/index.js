@@ -8,23 +8,22 @@ import { EventsFunctionParametersEditor } from './EventsFunctionParametersEditor
 import { EventsFunctionPropertiesEditor } from './EventsFunctionPropertiesEditor';
 import ScrollView from '../../UI/ScrollView';
 import { Column, Line } from '../../UI/Grid';
+import Window from '../../Utils/Window';
 import { type GroupWithContext } from '../../ObjectsList/EnumerateObjects';
 import { type UnsavedChanges } from '../../MainFrame/UnsavedChangesContext';
 import newNameGenerator from '../../Utils/NewNameGenerator';
 import { type ExtensionItemConfigurationAttribute } from '../../EventsFunctionsExtensionEditor';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 const gd: libGDevelop = global.gd;
 
 type Props = {|
   project: gdProject,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
   eventsFunction: gdEventsFunction,
-  eventsBasedBehavior: gdEventsBasedBehavior | null,
-  eventsBasedObject: gdEventsBasedObject | null,
+  eventsBasedBehavior: ?gdEventsBasedBehavior,
+  eventsBasedObject: ?gdEventsBasedObject,
   eventsFunctionsContainer: gdEventsFunctionsContainer,
-  eventsFunctionsExtension: gdEventsFunctionsExtension,
   onParametersOrGroupsUpdated: () => void,
   helpPagePath?: string,
   onConfigurationUpdated?: (?ExtensionItemConfigurationAttribute) => void,
@@ -70,14 +69,16 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
   };
 
   _getValidatedObjectOrGroupName = (newName: string) => {
-    const { objectsContainer } = this.props;
+    const { objectsContainer, globalObjectsContainer } = this.props;
 
     const safeAndUniqueNewName = newNameGenerator(
       gd.Project.getSafeName(newName),
       tentativeNewName => {
         if (
           objectsContainer.hasObjectNamed(tentativeNewName) ||
-          objectsContainer.getObjectGroups().has(tentativeNewName)
+          globalObjectsContainer.hasObjectNamed(tentativeNewName) ||
+          objectsContainer.getObjectGroups().has(tentativeNewName) ||
+          globalObjectsContainer.getObjectGroups().has(tentativeNewName)
         ) {
           return true;
         }
@@ -93,6 +94,27 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
     groupWithContext: GroupWithContext,
     done: boolean => void
   ) => {
+    const { group } = groupWithContext;
+    const {
+      project,
+      eventsFunction,
+      globalObjectsContainer,
+      objectsContainer,
+    } = this.props;
+
+    const answer = Window.showConfirmDialog(
+      'Do you want to remove all references to this group in events (actions and conditions using the group)?'
+    );
+
+    gd.WholeProjectRefactorer.objectOrGroupRemovedInEventsFunction(
+      project,
+      eventsFunction,
+      globalObjectsContainer,
+      objectsContainer,
+      group.getName(),
+      /* isObjectGroup=*/ true,
+      !!answer
+    );
     done(true);
   };
 
@@ -104,8 +126,9 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
     const { group } = groupWithContext;
     const {
       project,
-      projectScopedContainersAccessor,
       eventsFunction,
+      globalObjectsContainer,
+      objectsContainer,
     } = this.props;
 
     // newName is supposed to have been already validated
@@ -114,8 +137,9 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
     if (group.getName() !== newName) {
       gd.WholeProjectRefactorer.objectOrGroupRenamedInEventsFunction(
         project,
-        projectScopedContainersAccessor.get(),
         eventsFunction,
+        globalObjectsContainer,
+        objectsContainer,
         group.getName(),
         newName,
         /* isObjectGroup=*/ true
@@ -133,6 +157,7 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
   render() {
     const {
       project,
+      globalObjectsContainer,
       objectsContainer,
       eventsFunction,
       eventsBasedBehavior,
@@ -148,7 +173,6 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
       onMoveObjectEventsParameter,
       getFunctionGroupNames,
       eventsFunctionsContainer,
-      eventsFunctionsExtension,
     } = this.props;
 
     return (
@@ -184,7 +208,6 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
                 eventsBasedBehavior={eventsBasedBehavior}
                 eventsBasedObject={eventsBasedObject}
                 eventsFunctionsContainer={eventsFunctionsContainer}
-                eventsFunctionsExtension={eventsFunctionsExtension}
                 helpPagePath={helpPagePath}
                 onConfigurationUpdated={onConfigurationUpdated}
                 renderConfigurationHeader={renderConfigurationHeader}
@@ -203,7 +226,6 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
                 eventsBasedBehavior={eventsBasedBehavior}
                 eventsBasedObject={eventsBasedObject}
                 eventsFunctionsContainer={eventsFunctionsContainer}
-                eventsFunctionsExtension={eventsFunctionsExtension}
                 onParametersUpdated={onParametersOrGroupsUpdated}
                 helpPagePath={helpPagePath}
                 freezeParameters={freezeParameters}
@@ -218,9 +240,9 @@ export default class EventsFunctionConfigurationEditor extends React.Component<
         {this.state.currentTab === 'groups' ? (
           <ObjectGroupsListWithObjectGroupEditor
             project={project}
-            globalObjectsContainer={null}
+            globalObjectsContainer={globalObjectsContainer}
             objectsContainer={objectsContainer}
-            globalObjectGroups={null}
+            globalObjectGroups={globalObjectsContainer.getObjectGroups()}
             objectGroups={eventsFunction.getObjectGroups()}
             getValidatedObjectOrGroupName={this._getValidatedObjectOrGroupName}
             onRenameGroup={this._onRenameGroup}

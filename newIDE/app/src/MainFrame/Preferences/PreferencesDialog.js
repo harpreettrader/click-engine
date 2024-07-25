@@ -54,7 +54,6 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
     setAutosaveOnPreview,
     setUseGDJSDevelopmentWatcher,
     setEventsSheetUseAssignmentOperators,
-    setEventsSheetIndentScale,
     getDefaultEditorMosaicNode,
     setDefaultEditorMosaicNode,
     setAutoOpenMostRecentProject,
@@ -67,15 +66,11 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
     setEventsSheetCancelInlineParameter,
     setShowCommunityExtensions,
     setShowEventBasedObjectsEditor,
-    setShowInAppTutorialDeveloperMode,
-    setOpenDiagnosticReportAutomatically,
     setShowDeprecatedInstructionWarning,
     setUse3DEditor,
     setNewProjectsDefaultFolder,
     setUseShortcutToClosePreviewWindow,
     setWatchProjectFolderFilesForLocalProjects,
-    setDisplaySaveReminder,
-    setFetchPlayerTokenForPreviewAutomatically,
   } = React.useContext(PreferencesContext);
 
   const initialUse3DEditor = React.useRef<boolean>(values.use3DEditor);
@@ -159,11 +154,13 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
                 You can contribute and{' '}
                 <Link
                   href={
-                    'https://github.com/4ian/GDevelop/blob/master/newIDE/README-themes.md'
+                    ''
+                    // 'https://github.com/4ian/GDevelop/blob/master/newIDE/README-themes.md'
                   }
                   onClick={() =>
                     Window.openExternalURL(
-                      'https://github.com/4ian/GDevelop/blob/master/newIDE/README-themes.md'
+                      ''
+                      // 'https://github.com/4ian/GDevelop/blob/master/newIDE/README-themes.md'
                     )
                   }
                 >
@@ -292,23 +289,6 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
             label={<Trans>Display assignment operators in Events Sheets</Trans>}
           />
           <SelectField
-            floatingLabelText={<Trans>Indent Scale in Events Sheet</Trans>}
-            fullWidth
-            value={values.eventsSheetIndentScale.toString()}
-            onChange={(e, i, value) => {
-              setEventsSheetIndentScale(parseInt(value, 10));
-            }}
-          >
-            <SelectOption value="1" label={t`100% (Default)`} />
-            <SelectOption value="2" label={t`200%`} />
-            <SelectOption value="3" label={t`300%`} />
-            <SelectOption value="4" label={t`400%`} />
-            <SelectOption value="5" label={t`500%`} />
-            <SelectOption value="6" label={t`600%`} />
-            <SelectOption value="7" label={t`700%`} />
-            <SelectOption value="8" label={t`800%`} />
-          </SelectField>
-          <SelectField
             floatingLabelText={
               <Trans>
                 Escape key behavior when editing an parameter inline
@@ -356,27 +336,7 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
             onToggle={(e, check) => setAutosaveOnPreview(check)}
             toggled={values.autosaveOnPreview}
             labelPosition="right"
-            label={<Trans>Auto-save project on preview</Trans>}
-          />
-          <Toggle
-            onToggle={(e, check) =>
-              setFetchPlayerTokenForPreviewAutomatically(check)
-            }
-            toggled={values.fetchPlayerTokenForPreviewAutomatically}
-            labelPosition="right"
-            label={<Trans>Automatically log in as a player in preview</Trans>}
-          />
-          <Toggle
-            onToggle={(e, check) =>
-              setDisplaySaveReminder({ activated: check })
-            }
-            toggled={values.displaySaveReminder.activated}
-            labelPosition="right"
-            label={
-              <Trans>
-                Display save reminder after significant changes in project
-              </Trans>
-            }
+            label={<Trans>Auto-save project on Preview</Trans>}
           />
           <Toggle
             onToggle={(e, check) => setAutoOpenMostRecentProject(check)}
@@ -399,6 +359,16 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
               </Trans>
             }
           />
+          <Toggle
+            onToggle={(e, check) => setShowEventBasedObjectsEditor(check)}
+            toggled={values.showEventBasedObjectsEditor}
+            labelPosition="right"
+            label={
+              <Trans>
+                Show custom objects in the extension editor (experimental)
+              </Trans>
+            }
+          />
           {!!electron && (
             <Toggle
               onToggle={(e, check) =>
@@ -415,14 +385,6 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
               }
             />
           )}
-          <Toggle
-            onToggle={(e, check) => setOpenDiagnosticReportAutomatically(check)}
-            toggled={values.openDiagnosticReportAutomatically}
-            labelPosition="right"
-            label={
-              <Trans>Automatically open the diagnostic report at preview</Trans>
-            }
-          />
           <Toggle
             onToggle={(e, check) => setShowDeprecatedInstructionWarning(check)}
             toggled={values.showDeprecatedInstructionWarning}
@@ -486,46 +448,18 @@ const PreferencesDialog = ({ i18n, onClose }: Props) => {
               </ColumnStackLayout>
             </>
           )}
-          <Text size="block-title">
-            <Trans>Contributor options</Trans>
-          </Text>
-          <Toggle
-            onToggle={(e, check) => setShowEventBasedObjectsEditor(check)}
-            toggled={values.showEventBasedObjectsEditor}
-            labelPosition="right"
-            label={
-              <Trans>
-                Show custom objects in the extension editor (experimental)
-              </Trans>
-            }
-          />
-          <Toggle
-            onToggle={(e, check) => setShowInAppTutorialDeveloperMode(check)}
-            toggled={values.showInAppTutorialDeveloperMode}
-            labelPosition="right"
-            label={
-              <Trans>
-                Show button to load guided lesson from file and test it.
-              </Trans>
-            }
-          />
           {Window.isDev() && (
-            <>
-              <Text size="block-title">
-                <Trans>Developer options</Trans>
-              </Text>
-              <Toggle
-                onToggle={(e, check) => setUseGDJSDevelopmentWatcher(check)}
-                toggled={values.useGDJSDevelopmentWatcher}
-                labelPosition="right"
-                label={
-                  <Trans>
-                    Watch changes in game engine (GDJS) sources and auto import
-                    them (dev only)
-                  </Trans>
-                }
-              />
-            </>
+            <Toggle
+              onToggle={(e, check) => setUseGDJSDevelopmentWatcher(check)}
+              toggled={values.useGDJSDevelopmentWatcher}
+              labelPosition="right"
+              label={
+                <Trans>
+                  Watch changes in game engine (CEJS) sources and auto import
+                  them (dev only)
+                </Trans>
+              }
+            />
           )}
         </ColumnStackLayout>
       )}

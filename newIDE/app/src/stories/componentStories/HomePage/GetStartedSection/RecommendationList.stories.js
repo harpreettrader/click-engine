@@ -3,7 +3,6 @@ import * as React from 'react';
 import { action } from '@storybook/addon-actions';
 import paperDecorator from '../../../PaperDecorator';
 import {
-  fakeAuthenticatedUserWithGitHubStarBadge,
   fakeAuthenticatedUserWithNoSubscription,
   subscriptionPlansWithPricingSystems,
 } from '../../../../fixtures/GDevelopServicesTestData';
@@ -24,7 +23,6 @@ export const Default = () => (
   <PreferencesContext.Provider value={initialPreferences}>
     <TutorialStateProvider>
       <RecommendationList
-        onOpenProfile={action('onOpenProfile')}
         authenticatedUser={fakeAuthenticatedUserWithNoSubscription}
         selectInAppTutorial={action('selectInAppTutorial')}
         subscriptionPlansWithPricingSystems={
@@ -37,28 +35,10 @@ export const Default = () => (
   </PreferencesContext.Provider>
 );
 
-export const WithGitHubStarAlreadyMade = () => (
-  <PreferencesContext.Provider value={initialPreferences}>
-    <TutorialStateProvider>
-      <RecommendationList
-        onOpenProfile={action('onOpenProfile')}
-        authenticatedUser={fakeAuthenticatedUserWithGitHubStarBadge}
-        selectInAppTutorial={action('selectInAppTutorial')}
-        subscriptionPlansWithPricingSystems={
-          subscriptionPlansWithPricingSystems
-        }
-        onStartSurvey={action('onStartSurvey')}
-        hasFilledSurveyAlready={false}
-      />
-    </TutorialStateProvider>
-  </PreferencesContext.Provider>
-);
-
 export const WithSurvey = () => (
   <PreferencesContext.Provider value={initialPreferences}>
     <TutorialStateProvider>
       <RecommendationList
-        onOpenProfile={action('onOpenProfile')}
         authenticatedUser={fakeAuthenticatedUserWithNoSubscription}
         selectInAppTutorial={action('selectInAppTutorial')}
         subscriptionPlansWithPricingSystems={
@@ -75,7 +55,6 @@ export const WithSurveyAlreadyFilled = () => (
   <PreferencesContext.Provider value={initialPreferences}>
     <TutorialStateProvider>
       <RecommendationList
-        onOpenProfile={action('onOpenProfile')}
         authenticatedUser={fakeAuthenticatedUserWithNoSubscription}
         selectInAppTutorial={action('selectInAppTutorial')}
         subscriptionPlansWithPricingSystems={

@@ -17,13 +17,9 @@ import Preferences from '../../../UI/CustomSvgIcons/Preferences';
 import GDevelopGLogo from '../../../UI/CustomSvgIcons/GDevelopGLogo';
 import GDevelopThemeContext from '../../../UI/Theme/GDevelopThemeContext';
 import HomePageMenuBar from './HomePageMenuBar';
-import {
-  canUseClassroomFeature,
-  type Limits,
-} from '../../../Utils/GDevelopServices/Usage';
+import type { Profile } from '../../../Utils/GDevelopServices/Authentication';
 import AuthenticatedUserContext from '../../../Profile/AuthenticatedUserContext';
 import GraphsIcon from '../../../UI/CustomSvgIcons/Graphs';
-import { isNativeMobileApp } from '../../../Utils/Platform';
 
 export const styles = {
   drawerContent: {
@@ -44,14 +40,8 @@ export const styles = {
 };
 
 export type HomeTab =
-  | 'get-started'
-  | 'manage'
-  | 'build'
-  | 'learn'
-  | 'play'
-  | 'community'
-  | 'shop'
-  | 'team-view';
+  // | 'get-started'
+  'manage' | 'build' | 'learn' | 'play' | 'community' | 'shop' | 'team-view';
 
 export type GetIconFunction = ({
   color: string,
@@ -66,14 +56,14 @@ export type HomePageMenuTab = {|
 |};
 
 const homePageMenuTabs: { [tab: string]: HomePageMenuTab } = {
-  'get-started': {
-    label: <Trans>Get Started</Trans>,
-    tab: 'get-started',
-    id: 'home-get-started-tab',
-    getIcon: ({ color, fontSize }) => (
-      <SunIcon fontSize={fontSize} color={color} />
-    ),
-  },
+  // 'get-started': {
+  //   label: <Trans>Get Started</Trans>,
+  //   tab: 'get-started',
+  //   id: 'home-get-started-tab',
+  //   getIcon: ({ color, fontSize }) => (
+  //     <SunIcon fontSize={fontSize} color={color} />
+  //   ),
+  // },
   build: {
     label: <Trans>Build</Trans>,
     tab: 'build',
@@ -82,14 +72,14 @@ const homePageMenuTabs: { [tab: string]: HomePageMenuTab } = {
       <PickAxeIcon fontSize={fontSize} color={color} />
     ),
   },
-  manage: {
-    label: <Trans>Manage</Trans>,
-    tab: 'manage',
-    id: 'home-manage-tab',
-    getIcon: ({ color, fontSize }) => (
-      <GraphsIcon fontSize={fontSize} color={color} />
-    ),
-  },
+  // manage: {
+  //   label: <Trans>Manage</Trans>,
+  //   tab: 'manage',
+  //   id: 'home-manage-tab',
+  //   getIcon: ({ color, fontSize }) => (
+  //     <GraphsIcon fontSize={fontSize} color={color} />
+  //   ),
+  // },
   shop: {
     label: <Trans>Shop</Trans>,
     tab: 'shop',
@@ -98,14 +88,14 @@ const homePageMenuTabs: { [tab: string]: HomePageMenuTab } = {
       <StoreIcon fontSize={fontSize} color={color} />
     ),
   },
-  learn: {
-    label: <Trans>Learn</Trans>,
-    tab: 'learn',
-    id: 'home-learn-tab',
-    getIcon: ({ color, fontSize }) => (
-      <SchoolIcon fontSize={fontSize} color={color} />
-    ),
-  },
+  // learn: {
+  //   label: <Trans>Learn</Trans>,
+  //   tab: 'learn',
+  //   id: 'home-learn-tab',
+  //   getIcon: ({ color, fontSize }) => (
+  //     <SchoolIcon fontSize={fontSize} color={color} />
+  //   ),
+  // },
   play: {
     label: <Trans>Play</Trans>,
     tab: 'play',
@@ -114,14 +104,14 @@ const homePageMenuTabs: { [tab: string]: HomePageMenuTab } = {
       <GoogleControllerIcon fontSize={fontSize} color={color} />
     ),
   },
-  community: {
-    label: <Trans>Community</Trans>,
-    tab: 'community',
-    id: 'home-community-tab',
-    getIcon: ({ color, fontSize }) => (
-      <WebIcon fontSize={fontSize} color={color} />
-    ),
-  },
+  // community: {
+  //   label: <Trans>Community</Trans>,
+  //   tab: 'community',
+  //   id: 'home-community-tab',
+  //   getIcon: ({ color, fontSize }) => (
+  //     <WebIcon fontSize={fontSize} color={color} />
+  //   ),
+  // },
   'team-view': {
     label: <Trans>Classrooms</Trans>,
     tab: 'team-view',
@@ -133,29 +123,21 @@ const homePageMenuTabs: { [tab: string]: HomePageMenuTab } = {
 };
 
 export const getTabsToDisplay = ({
-  limits,
+  profile,
 }: {|
-  limits: ?Limits,
+  profile: ?Profile,
 |}): HomePageMenuTab[] => {
-  const displayPlayTab =
-    !limits ||
-    !(
-      limits.capabilities.classrooms &&
-      limits.capabilities.classrooms.hidePlayTab
-    );
+  const displayTeamViewTab = profile && profile.isTeacher;
+  const displayPlayTab = !profile || !profile.isStudent;
   const tabs = [
-    'get-started',
+    // 'get-started',
     'build',
-    canUseClassroomFeature(limits)
-      ? 'team-view'
-      : isNativeMobileApp()
-      ? null
-      : 'team-view',
-    'manage',
+    displayTeamViewTab ? 'team-view' : null,
+    // 'manage',
     'shop',
-    'learn',
+    // 'learn',
     displayPlayTab ? 'play' : null,
-    'community',
+    // 'community',
   ].filter(Boolean);
   return tabs.map(tab => homePageMenuTabs[tab]);
 };
@@ -174,13 +156,13 @@ export const HomePageMenu = ({
   onOpenAbout,
 }: Props) => {
   const gdevelopTheme = React.useContext(GDevelopThemeContext);
-  const { limits } = React.useContext(AuthenticatedUserContext);
+  const { profile } = React.useContext(AuthenticatedUserContext);
   const [
     isHomePageMenuDrawerOpen,
     setIsHomePageMenuDrawerOpen,
   ] = React.useState(false);
 
-  const tabsToDisplay = getTabsToDisplay({ limits });
+  const tabsToDisplay = getTabsToDisplay({ profile });
 
   const buttons: {
     label: React.Node,
@@ -197,9 +179,10 @@ export const HomePageMenu = ({
       ),
     },
     {
-      label: <Trans>About GDevelop</Trans>,
+      label: <Trans>About ClickEngine</Trans>,
       id: 'about-gdevelop',
-      onClick: onOpenAbout,
+      // onClick: onOpenAbout,
+      onClick: () => {},
       getIcon: ({ color, fontSize }) => (
         <GDevelopGLogo fontSize={fontSize} color={color} />
       ),

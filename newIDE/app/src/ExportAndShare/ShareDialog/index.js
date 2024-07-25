@@ -326,7 +326,7 @@ const ShareDialog = ({
           project={project}
           onSaveProject={onSaveProject}
           isSavingProject={isSavingProject}
-          onRefreshGame={loadGame}
+          onGameUpdated={loadGame}
           onChangeSubscription={onChangeSubscription}
           isNavigationDisabled={isNavigationDisabled}
           setIsNavigationDisabled={setIsNavigationDisabled}
@@ -347,7 +347,7 @@ const ShareDialog = ({
           onClose={() => setBuildsDialogOpen(false)}
           authenticatedUser={authenticatedUser}
           game={game}
-          onGameUpdated={setGame}
+          onGameUpdated={loadGame}
         />
       )}
     </Dialog>

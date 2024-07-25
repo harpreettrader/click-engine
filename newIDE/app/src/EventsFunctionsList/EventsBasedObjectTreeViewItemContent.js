@@ -19,10 +19,6 @@ import Add from '../UI/CustomSvgIcons/Add';
 
 const EVENTS_BASED_OBJECT_CLIPBOARD_KIND = 'Events Based Object';
 
-export type EventsBasedObjectCreationParameters = {|
-  isRenderedIn3D: boolean,
-|};
-
 export type EventsBasedObjectCallbacks = {|
   onSelectEventsBasedObject: (eventsBasedObject: ?gdEventsBasedObject) => void,
   onDeleteEventsBasedObject: (
@@ -34,11 +30,7 @@ export type EventsBasedObjectCallbacks = {|
     newName: string,
     cb: (boolean) => void
   ) => void,
-  onAddEventsBasedObject: (
-    (parameters: ?EventsBasedObjectCreationParameters) => void
-  ) => void,
   onEventsBasedObjectRenamed: (eventsBasedObject: gdEventsBasedObject) => void,
-  onOpenCustomObjectEditor: (eventsBasedObject: gdEventsBasedObject) => void,
 |};
 
 export type EventsBasedObjectProps = {|
@@ -107,9 +99,7 @@ export class EventsBasedObjectTreeViewItemContent
   }
 
   getThumbnail(): ?string {
-    return this.eventsBasedObject.isRenderedIn3D()
-      ? 'res/functions/object3d_black.svg'
-      : 'res/functions/object2d_black.svg';
+    return 'res/functions/object_black.svg';
   }
 
   getDataset(): ?HTMLDataset {
@@ -119,8 +109,6 @@ export class EventsBasedObjectTreeViewItemContent
   onSelect(): void {
     this.props.onSelectEventsBasedObject(this.eventsBasedObject);
   }
-
-  onClick(): void {}
 
   rename(newName: string): void {
     if (this.eventsBasedObject.getName() === newName) return;
@@ -143,11 +131,6 @@ export class EventsBasedObjectTreeViewItemContent
 
   buildMenuTemplate(i18n: I18nType, index: number) {
     return [
-      {
-        label: i18n._(t`Open visual editor`),
-        click: () =>
-          this.props.onOpenCustomObjectEditor(this.eventsBasedObject),
-      },
       {
         label: i18n._(t`Add a function`),
         click: () => this.addFunctionAtSelection(),

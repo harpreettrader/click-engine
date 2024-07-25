@@ -130,11 +130,6 @@ export type PrivateGameTemplate = {|
   gamePreviewLink: string,
 |};
 
-export type PrivatePdfTutorial = {|
-  id: string,
-  downloadUrl: string,
-|};
-
 export type AllPublicAssets = {|
   publicAssetShortHeaders: Array<AssetShortHeader>,
   publicFilters: Filters,
@@ -363,28 +358,6 @@ export const getPrivateGameTemplate = async (
   gameTemplateId: string
 ): Promise<PrivateGameTemplate> => {
   const response = await client.get(`/game-template/${gameTemplateId}`);
-  return response.data;
-};
-
-export const getPrivatePdfTutorial = async (
-  getAuthorizationHeader: () => Promise<string>,
-  {
-    userId,
-    tutorialId,
-  }: {|
-    userId: string,
-    tutorialId: string,
-  |}
-): Promise<PrivatePdfTutorial> => {
-  const authorizationHeader = await getAuthorizationHeader();
-  const response = await client.get(`/pdf-tutorial/${tutorialId}`, {
-    params: {
-      userId,
-    },
-    headers: {
-      Authorization: authorizationHeader,
-    },
-  });
   return response.data;
 };
 

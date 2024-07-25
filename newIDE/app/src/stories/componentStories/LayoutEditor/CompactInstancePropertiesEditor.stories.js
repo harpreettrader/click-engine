@@ -27,18 +27,10 @@ export const InstanceSprite2d = () => (
             i18n={i18n}
             project={testProject.project}
             layout={testProject.testLayout}
-            objectsContainer={testProject.testLayout.getObjects()}
-            globalObjectsContainer={testProject.project.getObjects()}
-            layersContainer={testProject.testLayout.getLayers()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
             instances={[testProject.testSpriteObjectInstance]}
             editInstanceVariables={action('edit instance variables')}
             onGetInstanceSize={() => [100, 101, 102]}
             onEditObjectByName={action('edit object')}
-            tileMapTileSelection={null}
-            onSelectTileMapTile={() => {}}
           />
         </SerializedObjectDisplay>
       )}
@@ -55,18 +47,10 @@ export const InstanceCube3d = () => (
             i18n={i18n}
             project={testProject.project}
             layout={testProject.testLayout}
-            objectsContainer={testProject.testLayout.getObjects()}
-            globalObjectsContainer={testProject.project.getObjects()}
-            layersContainer={testProject.testLayout.getLayers()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
             instances={[testProject.testLayoutInstance2]}
             editInstanceVariables={action('edit instance variables')}
             onGetInstanceSize={() => [100, 101, 102]}
             onEditObjectByName={action('edit object')}
-            tileMapTileSelection={null}
-            onSelectTileMapTile={() => {}}
           />
         </SerializedObjectDisplay>
       )}
@@ -83,18 +67,10 @@ export const InstanceTextInput = () => (
             i18n={i18n}
             project={testProject.project}
             layout={testProject.testLayout}
-            objectsContainer={testProject.testLayout.getObjects()}
-            globalObjectsContainer={testProject.project.getObjects()}
-            layersContainer={testProject.testLayout.getLayers()}
-            projectScopedContainersAccessor={
-              testProject.testSceneProjectScopedContainersAccessor
-            }
             instances={[testProject.testLayoutInstance3]}
             editInstanceVariables={action('edit instance variables')}
             onGetInstanceSize={() => [120, 40, 0]}
             onEditObjectByName={action('edit object')}
-            tileMapTileSelection={null}
-            onSelectTileMapTile={() => {}}
           />
         </SerializedObjectDisplay>
       )}

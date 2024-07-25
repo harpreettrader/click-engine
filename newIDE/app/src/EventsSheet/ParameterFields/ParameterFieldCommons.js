@@ -2,7 +2,6 @@
 import { type ResourceManagementProps } from '../../ResourcesList/ResourceSource';
 import { type EventsScope } from '../../InstructionOrExpression/EventsScope.flow';
 import { type MessageDescriptor } from '../../Utils/i18n/MessageDescriptor.flow';
-import { type ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
 
 export type ParameterRenderingServiceType = {
   components: any,
@@ -21,7 +20,6 @@ type CommonProps = {|
   scope: EventsScope,
   globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   isInline?: boolean,
   onRequestClose?: () => void,
   onApply?: () => void,
@@ -53,7 +51,6 @@ export type ParameterFieldProps = {|
 
   // The index of the parameter in the instruction or expression.
   parameterIndex?: number,
-  onInstructionTypeChanged?: () => void,
 |};
 
 export type FieldFocusFunction = (

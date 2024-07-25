@@ -123,15 +123,15 @@ const getZField = ({ i18n }: {| i18n: I18nType |}) => ({
 });
 const getLayerField = ({
   i18n,
-  layersContainer,
+  layout,
 }: {|
   i18n: I18nType,
-  layersContainer: gdLayersContainer,
+  layout: gdLayout,
 |}) => ({
   name: 'Layer',
   getLabel: () => i18n._(t`Layer`),
   valueType: 'string',
-  getChoices: () => enumerateLayers(layersContainer),
+  getChoices: () => enumerateLayers(layout),
   getValue: (instance: gdInitialInstance) => instance.getLayer(),
   setValue: (instance: gdInitialInstance, newValue: string) =>
     instance.setLayer(newValue),
@@ -186,21 +186,17 @@ const getTitleRow = ({ i18n }: {| i18n: I18nType |}) => ({
           : instance.isLocked()
           ? 'locked'
           : 'free',
-      setValue: (
-        instance: gdInitialInstance,
-        newValue: 'sealed' | 'locked' | 'free'
-      ) => {
-        instance.setSealed(newValue === 'sealed' ? true : false);
-        instance.setLocked(
-          newValue === 'sealed' || newValue === 'locked' ? true : false
-        );
-      },
-      getNextValue: (
-        currentValue: 'sealed' | 'locked' | 'free'
-      ): 'sealed' | 'locked' | 'free' => {
-        if (currentValue === 'free') return 'locked';
-        if (currentValue === 'locked') return 'sealed';
-        return 'free';
+      setValue: (instance: gdInitialInstance, newValue: boolean) => {
+        if (instance.isSealed()) {
+          instance.setSealed(false);
+          instance.setLocked(false);
+          return;
+        }
+        if (instance.isLocked()) {
+          instance.setSealed(true);
+          return;
+        }
+        instance.setLocked(true);
       },
     },
   ],
@@ -255,12 +251,7 @@ const getWidthField = ({
     forceUpdate();
   },
   renderLeftIcon: className => <LetterW className={className} />,
-  getEndAdornmentIcon: (instance: gdInitialInstance) => {
-    if (instance.hasCustomDepth() || instance.hasCustomSize()) {
-      return className => <Restore className={className} />;
-    }
-    return null;
-  },
+  getEndAdornmentIcon: className => <Restore className={className} />,
   onClickEndAdornment: (instance: gdInitialInstance) => {
     instance.setHasCustomSize(false);
     instance.setHasCustomDepth(false);
@@ -316,12 +307,7 @@ const getHeightField = ({
     forceUpdate();
   },
   renderLeftIcon: className => <LetterH className={className} />,
-  getEndAdornmentIcon: (instance: gdInitialInstance) => {
-    if (instance.hasCustomDepth() || instance.hasCustomSize()) {
-      return className => <Restore className={className} />;
-    }
-    return null;
-  },
+  getEndAdornmentIcon: className => <Restore className={className} />,
   onClickEndAdornment: (instance: gdInitialInstance) => {
     instance.setHasCustomSize(false);
     instance.setHasCustomDepth(false);
@@ -377,12 +363,7 @@ const getDepthField = ({
     forceUpdate();
   },
   renderLeftIcon: className => <LetterD className={className} />,
-  getEndAdornmentIcon: (instance: gdInitialInstance) => {
-    if (instance.hasCustomDepth() || instance.hasCustomSize()) {
-      return className => <Restore className={className} />;
-    }
-    return null;
-  },
+  getEndAdornmentIcon: className => <Restore className={className} />,
   onClickEndAdornment: (instance: gdInitialInstance) => {
     instance.setHasCustomSize(false);
     instance.setHasCustomDepth(false);
@@ -411,7 +392,6 @@ const getKeepRatioField = ({
   getValue: (instance: gdInitialInstance) => instance.shouldKeepRatio(),
   setValue: (instance: gdInitialInstance, newValue: boolean) =>
     instance.setShouldKeepRatio(newValue),
-  getNextValue: (currentValue: boolean) => !currentValue,
 });
 
 export const makeSchema = ({
@@ -420,14 +400,14 @@ export const makeSchema = ({
   forceUpdate,
   onEditObjectByName,
   onGetInstanceSize,
-  layersContainer,
+  layout,
 }: {|
   is3DInstance: boolean,
   i18n: I18nType,
   forceUpdate: () => void,
   onEditObjectByName: (name: string) => void,
   onGetInstanceSize: gdInitialInstance => [number, number, number],
-  layersContainer: gdLayersContainer,
+  layout: gdLayout,
 |}): Schema => {
   const getInstanceWidth = (instance: gdInitialInstance) =>
     instance.hasCustomSize()
@@ -500,7 +480,7 @@ export const makeSchema = ({
           },
         ],
       },
-      getLayerField({ i18n, layersContainer }),
+      getLayerField({ i18n, layout }),
       {
         name: 'Rotation',
         type: 'row',
@@ -562,7 +542,7 @@ export const makeSchema = ({
         },
       ],
     },
-    getLayerField({ i18n, layersContainer }),
+    getLayerField({ i18n, layout }),
     {
       name: 'Rotation',
       type: 'row',

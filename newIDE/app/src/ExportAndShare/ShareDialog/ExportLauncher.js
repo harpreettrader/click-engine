@@ -63,7 +63,7 @@ type Props = {|
   eventsFunctionsExtensionsState: EventsFunctionsExtensionsState,
   exportPipeline: ExportPipeline<any, any, any, any, any>,
   setIsNavigationDisabled: (isNavigationDisabled: boolean) => void,
-  onRefreshGame: () => Promise<void>,
+  onGameUpdated: () => Promise<void>,
   game: ?Game,
   gameAvailabilityError: ?GameAvailabilityError,
   builds: ?Array<Build>,
@@ -240,7 +240,7 @@ export default class ExportLauncher extends Component<Props, State> {
           });
           // We don't await for the authors update, as it is not required for publishing.
           this.tryUpdateAuthors();
-          this.props.onRefreshGame();
+          this.props.onGameUpdated();
         }
       }
     }
@@ -424,7 +424,7 @@ export default class ExportLauncher extends Component<Props, State> {
         });
 
         // When the build is started, update the game because the build may be linked to it.
-        this.props.onRefreshGame();
+        this.props.onGameUpdated();
         // Also refresh the builds list, as the new build will be considered as a pending build.
         this.props.onRefreshBuilds();
       }
@@ -466,7 +466,7 @@ export default class ExportLauncher extends Component<Props, State> {
       builds,
       game,
       gameAvailabilityError,
-      onRefreshGame,
+      onGameUpdated,
     } = this.props;
     if (!project) return null;
     const buildQuota = getBuildQuota(
@@ -661,7 +661,7 @@ export default class ExportLauncher extends Component<Props, State> {
                   isExporting,
                   stepCurrentProgress,
                   stepMaxProgress,
-                  onRefreshGame,
+                  onGameUpdated,
                 })}
               {doneFooterOpen &&
                 exportPipeline.renderDoneFooter &&

@@ -9,7 +9,6 @@ import {
   itemsWithJustImage,
   itemsWithOverlay,
   itemsWithTitleAndDescription,
-  itemsWithLocks,
 } from './data';
 
 export default {
@@ -40,13 +39,6 @@ export const Default = () => (
 export const WithTitleAndDescription = () => (
   <ImageTileGrid
     items={itemsWithTitleAndDescription}
-    getColumnsFromWindowSize={getColumnsFromWindowSize}
-  />
-);
-
-export const WithLocks = () => (
-  <ImageTileGrid
-    items={itemsWithLocks}
     getColumnsFromWindowSize={getColumnsFromWindowSize}
   />
 );

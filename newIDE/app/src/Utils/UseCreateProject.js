@@ -39,7 +39,6 @@ type Props = {|
     project: gdProject,
     editorTabs: EditorTabsState,
     oldProjectId: string,
-    options?: { openAllScenes: boolean },
   |}) => Promise<void>,
   onError: () => void,
   onSuccessOrError: () => void,
@@ -88,6 +87,9 @@ const useCreateProject = ({
     project.setVersion('1.0.0');
     project.getAuthorIds().clear();
     project.setAuthor('');
+    if (newProjectSetup.templateSlug) {
+      project.setTemplateSlug(newProjectSetup.templateSlug);
+    }
     if (newProjectSetup.width && newProjectSetup.height) {
       project.setGameResolutionSize(
         newProjectSetup.width,
@@ -108,8 +110,7 @@ const useCreateProject = ({
   const createProject = React.useCallback(
     async (
       newProjectSource: ?NewProjectSource,
-      newProjectSetup: NewProjectSetup,
-      options?: { openAllScenes: boolean }
+      newProjectSetup: NewProjectSetup
     ) => {
       if (!newProjectSource) return; // New project creation aborted.
 
@@ -138,9 +139,6 @@ const useCreateProject = ({
 
         const oldProjectId = currentProject.getProjectUuid();
         initialiseProjectProperties(currentProject, newProjectSetup);
-        if (newProjectSource.templateSlug) {
-          currentProject.setTemplateSlug(newProjectSource.templateSlug);
-        }
 
         if (authenticatedUser.profile) {
           // if the user is connected, try to register the game to avoid
@@ -210,7 +208,7 @@ const useCreateProject = ({
 
           if (wasSaved) {
             onProjectSaved(fileMetadata);
-            unsavedChanges.sealUnsavedChanges({ setCheckpointTime: true });
+            unsavedChanges.sealUnsavedChanges();
             if (newProjectSetup.storageProvider.internalName === 'LocalFile') {
               preferences.setHasProjectOpened(true);
             }
@@ -223,7 +221,6 @@ const useCreateProject = ({
           project: currentProject,
           editorTabs,
           oldProjectId,
-          options,
         });
       } catch (rawError) {
         const { getWriteErrorMessage } = getStorageProviderOperations();
@@ -276,7 +273,10 @@ const useCreateProject = ({
         i18n,
         exampleShortHeader,
       });
-      await createProject(newProjectSource, newProjectSetup);
+      await createProject(newProjectSource, {
+        ...newProjectSetup,
+        templateSlug: exampleShortHeader.slug,
+      });
     },
     [beforeCreatingProject, createProject]
   );
@@ -333,9 +333,7 @@ const useCreateProject = ({
         templateUrl,
         selectedInAppTutorialShortHeader.id
       );
-      await createProject(newProjectSource, newProjectSetup, {
-        openAllScenes: true,
-      });
+      await createProject(newProjectSource, newProjectSetup);
     },
     [beforeCreatingProject, createProject, getInAppTutorialShortHeader]
   );

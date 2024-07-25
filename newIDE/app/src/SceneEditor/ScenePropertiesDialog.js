@@ -25,7 +25,6 @@ import { Accordion, AccordionHeader, AccordionBody } from '../UI/Accordion';
 import { IconContainer } from '../UI/IconContainer';
 import { getBehaviorTutorialIds } from '../Utils/GDevelopServices/Tutorial';
 import { type ResourceManagementProps } from '../ResourcesList/ResourceSource';
-import SceneVariable from '../UI/CustomSvgIcons/SceneVariable';
 
 const gd: libGDevelop = global.gd;
 
@@ -213,7 +212,6 @@ const ScenePropertiesDialog = ({
       secondaryActions={[
         <RaisedButton
           key="edit-scene-variables"
-          icon={<SceneVariable fontSize="small" />}
           label={<Trans>Edit scene variables</Trans>}
           fullWidth
           onClick={() => {

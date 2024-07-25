@@ -108,20 +108,14 @@ export class EventsFunctionsExtensionEditorContainer extends React.Component<Ren
 
   selectEventsFunctionByName(
     eventsFunctionName: string,
-    eventBasedBehaviorName: ?string,
-    eventBasedObjectName: ?string
+    behaviorName: ?string
   ) {
     if (this.editor)
-      this.editor.selectEventsFunctionByName(
-        eventsFunctionName,
-        eventBasedBehaviorName,
-        eventBasedObjectName
-      );
+      this.editor.selectEventsFunctionByName(eventsFunctionName, behaviorName);
   }
 
-  selectEventsBasedBehaviorByName(eventBasedBehaviorName: string) {
-    if (this.editor)
-      this.editor.selectEventsBasedBehaviorByName(eventBasedBehaviorName);
+  selectEventsBasedBehaviorByName(behaviorName: string) {
+    if (this.editor) this.editor.selectEventsBasedBehaviorByName(behaviorName);
   }
 
   render() {
@@ -133,11 +127,8 @@ export class EventsFunctionsExtensionEditorContainer extends React.Component<Ren
       return <div>No extension called {projectItemName} found!</div>;
     }
 
-    const {
-      initiallyFocusedFunctionName,
-      initiallyFocusedBehaviorName,
-      initiallyFocusedObjectName,
-    } = this.props.extraEditorProps || {};
+    const { initiallyFocusedFunctionName, initiallyFocusedBehaviorName } =
+      this.props.extraEditorProps || {};
 
     return (
       <div style={styles.container}>
@@ -151,18 +142,11 @@ export class EventsFunctionsExtensionEditorContainer extends React.Component<Ren
           onCreateEventsFunction={this.props.onCreateEventsFunction}
           initiallyFocusedFunctionName={initiallyFocusedFunctionName}
           initiallyFocusedBehaviorName={initiallyFocusedBehaviorName}
-          initiallyFocusedObjectName={initiallyFocusedObjectName}
           onBehaviorEdited={this._reloadExtensionMetadata}
           onObjectEdited={this._reloadExtensionMetadata}
           onFunctionEdited={this._reloadExtensionMetadata}
           ref={editor => (this.editor = editor)}
           unsavedChanges={this.props.unsavedChanges}
-          onOpenCustomObjectEditor={eventsBasedObject => {
-            this.props.onOpenCustomObjectEditor(
-              eventsFunctionsExtension,
-              eventsBasedObject
-            );
-          }}
         />
       </div>
     );

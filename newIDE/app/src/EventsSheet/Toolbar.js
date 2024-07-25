@@ -17,14 +17,11 @@ import RedoIcon from '../UI/CustomSvgIcons/Redo';
 import ToolbarSearchIcon from '../UI/CustomSvgIcons/ToolbarSearch';
 import EditSceneIcon from '../UI/CustomSvgIcons/EditScene';
 import { getShortcutDisplayName, useShortcutMap } from '../KeyboardShortcuts';
-import AddLocalVariableIcon from '../UI/CustomSvgIcons/LocalVariable';
 
 type Props = {|
   onAddStandardEvent: () => void,
   onAddSubEvent: () => void,
   canAddSubEvent: boolean,
-  onAddLocalVariable: () => void,
-  canAddLocalVariable: boolean,
   onAddCommentEvent: () => void,
   allEventsMetadata: Array<EventMetadata>,
   onAddEvent: (eventType: string) => Array<gdBaseEvent>,
@@ -43,15 +40,12 @@ type Props = {|
   settingsIcon?: React.Node,
   moveEventsIntoNewGroup: () => void,
   canMoveEventsIntoNewGroup: boolean,
-  onOpenSceneVariables: () => void,
 |};
 
 const Toolbar = React.memo<Props>(function Toolbar({
   onAddStandardEvent,
   onAddSubEvent,
   canAddSubEvent,
-  onAddLocalVariable,
-  canAddLocalVariable,
   onAddCommentEvent,
   allEventsMetadata,
   onAddEvent,
@@ -70,7 +64,6 @@ const Toolbar = React.memo<Props>(function Toolbar({
   settingsIcon,
   moveEventsIntoNewGroup,
   canMoveEventsIntoNewGroup,
-  onOpenSceneVariables,
 }: Props) {
   const shortcutMap = useShortcutMap();
 
@@ -80,8 +73,6 @@ const Toolbar = React.memo<Props>(function Toolbar({
         onAddCommentEvent={onAddCommentEvent}
         onAddSubEvent={onAddSubEvent}
         canAddSubEvent={canAddSubEvent}
-        onAddLocalVariable={onAddLocalVariable}
-        canAddLocalVariable={canAddLocalVariable}
         onAddStandardEvent={onAddStandardEvent}
         onAddEvent={onAddEvent}
         allEventsMetadata={allEventsMetadata}
@@ -99,7 +90,6 @@ const Toolbar = React.memo<Props>(function Toolbar({
         onOpenSettings={onOpenSettings}
         moveEventsIntoNewGroup={moveEventsIntoNewGroup}
         canMoveEventsIntoNewGroup={canMoveEventsIntoNewGroup}
-        onOpenSceneVariables={onOpenSceneVariables}
       />
       <ToolbarGroup lastChild>
         <IconButton
@@ -127,20 +117,6 @@ const Toolbar = React.memo<Props>(function Toolbar({
           )}
         >
           <AddSubEventIcon />
-        </IconButton>
-
-        <IconButton
-          size="small"
-          color="default"
-          onClick={onAddLocalVariable}
-          disabled={!canAddLocalVariable}
-          id="toolbar-add-local-variable-button"
-          tooltip={t`Add a local variable`}
-          acceleratorString={getShortcutDisplayName(
-            shortcutMap['ADD_LOCAL_VARIABLE']
-          )}
-        >
-          <AddLocalVariableIcon />
         </IconButton>
 
         <IconButton

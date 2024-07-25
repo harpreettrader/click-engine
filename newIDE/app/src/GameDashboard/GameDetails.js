@@ -47,17 +47,15 @@ import { sendGameDetailsOpened } from '../Utils/Analytics/EventSender';
 import useAlertDialog from '../UI/Alert/useAlertDialog';
 import { extractGDevelopApiErrorStatusAndCode } from '../Utils/GDevelopServices/Errors';
 import CreditsStatusBanner from '../Credits/CreditsStatusBanner';
-import MarketingPlans from '../MarketingPlans/MarketingPlans';
-import MultiplayerAdmin from './MultiplayerAdmin';
+// import MarketingPlans from '../MarketingPlans/MarketingPlans';
 
 export type GameDetailsTab =
   | 'details'
   | 'builds'
   | 'feedback'
   | 'analytics'
-  | 'multiplayer'
-  | 'leaderboards'
-  | 'marketing';
+  | 'leaderboards';
+// | 'marketing';
 
 export const gameDetailsTabs: TabOptions<GameDetailsTab> = [
   {
@@ -77,23 +75,19 @@ export const gameDetailsTabs: TabOptions<GameDetailsTab> = [
     label: <Trans>Analytics</Trans>,
   },
   {
-    value: 'multiplayer',
-    label: <Trans>Multiplayer</Trans>,
-  },
-  {
     value: 'leaderboards',
     label: <Trans>Leaderboards</Trans>,
   },
-  {
-    value: 'marketing',
-    label: <Trans>Marketing & Ads</Trans>,
-  },
+  // {
+  //   value: 'marketing',
+  //   label: <Trans>Marketing & Ads</Trans>,
+  // },
 ];
 
 type Props = {|
   game: Game,
   project: ?gdProject,
-  onGameUpdated: (game: Game) => void,
+  onGameUpdated: () => Promise<void>,
   onGameDeleted: () => void,
   onLoading: boolean => void,
   currentTab: GameDetailsTab,
@@ -178,11 +172,11 @@ const GameDetails = ({
   );
 
   const handleGameUpdated = React.useCallback(
-    (game: Game) => {
+    () => {
       // Set Public Game to null to show the loader.
       // It will be refetched thanks to loadPublicGame, because Game is updated.
       setPublicGame(null);
-      onGameUpdated(game);
+      onGameUpdated();
     },
     [onGameUpdated]
   );
@@ -206,7 +200,7 @@ const GameDetails = ({
     try {
       setIsGameUpdating(true);
       const gameId = project.getProjectUuid();
-      const updatedGame = await updateGame(getAuthorizationHeader, id, gameId, {
+      await updateGame(getAuthorizationHeader, id, gameId, {
         authorName: project.getAuthor() || 'Unspecified publisher',
         gameName: project.getName() || 'Untitled game',
         categories: project.getCategories().toJSArray() || [],
@@ -276,7 +270,7 @@ const GameDetails = ({
         setIsGameUpdating(false);
         return false;
       }
-      handleGameUpdated(updatedGame);
+      handleGameUpdated();
     } catch (error) {
       console.error(
         'Unable to update the game:',
@@ -338,15 +332,10 @@ const GameDetails = ({
       const { id } = profile;
       try {
         setIsGameUpdating(true);
-        const updatedGame = await updateGame(
-          getAuthorizationHeader,
-          id,
-          game.id,
-          {
-            publicWebBuildId: null,
-          }
-        );
-        handleGameUpdated(updatedGame);
+        await updateGame(getAuthorizationHeader, id, game.id, {
+          publicWebBuildId: null,
+        });
+        handleGameUpdated();
       } catch (err) {
         console.error('Unable to update the game', err);
       } finally {
@@ -402,9 +391,6 @@ const GameDetails = ({
           <Line expand noMargin useFullHeight>
             {currentTab === 'leaderboards' ? (
               <LeaderboardAdmin gameId={game.id} onLoading={onLoading} />
-            ) : null}
-            {currentTab === 'multiplayer' ? (
-              <MultiplayerAdmin gameId={game.id} />
             ) : null}
             {currentTab === 'details' ? (
               publicGameError ? (
@@ -587,7 +573,7 @@ const GameDetails = ({
                 game={game}
               />
             ) : null}
-            {currentTab === 'marketing' ? (
+            {/* {currentTab === 'marketing' ? (
               <ColumnStackLayout noMargin expand>
                 <CreditsStatusBanner displayPurchaseAction />
                 <Text size="sub-title">
@@ -599,7 +585,7 @@ const GameDetails = ({
                   onGameUpdated={handleGameUpdated}
                 />
               </ColumnStackLayout>
-            ) : null}
+            ) : null} */}
           </Line>
           {publicGame && project && isPublicGamePropertiesDialogOpen && (
             <PublicGamePropertiesDialog

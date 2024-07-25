@@ -1,10 +1,9 @@
 // @flow
 import * as React from 'react';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
+import { Button } from '@material-ui/core';
 import Snackbar from '@material-ui/core/Snackbar';
 import { useScreenType } from '../Responsive/ScreenTypeMeasurer';
-import CrossSVG from '../CustomSvgIcons/Cross';
+import GDevelopThemeContext from '../Theme/GDevelopThemeContext';
 
 type Props = {|
   message: React.Node,
@@ -13,7 +12,6 @@ type Props = {|
   duration?: number,
   hide: () => void,
   actionLabel?: React.Node,
-  closable?: boolean,
   onActionClick?: () => void | Promise<void>,
 |};
 
@@ -24,14 +22,13 @@ const InfoBar = ({
   hide,
   actionLabel,
   onActionClick,
-  closable,
   duration = 3000,
 }: Props) => {
+  const gdevelopTheme = React.useContext(GDevelopThemeContext);
   const screenType = useScreenType();
 
   React.useEffect(
     () => {
-      if (duration <= 0) return;
       if (visible) {
         const timeout = setTimeout(() => {
           hide();
@@ -51,18 +48,17 @@ const InfoBar = ({
           : message
       }
       action={
-        <>
-          {actionLabel && onActionClick ? (
-            <Button color="secondary" size="small" onClick={onActionClick}>
-              {actionLabel}
-            </Button>
-          ) : null}
-          {closable && (
-            <IconButton color="secondary" size="small" onClick={hide}>
-              <CrossSVG />
-            </IconButton>
-          )}
-        </>
+        actionLabel && onActionClick ? (
+          <Button
+            color={
+              gdevelopTheme.palette.type === 'light' ? 'secondary' : 'primary'
+            }
+            size="small"
+            onClick={onActionClick}
+          >
+            {actionLabel}
+          </Button>
+        ) : null
       }
     />
   );

@@ -20,16 +20,13 @@ export const DefaultFreeFunction = () => (
   <FixedHeightFlexContainer height={500}>
     <EventsFunctionConfigurationEditor
       project={testProject.project}
-      projectScopedContainersAccessor={
-        testProject.emptySceneProjectScopedContainersAccessor
-      }
-      objectsContainer={testProject.testLayout.getObjects()}
+      globalObjectsContainer={testProject.project}
+      objectsContainer={testProject.testLayout}
       helpPagePath="/events/functions"
       eventsFunction={testProject.testEventsFunction}
       eventsBasedBehavior={null}
       eventsBasedObject={null}
       eventsFunctionsContainer={testProject.testEventsFunctionsExtension}
-      eventsFunctionsExtension={testProject.testEventsFunctionsExtension}
       onParametersOrGroupsUpdated={action('Parameters or groups were updated')}
     />
   </FixedHeightFlexContainer>
@@ -39,16 +36,13 @@ export const DefaultBehaviorFunction = () => (
   <FixedHeightFlexContainer height={500}>
     <EventsFunctionConfigurationEditor
       project={testProject.project}
-      projectScopedContainersAccessor={
-        testProject.emptySceneProjectScopedContainersAccessor
-      }
-      objectsContainer={testProject.testLayout.getObjects()}
+      globalObjectsContainer={testProject.project}
+      objectsContainer={testProject.testLayout}
       helpPagePath="/events/functions"
       eventsFunction={testProject.testBehaviorEventsFunction}
       eventsBasedBehavior={testProject.testEventsBasedBehavior}
       eventsBasedObject={null}
       eventsFunctionsContainer={testProject.testEventsBasedBehavior.getEventsFunctions()}
-      eventsFunctionsExtension={testProject.testEventsFunctionsExtension}
       onParametersOrGroupsUpdated={action('Parameters or groups were updated')}
     />
   </FixedHeightFlexContainer>
@@ -58,16 +52,13 @@ export const DefaultBehaviorLifecycleFunction = () => (
   <FixedHeightFlexContainer height={500}>
     <EventsFunctionConfigurationEditor
       project={testProject.project}
-      projectScopedContainersAccessor={
-        testProject.emptySceneProjectScopedContainersAccessor
-      }
-      objectsContainer={testProject.testLayout.getObjects()}
+      globalObjectsContainer={testProject.project}
+      objectsContainer={testProject.testLayout}
       helpPagePath="/events/functions"
       eventsFunction={testProject.testBehaviorLifecycleEventsFunction}
       eventsBasedBehavior={testProject.testEventsBasedBehavior}
       eventsBasedObject={null}
       eventsFunctionsContainer={testProject.testEventsBasedBehavior.getEventsFunctions()}
-      eventsFunctionsExtension={testProject.testEventsFunctionsExtension}
       onParametersOrGroupsUpdated={action('Parameters or groups were updated')}
     />
   </FixedHeightFlexContainer>
@@ -77,16 +68,13 @@ export const DefaultObjectFunction = () => (
   <FixedHeightFlexContainer height={500}>
     <EventsFunctionConfigurationEditor
       project={testProject.project}
-      projectScopedContainersAccessor={
-        testProject.emptySceneProjectScopedContainersAccessor
-      }
-      objectsContainer={testProject.testLayout.getObjects()}
+      globalObjectsContainer={testProject.project}
+      objectsContainer={testProject.testLayout}
       helpPagePath="/events/functions"
       eventsFunction={testProject.testObjectEventsFunction}
       eventsBasedBehavior={null}
       eventsBasedObject={testProject.testEventsBasedObject}
       eventsFunctionsContainer={testProject.testEventsBasedObject.getEventsFunctions()}
-      eventsFunctionsExtension={testProject.testEventsFunctionsExtension}
       onParametersOrGroupsUpdated={action('Parameters or groups were updated')}
     />
   </FixedHeightFlexContainer>

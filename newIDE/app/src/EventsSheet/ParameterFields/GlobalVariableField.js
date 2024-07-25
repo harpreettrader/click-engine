@@ -1,27 +1,24 @@
 // @flow
+import { Trans } from '@lingui/macro';
 import * as React from 'react';
 import { type ParameterInlineRendererProps } from './ParameterInlineRenderer.flow';
 import VariableField, {
   renderVariableWithIcon,
   type VariableFieldInterface,
-  type VariableDialogOpeningProps,
 } from './VariableField';
-import GlobalVariablesDialog from '../../VariablesList/GlobalVariablesDialog';
+import VariablesEditorDialog from '../../VariablesList/VariablesEditorDialog';
 import {
   type ParameterFieldProps,
   type ParameterFieldInterface,
   type FieldFocusFunction,
 } from './ParameterFieldCommons';
-import { enumerateVariables } from './EnumerateVariables';
-import GlobalVariableIcon from '../../UI/CustomSvgIcons/GlobalVariable';
+import EventsRootVariablesFinder from '../../Utils/EventsRootVariablesFinder';
+import GlobalIcon from '../../UI/CustomSvgIcons/Publish';
 
 export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
   function GlobalVariableField(props: ParameterFieldProps, ref) {
     const field = React.useRef<?VariableFieldInterface>(null);
-    const [
-      editorOpen,
-      setEditorOpen,
-    ] = React.useState<VariableDialogOpeningProps | null>(null);
+    const [editorOpen, setEditorOpen] = React.useState(false);
     const focus: FieldFocusFunction = options => {
       if (field.current) field.current.focus(options);
     };
@@ -29,7 +26,15 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       focus,
     }));
 
-    const { project, scope, projectScopedContainersAccessor } = props;
+    const { project, scope } = props;
+
+    const onComputeAllVariableNames = () =>
+      project
+        ? EventsRootVariablesFinder.findAllGlobalVariables(
+            project.getCurrentPlatform(),
+            project
+          )
+        : [];
 
     const variablesContainers = React.useMemo(
       () => {
@@ -38,19 +43,10 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
       [project]
     );
 
-    const enumerateGlobaleVariables = React.useCallback(
-      () => {
-        return project ? enumerateVariables(project.getVariables()) : [];
-      },
-      [project]
-    );
-
     return (
       <React.Fragment>
         <VariableField
-          isObjectVariable={false}
           variablesContainers={variablesContainers}
-          enumerateVariables={enumerateGlobaleVariables}
           parameterMetadata={props.parameterMetadata}
           value={props.value}
           onChange={props.onChange}
@@ -58,30 +54,33 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
           onRequestClose={props.onRequestClose}
           onApply={props.onApply}
           ref={field}
-          onOpenDialog={setEditorOpen}
+          onOpenDialog={() => setEditorOpen(true)}
           globalObjectsContainer={props.globalObjectsContainer}
           objectsContainer={props.objectsContainer}
-          projectScopedContainersAccessor={projectScopedContainersAccessor}
           scope={scope}
         />
         {editorOpen && project && (
-          <GlobalVariablesDialog
+          <VariablesEditorDialog
             project={project}
-            open
-            onCancel={() => setEditorOpen(null)}
-            onApply={(selectedVariableName: string | null) => {
-              if (
-                selectedVariableName &&
-                selectedVariableName.startsWith(props.value)
-              ) {
-                props.onChange(selectedVariableName);
-              }
-              setEditorOpen(null);
+            title={<Trans>Global Variables</Trans>}
+            open={editorOpen}
+            variablesContainer={project.getVariables()}
+            onCancel={() => setEditorOpen(false)}
+            onApply={() => {
+              setEditorOpen(false);
               if (field.current) field.current.updateAutocompletions();
             }}
+            emptyPlaceholderTitle={
+              <Trans>Add your first global variable</Trans>
+            }
+            emptyPlaceholderDescription={
+              <Trans>
+                These variables hold additional information on a project.
+              </Trans>
+            }
+            helpPagePath={'/all-features/variables/global-variables'}
+            onComputeAllVariableNames={onComputeAllVariableNames}
             preventRefactoringToDeleteInstructions
-            initiallySelectedVariableName={editorOpen.variableName}
-            shouldCreateInitiallySelectedVariable={editorOpen.shouldCreate}
           />
         )}
       </React.Fragment>
@@ -91,4 +90,4 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
 
 export const renderInlineGlobalVariable = (
   props: ParameterInlineRendererProps
-) => renderVariableWithIcon(props, 'global variable', GlobalVariableIcon);
+) => renderVariableWithIcon(props, GlobalIcon, 'global variable');

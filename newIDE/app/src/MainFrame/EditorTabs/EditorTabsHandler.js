@@ -13,7 +13,6 @@ import {
   type EditorContainerExtraProps,
 } from '../EditorContainers/BaseEditor';
 import { type HTMLDataset } from '../../Utils/HTMLDataset';
-import { CustomObjectEditorContainer } from '../EditorContainers/CustomObjectEditorContainer';
 
 // Supported editors
 type EditorRef =
@@ -35,7 +34,6 @@ export type EditorTab = {|
   /** The label shown on the tab. */
   label?: string,
   icon?: React.Node,
-  renderCustomIcon: ?(brightness: number) => React.Node,
   /** the html dataset object to set on the tab button. */
   tabOptions?: TabOptions,
   /** The name of the layout/external layout/external events/extension. */
@@ -59,7 +57,6 @@ export type EditorKind =
   | 'external layout'
   | 'external events'
   | 'events functions extension'
-  | 'custom object'
   | 'debugger'
   | 'resources'
   | 'start page';
@@ -79,7 +76,6 @@ export type EditorTabsPersistedState = {|
 export type EditorOpeningOptions = {|
   label?: string,
   icon?: React.Node,
-  renderCustomIcon?: ?(brightness: number) => React.Node,
   projectItemName: ?string,
   tabOptions?: TabOptions,
   renderEditorContainer: (
@@ -127,7 +123,6 @@ export const openEditorTab = (
   {
     label,
     icon,
-    renderCustomIcon,
     projectItemName,
     tabOptions,
     renderEditorContainer,
@@ -151,7 +146,6 @@ export const openEditorTab = (
   const editorTab: EditorTab = {
     label,
     icon,
-    renderCustomIcon,
     projectItemName,
     tabOptions,
     renderEditorContainer,
@@ -357,25 +351,6 @@ export const getEventsFunctionsExtensionEditor = (
     if (
       editor instanceof EventsFunctionsExtensionEditorContainer &&
       editor.getEventsFunctionsExtension() === eventsFunctionsExtension
-    ) {
-      return { editor, tabIndex };
-    }
-  }
-
-  return null;
-};
-
-export const getCustomObjectEditor = (
-  state: EditorTabsState,
-  eventsFunctionsExtension: gdEventsFunctionsExtension,
-  eventsBasedObject: gdEventsBasedObject
-): ?{| editor: CustomObjectEditorContainer, tabIndex: number |} => {
-  for (let tabIndex = 0; tabIndex < state.editors.length; ++tabIndex) {
-    const editor = state.editors[tabIndex].editorRef;
-    if (
-      editor instanceof CustomObjectEditorContainer &&
-      editor.getEventsFunctionsExtension() === eventsFunctionsExtension &&
-      editor.getEventsBasedObject() === eventsBasedObject
     ) {
       return { editor, tabIndex };
     }

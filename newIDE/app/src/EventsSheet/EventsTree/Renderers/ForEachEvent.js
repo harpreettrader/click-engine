@@ -7,9 +7,7 @@ import {
   largeSelectableArea,
   selectableArea,
   executableEventContainer,
-  instructionParameter,
-  nameAndIconContainer,
-  instructionInvalidParameter,
+  disabledText,
 } from '../ClassNames';
 import InlinePopover from '../../InlinePopover';
 import ObjectField from '../../ParameterFields/ObjectField';
@@ -30,10 +28,6 @@ const styles = {
   },
   actionsList: {
     flex: 1,
-  },
-  objectContainer: {
-    marginLeft: '3px',
-    marginRight: '2px',
   },
 };
 
@@ -104,11 +98,6 @@ export default class ForEachEvent extends React.Component<
     const forEachEvent = gd.asForEachEvent(this.props.event);
     const objectName = forEachEvent.getObjectToPick();
 
-    const objectNameIsValid = this.props.projectScopedContainersAccessor
-      .get()
-      .getObjectsContainersList()
-      .hasObjectOrGroupNamed(objectName);
-
     return (
       <div
         style={styles.container}
@@ -119,47 +108,29 @@ export default class ForEachEvent extends React.Component<
         })}
       >
         <div>
-          <Trans>
-            Repeat for each instance of
-            <span
-              className={classNames({
-                [selectableArea]: true,
-                [instructionParameter]: true,
-                [nameAndIconContainer]: true,
-                object: true,
-              })}
-              style={styles.objectContainer}
-              onClick={this.edit}
-              onKeyPress={event => {
-                if (shouldActivate(event)) {
-                  this.edit(event);
-                }
-              }}
-              tabIndex={0}
-            >
-              {objectName ? (
-                <span>
-                  {this.props.renderObjectThumbnail(objectName)}
-                  {objectNameIsValid ? (
-                    objectName
-                  ) : (
-                    <span
-                      className={classNames({
-                        [instructionInvalidParameter]: true,
-                      })}
-                    >
-                      {objectName}
-                    </span>
-                  )}
-                </span>
-              ) : (
-                <span className="instruction-missing-parameter">
-                  <Trans>{`<Select an object>`}</Trans>
-                </span>
-              )}
-            </span>
-            :
-          </Trans>
+          <span
+            className={classNames({
+              [selectableArea]: true,
+              [disabledText]: this.props.disabled,
+            })}
+            onClick={this.edit}
+            onKeyPress={event => {
+              if (shouldActivate(event)) {
+                this.edit(event);
+              }
+            }}
+            tabIndex={0}
+          >
+            {objectName ? (
+              <Trans>Repeat for each instance of {objectName}:</Trans>
+            ) : (
+              <i>
+                <Trans>
+                  Click to choose for which objects this event will be repeated
+                </Trans>
+              </i>
+            )}
+          </span>
         </div>
         <ConditionsActionsColumns
           leftIndentWidth={this.props.leftIndentWidth}
@@ -191,9 +162,6 @@ export default class ForEachEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -228,9 +196,6 @@ export default class ForEachEvent extends React.Component<
               resourcesManager={this.props.project.getResourcesManager()}
               globalObjectsContainer={this.props.globalObjectsContainer}
               objectsContainer={this.props.objectsContainer}
-              projectScopedContainersAccessor={
-                this.props.projectScopedContainersAccessor
-              }
               idPrefix={this.props.idPrefix}
             />
           )}
@@ -246,9 +211,6 @@ export default class ForEachEvent extends React.Component<
             scope={this.props.scope}
             globalObjectsContainer={this.props.globalObjectsContainer}
             objectsContainer={this.props.objectsContainer}
-            projectScopedContainersAccessor={
-              this.props.projectScopedContainersAccessor
-            }
             value={objectName}
             onChange={text => {
               forEachEvent.setObjectToPick(text);

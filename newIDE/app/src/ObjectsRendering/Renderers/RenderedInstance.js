@@ -8,6 +8,7 @@ import PixiResourcesLoader from '../../ObjectsRendering/PixiResourcesLoader';
  */
 export default class RenderedInstance {
   _project: gdProject;
+  _layout: gdLayout;
   _instance: gdInitialInstance;
   _associatedObjectConfiguration: gdObjectConfiguration;
   _pixiContainer: PIXI.Container;
@@ -17,6 +18,7 @@ export default class RenderedInstance {
 
   constructor(
     project: gdProject,
+    layout: gdLayout,
     instance: gdInitialInstance,
     associatedObjectConfiguration: gdObjectConfiguration,
     pixiContainer: PIXI.Container,
@@ -27,12 +29,9 @@ export default class RenderedInstance {
     this._associatedObjectConfiguration = associatedObjectConfiguration;
     this._pixiContainer = pixiContainer;
     this._project = project;
+    this._layout = layout;
     this._pixiResourcesLoader = pixiResourcesLoader;
     this.wasUsed = true; //Used by InstancesRenderer to track rendered instance that are not used anymore.
-  }
-
-  isRenderedIn3D(): boolean {
-    return false;
   }
 
   /**
@@ -72,10 +71,6 @@ export default class RenderedInstance {
   }
 
   getOriginY(): number {
-    return 0;
-  }
-
-  getOriginZ(): number {
     return 0;
   }
 

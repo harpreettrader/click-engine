@@ -20,7 +20,7 @@ import {
   type ItemResult,
 } from '../Utils/BlobDownloader';
 import { showWarningBox } from '../UI/Messages/MessageBox';
-import { displayBlackLoadingScreenOrThrow } from '../Utils/BrowserExternalWindowUtils';
+import { displayBlackLoadingScreen } from '../Utils/BrowserExternalWindowUtils';
 import { UserCancellationError } from '../LoginProvider/Utils';
 let nextExternalEditorWindowId = 0;
 
@@ -350,7 +350,7 @@ const immediatelyOpenLoadingWindowForExternalEditor = () => {
     );
   }
 
-  displayBlackLoadingScreenOrThrow(externalEditorWindow);
+  displayBlackLoadingScreen(externalEditorWindow);
 
   return externalEditorWindow;
 };

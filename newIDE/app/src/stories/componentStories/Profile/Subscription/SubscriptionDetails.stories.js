@@ -11,8 +11,7 @@ import {
   fakeSilverAuthenticatedUser,
   fakeGoldAuthenticatedUser,
   fakeStartupAuthenticatedUser,
-  fakeAuthenticatedStudentFromEducationPlan,
-  fakeAuthenticatedTeacherFromEducationPlan,
+  fakeAuthenticatedGoldUserFromEducationPlan,
   fakeAuthenticatedUserWithEducationPlan,
   fakeAuthenticatedUserWithLegacyIndieSubscription,
   fakeAuthenticatedUserWithLegacyProSubscription,
@@ -45,8 +44,7 @@ export default {
         'none',
         'gdevelop_silver',
         'gdevelop_gold',
-        'education student',
-        'education teacher',
+        'gdevelop_gold benefitting from education plan',
         'gdevelop_startup',
         'gdevelop_education',
         'gdevelop_indie',
@@ -84,8 +82,7 @@ export const Default = ({
     | 'none'
     | 'gdevelop_silver'
     | 'gdevelop_gold'
-    | 'education student'
-    | 'education teacher'
+    | 'gdevelop_gold benefitting from education plan'
     | 'gdevelop_startup'
     | 'gdevelop_education'
     | 'gdevelop_indie'
@@ -109,14 +106,12 @@ export const Default = ({
       ? fakeSilverAuthenticatedUser
       : userSubscriptionId === 'gdevelop_gold'
       ? fakeGoldAuthenticatedUser
+      : userSubscriptionId === 'gdevelop_gold benefitting from education plan'
+      ? fakeAuthenticatedGoldUserFromEducationPlan
       : userSubscriptionId === 'gdevelop_startup'
       ? fakeStartupAuthenticatedUser
       : userSubscriptionId === 'gdevelop_education'
       ? fakeAuthenticatedUserWithEducationPlan
-      : userSubscriptionId === 'education student'
-      ? fakeAuthenticatedStudentFromEducationPlan
-      : userSubscriptionId === 'education teacher'
-      ? fakeAuthenticatedTeacherFromEducationPlan
       : userSubscriptionId === 'gdevelop_indie'
       ? fakeAuthenticatedUserWithLegacyIndieSubscription
       : userSubscriptionId === 'gdevelop_pro'

@@ -43,7 +43,6 @@ type State = {|
   },
   hideMenuBar: boolean,
   alwaysOnTop: boolean,
-  numberOfWindows: number,
 |};
 
 export default class LocalPreviewLauncher extends React.Component<
@@ -63,7 +62,6 @@ export default class LocalPreviewLauncher extends React.Component<
     hotReloadsCount: 0,
     hideMenuBar: true,
     alwaysOnTop: true,
-    numberOfWindows: 1,
   };
   _networkPreviewSubscriptionChecker: ?SubscriptionCheckerInterface = null;
   _hotReloadSubscriptionChecker: ?SubscriptionCheckerInterface = null;
@@ -79,7 +77,6 @@ export default class LocalPreviewLauncher extends React.Component<
       previewGameIndexHtmlPath: `file://${previewGamePath}/index.html`,
       alwaysOnTop: this.state.alwaysOnTop,
       hideMenuBar: this.state.hideMenuBar,
-      numberOfWindows: this.state.numberOfWindows,
     });
   };
 
@@ -112,7 +109,6 @@ export default class LocalPreviewLauncher extends React.Component<
         previewGamePath: gamePath,
         hideMenuBar: !options.getIsMenuBarHiddenInPreview(),
         alwaysOnTop: options.getIsAlwaysOnTopInPreview(),
-        numberOfWindows: options.numberOfWindows,
       },
       () => {
         if (!options.networkPreview) {
@@ -254,13 +250,6 @@ export default class LocalPreviewLauncher extends React.Component<
               previewExportOptions.setFallbackAuthor(
                 previewOptions.fallbackAuthor.id,
                 previewOptions.fallbackAuthor.username
-              );
-            }
-            if (previewOptions.authenticatedPlayer) {
-              previewExportOptions.setAuthenticatedPlayer(
-                previewOptions.authenticatedPlayer.playerId,
-                previewOptions.authenticatedPlayer.playerUsername,
-                previewOptions.authenticatedPlayer.playerToken
               );
             }
 

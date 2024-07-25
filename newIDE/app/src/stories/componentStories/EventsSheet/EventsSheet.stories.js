@@ -20,11 +20,8 @@ export const DefaultNoScope = () => (
       <EventsSheet
         project={testProject.project}
         scope={{ project: testProject.project, layout: testProject.testLayout }}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         events={testProject.testLayout.getEvents()}
         onOpenExternalEvents={action('Open external events')}
         resourceManagementProps={fakeResourceManagementProps}
@@ -49,11 +46,8 @@ export const EmptyNoScope = () => (
           project: testProject.project,
           layout: testProject.emptyLayout,
         }}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.emptyLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.emptySceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.emptyLayout}
         events={testProject.emptyLayout.getEvents()}
         onOpenExternalEvents={action('Open external events')}
         resourceManagementProps={fakeResourceManagementProps}

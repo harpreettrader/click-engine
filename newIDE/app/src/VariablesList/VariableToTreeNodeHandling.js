@@ -51,30 +51,6 @@ export const isAnAncestryOf = (
   return lineageVariables.includes(variable);
 };
 
-/**
- * Brackets accessors are not handled, only the path elements before it are
- * converted.
- */
-export const getNodeIdFromVariableName = (variableName: string): string => {
-  const bracketIndex = variableName.indexOf('[');
-  const knownVariablePart =
-    bracketIndex < 0 ? variableName : variableName.substring(0, bracketIndex);
-  return knownVariablePart.replace(/\./g, '$$.$$');
-};
-
-export const getNodeIdFromVariableContext = (
-  variableContext: VariableContext
-): string | null => {
-  const variableName = variableContext.name;
-  if (!variableName) {
-    return null;
-  }
-  const parentPart = variableContext.lineage
-    .map(({ name }) => name)
-    .join(separator);
-  return (parentPart ? parentPart + separator : '') + variableName;
-};
-
 export const getVariableContextFromNodeId = (
   nodeId: string,
   variablesContainer: gdVariablesContainer
@@ -94,9 +70,7 @@ export const getVariableContextFromNodeId = (
       currentVariableName = removeInheritedPrefix(currentVariableName);
     }
     if (!parentVariable) {
-      currentVariable = variablesContainer.has(currentVariableName)
-        ? variablesContainer.get(currentVariableName)
-        : null;
+      currentVariable = variablesContainer.get(currentVariableName);
     } else {
       if (parentVariable.getType() === gd.Variable.Array) {
         const index = parseInt(currentVariableName, 10);
@@ -110,9 +84,6 @@ export const getVariableContextFromNodeId = (
         }
         currentVariable = parentVariable.getChild(currentVariableName);
       }
-    }
-    if (!currentVariable) {
-      break;
     }
     if (depth < bits.length - 1) {
       lineage.push({
@@ -128,25 +99,6 @@ export const getVariableContextFromNodeId = (
     name: currentVariableName,
     depth,
     lineage,
-  };
-};
-
-export const getParentVariableContext = (
-  variableContext: VariableContext
-): VariableContext => {
-  if (variableContext.lineage.length === 0) {
-    return variableContext;
-  }
-  const parentContext =
-    variableContext.lineage[variableContext.lineage.length - 1];
-  return {
-    variable: parentContext.variable,
-    name: parentContext.name,
-    depth: variableContext.depth - 1,
-    lineage: variableContext.lineage.slice(
-      0,
-      variableContext.lineage.length - 1
-    ),
   };
 };
 

@@ -1,4 +1,5 @@
 // @flow
+import { t } from '@lingui/macro';
 import { I18n } from '@lingui/react';
 import { type I18n as I18nType } from '@lingui/core';
 
@@ -7,6 +8,7 @@ import { Line } from '../UI/Grid';
 import ObjectsList, { type ObjectsListInterface } from '../ObjectsList';
 import ObjectsRenderingService from '../ObjectsRendering/ObjectsRenderingService';
 import type { ObjectWithContext } from '../ObjectsList/EnumerateObjects';
+import Window from '../Utils/Window';
 import ObjectEditorDialog from '../ObjectEditor/ObjectEditorDialog';
 import { type ObjectEditorTab } from '../ObjectEditor/ObjectEditorDialog';
 import { emptyStorageProvider } from '../ProjectsStorage/ProjectStorageProviders';
@@ -16,15 +18,14 @@ import {
   type ObjectFolderOrObjectWithContext,
 } from '../ObjectsList/EnumerateObjectFolderOrObject';
 import { type UnsavedChanges } from '../MainFrame/UnsavedChangesContext';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
 
 const gd: libGDevelop = global.gd;
 
 type Props = {|
   project: gdProject,
+  globalObjectsContainer: gdObjectsContainer,
   eventsFunctionsExtension: gdEventsFunctionsExtension,
   eventsBasedObject: gdEventsBasedObject,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   unsavedChanges?: ?UnsavedChanges,
 |};
 
@@ -40,8 +41,6 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
 > {
   _objectsList: ?ObjectsListInterface;
 
-  // TODO Reset selectedObjectFolderOrObjectsWithContext when a different eventsBasedObject is passed.
-  // It will avoid to add objects in the tree of the wrong ObjectsContainer.
   state = {
     editedObjectWithContext: null,
     editedObjectInitialTab: 'properties',
@@ -52,14 +51,29 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
     objectsWithContext: ObjectWithContext[],
     done: boolean => void
   ) => {
-    const { project, eventsBasedObject } = this.props;
+    const message =
+      objectsWithContext.length === 1
+        ? t`Do you want to remove all references to this object in groups and events (actions and conditions using the object)?`
+        : t`Do you want to remove all references to these objects in groups and events (actions and conditions using the objects)?`;
+
+    const answer = Window.showYesNoCancelDialog(i18n._(message));
+
+    if (answer === 'cancel') return;
+    const shouldRemoveReferences = answer === 'yes';
+
+    const { project, globalObjectsContainer, eventsBasedObject } = this.props;
 
     objectsWithContext.forEach(objectWithContext => {
       const { object } = objectWithContext;
-      gd.WholeProjectRefactorer.objectRemovedInEventsBasedObject(
+      gd.WholeProjectRefactorer.objectOrGroupRemovedInEventsBasedObject(
         project,
         eventsBasedObject,
-        object.getName()
+        globalObjectsContainer,
+        // $FlowFixMe gdObjectsContainer should be a member of gdEventsBasedObject instead of a base class.
+        eventsBasedObject,
+        object.getName(),
+        /* isObjectGroup=*/ false,
+        shouldRemoveReferences
       );
     });
     done(true);
@@ -72,11 +86,8 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
       gd.Project.getSafeName(newName),
       tentativeNewName => {
         if (
-          eventsBasedObject.getObjects().hasObjectNamed(tentativeNewName) ||
-          eventsBasedObject
-            .getObjects()
-            .getObjectGroups()
-            .has(tentativeNewName) ||
+          eventsBasedObject.hasObjectNamed(tentativeNewName) ||
+          eventsBasedObject.getObjectGroups().has(tentativeNewName) ||
           // TODO EBO Use a constant instead a hard coded value "Object".
           tentativeNewName === 'Object'
         ) {
@@ -100,11 +111,7 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
 
   _onRenameObject = (objectWithContext: ObjectWithContext, newName: string) => {
     const { object } = objectWithContext;
-    const {
-      project,
-      eventsBasedObject,
-      projectScopedContainersAccessor,
-    } = this.props;
+    const { project, globalObjectsContainer, eventsBasedObject } = this.props;
 
     // newName is supposed to have been already validated
 
@@ -112,7 +119,7 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
     if (object.getName() !== newName) {
       gd.WholeProjectRefactorer.objectOrGroupRenamedInEventsBasedObject(
         project,
-        projectScopedContainersAccessor.get(),
+        globalObjectsContainer,
         eventsBasedObject,
         object.getName(),
         newName,
@@ -216,6 +223,9 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
     const { eventsBasedObject, project, eventsFunctionsExtension } = this.props;
     const { selectedObjectFolderOrObjectsWithContext } = this.state;
 
+    // TODO EBO When adding an object, filter the object types to excludes
+    // object that depend (transitively) on this object to avoid cycles.
+
     // TODO EBO Add a button icon to mark some objects solid or not.
 
     return (
@@ -228,11 +238,9 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
                   ObjectsRenderingService
                 )}
                 project={project}
-                eventsBasedObject={eventsBasedObject}
                 unsavedChanges={this.props.unsavedChanges}
                 // $FlowFixMe gdObjectsContainer should be a member of gdEventsBasedObject instead of a base class.
-                objectsContainer={eventsBasedObject.getObjects()}
-                globalObjectsContainer={null}
+                objectsContainer={eventsBasedObject}
                 layout={null}
                 // TODO EBO Allow to use project resources as place holders
                 resourceManagementProps={{
@@ -270,8 +278,8 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
                 // to be generated.
                 hotReloadPreviewButtonProps={{
                   hasPreviewsRunning: false,
-                  launchProjectDataOnlyPreview: async () => {},
-                  launchProjectWithLoadingScreenPreview: async () => {},
+                  launchProjectDataOnlyPreview: () => {},
+                  launchProjectWithLoadingScreenPreview: () => {},
                 }}
                 canInstallPrivateAsset={() => false}
                 canSetAsGlobalObject={false}
@@ -283,12 +291,7 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
                 object={this.state.editedObjectWithContext.object}
                 initialTab={this.state.editedObjectInitialTab}
                 project={project}
-                layout={null}
                 eventsFunctionsExtension={eventsFunctionsExtension}
-                eventsBasedObject={eventsBasedObject}
-                projectScopedContainersAccessor={
-                  this.props.projectScopedContainersAccessor
-                }
                 resourceManagementProps={{
                   resourceSources: [],
                   resourceExternalEditors: [],
@@ -307,7 +310,7 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
                   //   project.getCurrentPlatform(),
                   //   project,
                   //   eventsBasedObject,
-                  //   editedObjectWithContext.object.getName()
+                  //   editedObjectWithContext.object
                   // );
                 }}
                 onCancel={() => {
@@ -327,8 +330,8 @@ export default class EventBasedObjectChildrenEditor extends React.Component<
                 // to be generated.
                 hotReloadPreviewButtonProps={{
                   hasPreviewsRunning: false,
-                  launchProjectDataOnlyPreview: async () => {},
-                  launchProjectWithLoadingScreenPreview: async () => {},
+                  launchProjectDataOnlyPreview: () => {},
+                  launchProjectWithLoadingScreenPreview: () => {},
                 }}
                 onUpdateBehaviorsSharedData={() =>
                   this.updateBehaviorsSharedData()

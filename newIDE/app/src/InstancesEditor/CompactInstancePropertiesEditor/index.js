@@ -12,7 +12,7 @@ import propertiesMapToSchema from '../../CompactPropertiesEditor/PropertiesMapTo
 import { type Schema } from '../../CompactPropertiesEditor';
 import getObjectByName from '../../Utils/GetObjectByName';
 import IconButton from '../../UI/IconButton';
-import { Line, Column, Spacer, marginsSize } from '../../UI/Grid';
+import { Line, Column, Spacer } from '../../UI/Grid';
 import Text from '../../UI/Text';
 import { type UnsavedChanges } from '../../MainFrame/UnsavedChangesContext';
 import ScrollView from '../../UI/ScrollView';
@@ -27,10 +27,6 @@ import {
   makeSchema,
   reorderInstanceSchemaForCustomProperties,
 } from './CompactPropertiesSchema';
-import { ProjectScopedContainersAccessor } from '../../InstructionOrExpression/EventsScope.flow';
-import TileSetVisualizer, {
-  type TileMapTileSelection,
-} from '../TileSetVisualizer';
 
 export const styles = {
   paper: {
@@ -42,18 +38,13 @@ export const styles = {
   icon: {
     fontSize: 18,
   },
-  scrollView: { paddingTop: marginsSize },
 };
 
 const gd: libGDevelop = global.gd;
 
 type Props = {|
   project: gdProject,
-  layout?: ?gdLayout,
-  objectsContainer: gdObjectsContainer,
-  globalObjectsContainer: gdObjectsContainer | null,
-  layersContainer: gdLayersContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
+  layout: gdLayout,
   instances: Array<gdInitialInstance>,
   onEditObjectByName: string => void,
   onInstancesModified?: (Array<gdInitialInstance>) => void,
@@ -62,8 +53,6 @@ type Props = {|
   unsavedChanges?: ?UnsavedChanges,
   i18n: I18nType,
   historyHandler?: HistoryHandler,
-  tileMapTileSelection: ?TileMapTileSelection,
-  onSelectTileMapTile: (?TileMapTileSelection) => void,
 |};
 
 export type CompactInstancePropertiesEditorInterface = {|
@@ -75,18 +64,12 @@ const CompactInstancePropertiesEditor = ({
   i18n,
   project,
   layout,
-  objectsContainer,
-  globalObjectsContainer,
-  layersContainer,
   unsavedChanges,
   historyHandler,
   onEditObjectByName,
   onGetInstanceSize,
   editInstanceVariables,
   onInstancesModified,
-  projectScopedContainersAccessor,
-  tileMapTileSelection,
-  onSelectTileMapTile,
 }: Props) => {
   const forceUpdate = useForceUpdate();
 
@@ -97,10 +80,10 @@ const CompactInstancePropertiesEditor = ({
         is3DInstance: false,
         onGetInstanceSize,
         onEditObjectByName,
-        layersContainer,
+        layout,
         forceUpdate,
       }),
-    [i18n, onGetInstanceSize, onEditObjectByName, layersContainer, forceUpdate]
+    [i18n, onGetInstanceSize, onEditObjectByName, layout, forceUpdate]
   );
 
   const schemaFor3D: Schema = React.useMemo(
@@ -110,20 +93,14 @@ const CompactInstancePropertiesEditor = ({
         is3DInstance: true,
         onGetInstanceSize,
         onEditObjectByName,
-        layersContainer,
+        layout,
         forceUpdate,
       }),
-    [i18n, onGetInstanceSize, onEditObjectByName, layersContainer, forceUpdate]
+    [i18n, onGetInstanceSize, onEditObjectByName, layout, forceUpdate]
   );
 
+  // TODO: multiple instances support.
   const instance = instances[0];
-  /**
-   * TODO: multiple instances support for variables list. Expected behavior should be:
-   * - if instances of different objects, do not show
-   * - if instances of same object, show only variables in common (inherited variables
-   * obviously plus instance-wise variables with same name).
-   */
-  const shouldDisplayVariablesList = instances.length === 1;
 
   const { object, instanceSchema } = React.useMemo<{|
     object?: gdObject,
@@ -133,15 +110,8 @@ const CompactInstancePropertiesEditor = ({
       if (!instance) return { object: undefined, instanceSchema: undefined };
 
       const associatedObjectName = instance.getObjectName();
-      const object = getObjectByName(
-        globalObjectsContainer,
-        objectsContainer,
-        associatedObjectName
-      );
-      const properties = instance.getCustomProperties(
-        globalObjectsContainer || objectsContainer,
-        objectsContainer
-      );
+      const object = getObjectByName(project, layout, associatedObjectName);
+      const properties = instance.getCustomProperties(project, layout);
       if (!object) return { object: undefined, instanceSchema: undefined };
 
       const is3DInstance = gd.MetadataProvider.getObjectMetadata(
@@ -151,17 +121,9 @@ const CompactInstancePropertiesEditor = ({
       const instanceSchemaForCustomProperties = propertiesMapToSchema(
         properties,
         (instance: gdInitialInstance) =>
-          instance.getCustomProperties(
-            globalObjectsContainer || objectsContainer,
-            objectsContainer
-          ),
+          instance.getCustomProperties(project, layout),
         (instance: gdInitialInstance, name, value) =>
-          instance.updateCustomProperty(
-            name,
-            value,
-            globalObjectsContainer || objectsContainer,
-            objectsContainer
-          )
+          instance.updateCustomProperty(name, value, project, layout)
       );
 
       const reorderedInstanceSchemaForCustomProperties = reorderInstanceSchemaForCustomProperties(
@@ -175,40 +137,7 @@ const CompactInstancePropertiesEditor = ({
           : schemaFor2D.concat(reorderedInstanceSchemaForCustomProperties),
       };
     },
-    [
-      instance,
-      globalObjectsContainer,
-      objectsContainer,
-      project,
-      i18n,
-      schemaFor3D,
-      schemaFor2D,
-    ]
-  );
-
-  const shouldDisplayTileSetVisualizer =
-    !!object && object.getType() === 'TileMap::SimpleTileMap';
-
-  React.useEffect(
-    () => {
-      if (!shouldDisplayTileSetVisualizer) {
-        // Reset tile map tile selection if tile set visualizer should
-        // not be displayed (an instance that is not a tile map is selected).
-        onSelectTileMapTile(null);
-      }
-      // Reset tile map tile selection if the component is unmounted
-      // (Useful when component is unmounted on an Undo user command).
-      return () => onSelectTileMapTile(null);
-    },
-    [shouldDisplayTileSetVisualizer, onSelectTileMapTile]
-  );
-
-  React.useEffect(
-    () => {
-      onSelectTileMapTile(null);
-    },
-    // Reset tile map tile selection if instance changes.
-    [instance.ptr, onSelectTileMapTile]
+    [project, layout, instance, schemaFor2D, schemaFor3D, i18n]
   );
 
   if (!object || !instance || !instanceSchema) return null;
@@ -220,7 +149,6 @@ const CompactInstancePropertiesEditor = ({
     >
       <ScrollView
         autoHideScrollbar
-        style={styles.scrollView}
         key={instances
           .map((instance: gdInitialInstance) => '' + instance.ptr)
           .join(';')}
@@ -234,69 +162,40 @@ const CompactInstancePropertiesEditor = ({
               onInstancesModified={onInstancesModified}
             />
             <Spacer />
-          </Column>
-          {shouldDisplayTileSetVisualizer && (
-            <>
-              <Column>
-                <Separator />
-                <Line alignItems="center" justifyContent="space-between">
-                  <Text size="sub-title" noMargin>
-                    <Trans>Tilemap painter</Trans>
-                  </Text>
-                </Line>
-                <TileSetVisualizer
-                  project={project}
-                  objectConfiguration={object.getConfiguration()}
-                  tileMapTileSelection={tileMapTileSelection}
-                  onSelectTileMapTile={onSelectTileMapTile}
-                  showPaintingToolbar
-                  allowMultipleSelection={false}
-                  interactive
-                />
-              </Column>
-            </>
-          )}
-          {object && shouldDisplayVariablesList ? (
-            <>
-              <Column>
-                <Separator />
-                <Line alignItems="center" justifyContent="space-between">
-                  <Text size="sub-title" noMargin>
-                    <Trans>Instance Variables</Trans>
-                  </Text>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      editInstanceVariables(instance);
-                    }}
-                  >
-                    <ShareExternal style={styles.icon} />
-                  </IconButton>
-                </Line>
-              </Column>
-              <VariablesList
-                projectScopedContainersAccessor={
-                  projectScopedContainersAccessor
-                }
-                directlyStoreValueChangesWhileEditing
-                inheritedVariablesContainer={object.getVariables()}
-                variablesContainer={instance.getVariables()}
-                areObjectVariables
+            <Separator />
+            <Line alignItems="center" justifyContent="space-between">
+              <Text size="sub-title" noMargin>
+                <Trans>Instance Variables</Trans>
+              </Text>
+              <IconButton
                 size="small"
-                onComputeAllVariableNames={() =>
-                  object && layout
-                    ? EventsRootVariablesFinder.findAllObjectVariables(
-                        project.getCurrentPlatform(),
-                        project,
-                        layout,
-                        object.getName()
-                      )
-                    : []
-                }
-                historyHandler={historyHandler}
-                toolbarIconStyle={styles.icon}
-              />
-            </>
+                onClick={() => {
+                  editInstanceVariables(instance);
+                }}
+              >
+                <ShareExternal style={styles.icon} />
+              </IconButton>
+            </Line>
+          </Column>
+          {object ? (
+            <VariablesList
+              directlyStoreValueChangesWhileEditing
+              inheritedVariablesContainer={object.getVariables()}
+              variablesContainer={instance.getVariables()}
+              size="small"
+              onComputeAllVariableNames={() =>
+                object
+                  ? EventsRootVariablesFinder.findAllObjectVariables(
+                      project.getCurrentPlatform(),
+                      project,
+                      layout,
+                      object
+                    )
+                  : []
+              }
+              historyHandler={historyHandler}
+              toolbarIconStyle={styles.icon}
+            />
           ) : null}
         </Column>
       </ScrollView>

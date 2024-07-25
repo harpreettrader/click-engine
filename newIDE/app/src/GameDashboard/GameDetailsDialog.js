@@ -20,7 +20,7 @@ type Props = {|
   game: ?Game,
   project: ?gdProject,
   onClose: () => void,
-  onGameUpdated: (game: Game) => void,
+  onGameUpdated: () => Promise<void>,
   onGameDeleted: () => void,
   analyticsSource: 'profile' | 'homepage' | 'projectManager',
   onShareProject?: () => void,
@@ -77,13 +77,7 @@ export const GameDetailsDialog = ({
               key="help"
               helpPagePath={
                 currentTab === 'leaderboards'
-                  ? '/interface/games-dashboard/leaderboard-administration/'
-                  : currentTab === 'multiplayer'
-                  ? '/all-features/multiplayer/'
-                  : currentTab === 'marketing'
-                  ? '/interface/games-dashboard/marketing/'
-                  : currentTab === 'feedback'
-                  ? '/interface/games-dashboard/player-feedback/'
+                  ? '/interface/games-dashboard/leaderboard-administration'
                   : '/interface/games-dashboard'
               }
             />,

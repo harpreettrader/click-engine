@@ -1,10 +1,14 @@
 // @flow
 
 import { Trans } from '@lingui/macro';
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import AlertMessage from '../../UI/AlertMessage';
+
+import { Line } from '../../UI/Grid';
 import { ResponsiveLineStackLayout } from '../../UI/Layout';
 import Text from '../../UI/Text';
 import {
+  getAchievements,
   type Badge,
   type Achievement,
 } from '../../Utils/GDevelopServices/Badge';
@@ -15,7 +19,6 @@ import { useResponsiveWindowSize } from '../../UI/Responsive/ResponsiveWindowMea
 import PlaceholderLoader from '../../UI/PlaceholderLoader';
 
 type Props = {|
-  achievements: ?Array<Achievement>,
   badges: ?Array<Badge>,
   displayUnclaimedAchievements: boolean,
   displayNotifications: boolean,
@@ -38,16 +41,44 @@ const styles = {
 };
 
 const UserAchievements = ({
-  achievements,
   badges,
   displayUnclaimedAchievements,
   displayNotifications,
 }: Props) => {
+  const [achievements, setAchievements] = useState<?Array<Achievement>>(null);
+  const [displayError, setDisplayError] = useState<boolean>(false);
   const { isMobile } = useResponsiveWindowSize();
+
+  const fetchAchievements = useCallback(async () => {
+    try {
+      setDisplayError(false);
+      const achievements = await getAchievements();
+      setAchievements(achievements);
+    } catch (err) {
+      console.error(`Error when fetching achievements: ${err}`);
+      setDisplayError(true);
+    }
+  }, []);
+
+  useEffect(
+    () => {
+      fetchAchievements();
+    },
+    [fetchAchievements]
+  );
 
   return (
     <ResponsiveLineStackLayout>
-      {!!badges && !!achievements ? (
+      {displayError ? (
+        <Line>
+          <AlertMessage kind="error">
+            <Trans>Unable to display your achievements for now.</Trans>{' '}
+            <Trans>
+              Please check your internet connection or try again later.
+            </Trans>
+          </AlertMessage>
+        </Line>
+      ) : !!badges && !!achievements ? (
         <>
           <div style={styles.leftContainer}>
             <div

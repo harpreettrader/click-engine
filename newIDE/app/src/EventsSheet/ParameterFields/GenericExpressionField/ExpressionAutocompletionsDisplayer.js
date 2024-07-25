@@ -11,17 +11,13 @@ import ScrollView, { type ScrollViewInterface } from '../../../UI/ScrollView';
 import { getVisibleParameterTypes } from './FormatExpressionCall';
 import { type ParameterRenderingServiceType } from '../ParameterFieldCommons';
 import { type EnumeratedInstructionOrExpressionMetadata } from '../../../InstructionOrExpression/EnumeratedInstructionOrExpressionMetadata';
-import { Column, Line } from '../../../UI/Grid';
+import { Column, Line, Spacer } from '../../../UI/Grid';
 import ObjectsRenderingService from '../../../ObjectsRendering/ObjectsRenderingService';
 import Paper from '../../../UI/Paper';
 import { mapVector } from '../../../Utils/MapFor';
 import { Trans } from '@lingui/macro';
 import GDevelopThemeContext from '../../../UI/Theme/GDevelopThemeContext';
 import { getVariableTypeToIcon } from '../../../VariablesList/VariableTypeSelector';
-import { getVariableSourceIcon } from '../../ParameterFields/VariableField';
-import PropertyIcon from '../../../UI/CustomSvgIcons/Settings';
-import ParameterIcon from '../../../UI/CustomSvgIcons/Parameter';
-import { LineStackLayout } from '../../../UI/Layout';
 
 const gd: libGDevelop = global.gd;
 
@@ -88,7 +84,6 @@ const AutocompletionRow = React.forwardRef(
     {
       icon,
       iconSrc,
-      secondaryIcon,
       label,
       parametersLabel,
       isSelected,
@@ -96,7 +91,6 @@ const AutocompletionRow = React.forwardRef(
     }: {|
       icon: React.Node | null,
       iconSrc: string | null,
-      secondaryIcon: React.Node | null,
       label: string,
       parametersLabel: string | null,
       isSelected: boolean,
@@ -117,18 +111,16 @@ const AutocompletionRow = React.forwardRef(
         onClick={onClick}
         ref={ref}
       >
-        <LineStackLayout noMargin expand>
-          {icon || (iconSrc ? <AutocompletionIcon src={iconSrc} /> : null)}
-          {secondaryIcon}
-          <Text style={defaultTextStyle} noMargin align="left">
-            {isSelected ? <b>{trimmedLabel}</b> : trimmedLabel}
-            {parametersLabel && (
-              <>
-                (<i>{parametersLabel}</i>)
-              </>
-            )}
-          </Text>
-        </LineStackLayout>
+        {icon || (iconSrc ? <AutocompletionIcon src={iconSrc} /> : null)}
+        <Spacer />
+        <Text style={defaultTextStyle} noMargin align="left">
+          {isSelected ? <b>{trimmedLabel}</b> : trimmedLabel}
+          {parametersLabel && (
+            <>
+              (<i>{parametersLabel}</i>)
+            </>
+          )}
+        </Text>
       </ButtonBase>
     );
   }
@@ -309,24 +301,6 @@ export default function ExpressionAutocompletionsDisplayer({
 
                   const IconComponent =
                     expressionAutocompletion.kind === 'Variable'
-                      ? expressionAutocompletion.variableScope ===
-                        gd.VariablesContainer.Unknown
-                        ? // No icon is displayed for child-variables
-                          null
-                        : getVariableSourceIcon(
-                            expressionAutocompletion.variableScope
-                          )
-                      : expressionAutocompletion.kind === 'Property'
-                      ? PropertyIcon
-                      : expressionAutocompletion.kind === 'Parameter'
-                      ? ParameterIcon
-                      : null;
-                  const icon = IconComponent ? (
-                    <IconComponent style={autocompletionIconSizeStyle} />
-                  ) : null;
-
-                  const SecondaryIconComponent =
-                    expressionAutocompletion.kind === 'Variable'
                       ? getVariableTypeToIcon()[
                           expressionAutocompletion.variableType
                         ]
@@ -345,10 +319,8 @@ export default function ExpressionAutocompletionsDisplayer({
                           )
                         )
                       : null;
-                  const secondaryIcon = SecondaryIconComponent ? (
-                    <SecondaryIconComponent
-                      style={autocompletionIconSizeStyle}
-                    />
+                  const icon = IconComponent ? (
+                    <IconComponent style={autocompletionIconSizeStyle} />
                   ) : null;
 
                   if (expressionAutocompletion.kind === 'Expression') {
@@ -360,7 +332,6 @@ export default function ExpressionAutocompletionsDisplayer({
                       key={index}
                       icon={icon}
                       iconSrc={iconSrc}
-                      secondaryIcon={secondaryIcon}
                       label={label}
                       parametersLabel={parametersLabel}
                       onClick={() => onChoose(expressionAutocompletion)}

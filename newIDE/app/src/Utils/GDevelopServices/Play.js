@@ -66,7 +66,6 @@ export type Leaderboard = {|
   extremeAllowedScore?: number,
   ignoreCustomPlayerNames?: boolean,
   autoPlayerNamePrefix?: string,
-  disableLoginInLeaderboard?: string,
 |};
 
 export type LeaderboardUpdatePayload = {|
@@ -79,7 +78,6 @@ export type LeaderboardUpdatePayload = {|
   extremeAllowedScore?: number | null,
   ignoreCustomPlayerNames?: boolean,
   autoPlayerNamePrefix?: string,
-  disableLoginInLeaderboard?: boolean,
 |};
 
 export type LeaderboardEntry = {|
@@ -89,13 +87,6 @@ export type LeaderboardEntry = {|
   playerName: string,
   createdAt: string,
   score: number,
-|};
-
-export type LobbyConfiguration = {|
-  gameId: string,
-  maxPlayers: number,
-  minPlayers: number,
-  canJoinAfterStart: boolean,
 |};
 
 export const shortenUuidForDisplay = (uuid: string): string =>
@@ -359,12 +350,6 @@ export const listComments = async (
     .then(response => response.data);
 };
 
-export const canCommentBeRatedByOwner = (comment: Comment): boolean => {
-  if (!comment.text) return false;
-
-  return true;
-};
-
 export const updateComment = async (
   getAuthorizationHeader: () => Promise<string>,
   userId: string,
@@ -453,103 +438,4 @@ export const getRGBLeaderboardTheme = (
       hexLeaderboardTheme.highlightTextColor
     ),
   };
-};
-
-export const getLobbyConfiguration = async (
-  getAuthorizationHeader: () => Promise<string>,
-  userId: string,
-  {
-    gameId,
-  }: {|
-    gameId: string,
-  |}
-): Promise<LobbyConfiguration> => {
-  const authorizationHeader = await getAuthorizationHeader();
-  const response = await axios.get(
-    `${GDevelopPlayApi.baseUrl}/game/${gameId}/lobby-configuration`,
-    {
-      params: { userId },
-      headers: {
-        Authorization: authorizationHeader,
-      },
-    }
-  );
-  return response.data;
-};
-
-export const updateLobbyConfiguration = async (
-  getAuthorizationHeader: () => Promise<string>,
-  userId: string,
-  {
-    gameId,
-    maxPlayers,
-    minPlayers,
-    canJoinAfterStart,
-  }: {|
-    gameId: string,
-    maxPlayers: number,
-    minPlayers: number,
-    canJoinAfterStart: boolean,
-  |}
-): Promise<LobbyConfiguration> => {
-  const authorizationHeader = await getAuthorizationHeader();
-  const response = await axios.patch(
-    `${GDevelopPlayApi.baseUrl}/game/${gameId}/lobby-configuration`,
-    { maxPlayers, minPlayers, canJoinAfterStart },
-    {
-      params: { userId },
-      headers: {
-        Authorization: authorizationHeader,
-      },
-    }
-  );
-  return response.data;
-};
-
-export const duplicateLobbyConfiguration = async ({
-  getAuthorizationHeader,
-  userId,
-  gameId,
-  sourceGameId,
-}: {|
-  getAuthorizationHeader: () => Promise<string>,
-  userId: string,
-  gameId: string,
-  sourceGameId: string,
-|}): Promise<LobbyConfiguration> => {
-  const authorizationHeader = await getAuthorizationHeader();
-  const response = await axios.post(
-    `${GDevelopPlayApi.baseUrl}/game/${gameId}/lobby-configuration/action/copy`,
-    { sourceGameId },
-    {
-      headers: { Authorization: authorizationHeader },
-      params: { userId },
-    }
-  );
-  return response.data;
-};
-
-export const getPlayerToken = async ({
-  getAuthorizationHeader,
-  userId,
-  gameId,
-}: {
-  getAuthorizationHeader: () => Promise<string>,
-  userId: string,
-  gameId: string,
-}): Promise<string> => {
-  const authorizationHeader = await getAuthorizationHeader();
-  const response = await axios.post(
-    `${GDevelopPlayApi.baseUrl}/game/${gameId}/player-token`,
-    {},
-    {
-      headers: {
-        Authorization: authorizationHeader,
-      },
-      params: {
-        userId,
-      },
-    }
-  );
-  return response.data;
 };

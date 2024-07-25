@@ -6,7 +6,7 @@ import paperDecorator from '../../PaperDecorator';
 import {
   LeaderboardReplacerProgressDialog,
   ReplacePromptDialog,
-} from '../../../Leaderboard/UseLeaderboardReplacer';
+} from '../../../Leaderboard/useLeaderboardReplacer';
 import AuthenticatedUserContext from '../../../Profile/AuthenticatedUserContext';
 import { fakeSilverAuthenticatedUser } from '../../../fixtures/GDevelopServicesTestData';
 

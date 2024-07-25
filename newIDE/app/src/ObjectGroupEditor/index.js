@@ -20,7 +20,7 @@ const styles = {
 type Props = {|
   project: ?gdProject,
   group: gdObjectGroup,
-  globalObjectsContainer: gdObjectsContainer | null,
+  globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
   onSizeUpdated?: () => void,
   onObjectGroupUpdated?: () => void,
@@ -57,9 +57,8 @@ const ObjectGroupEditor = ({
       return null;
     }
     objectsInGroup.forEach(objectName => {
-      // TODO Use ProjectScopedContainers to get the object type
       const objectType = gd.getTypeOfObject(
-        globalObjectsContainer || objectsContainer,
+        globalObjectsContainer,
         objectsContainer,
         objectName,
         false

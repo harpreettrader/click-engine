@@ -17,8 +17,7 @@ const gd: libGDevelop = global.gd;
 export default class LayerRenderer {
   project: gdProject;
   instances: gdInitialInstancesContainer;
-  globalObjectsContainer: gdObjectsContainer;
-  objectsContainer: gdObjectsContainer | null;
+  layout: gdLayout;
   /** `layer` can be changed at any moment (see InstancesRenderer).
    * /!\ Don't store any other reference.
    */
@@ -81,8 +80,7 @@ export default class LayerRenderer {
 
   constructor({
     project,
-    globalObjectsContainer,
-    objectsContainer,
+    layout,
     layer,
     viewPosition,
     instances,
@@ -100,8 +98,7 @@ export default class LayerRenderer {
   }: {
     project: gdProject,
     instances: gdInitialInstancesContainer,
-    globalObjectsContainer: gdObjectsContainer,
-    objectsContainer: gdObjectsContainer | null,
+    layout: gdLayout,
     layer: gdLayer,
     viewPosition: ViewPosition,
     onInstanceClicked: gdInitialInstance => void,
@@ -123,8 +120,7 @@ export default class LayerRenderer {
   }) {
     this.project = project;
     this.instances = instances;
-    this.globalObjectsContainer = globalObjectsContainer;
-    this.objectsContainer = objectsContainer;
+    this.layout = layout;
     this.layer = layer; // /!\ Don't store any other reference.
     // `layer` can be changed at any moment (see InstancesRenderer).
     this.viewPosition = viewPosition;
@@ -159,12 +155,12 @@ export default class LayerRenderer {
       var renderedInstance:
         | RenderedInstance
         | Rendered3DInstance
-        | null = this.getOrCreateRendererOfInstance(instance);
+        | null = this.getRendererOfInstance(instance);
       if (!renderedInstance) return;
 
       const pixiObject: PIXI.DisplayObject | null = renderedInstance.getPixiObject();
       if (pixiObject) {
-        if (renderedInstance.isRenderedIn3D()) {
+        if (renderedInstance instanceof Rendered3DInstance) {
           pixiObject.zOrder = instance.getZ() + renderedInstance.getDepth();
         } else {
           pixiObject.zOrder = instance.getZOrder();
@@ -233,13 +229,6 @@ export default class LayerRenderer {
     return this._threePlaneMesh;
   }
 
-  getRendererOfInstance(
-    instance: gdInitialInstance
-  ): RenderedInstance | Rendered3DInstance | null {
-    if (!this.renderedInstances.hasOwnProperty(instance.ptr)) return null;
-    return this.renderedInstances[instance.ptr];
-  }
-
   getUnrotatedInstanceLeft = (instance: gdInitialInstance) => {
     return (
       instance.getX() -
@@ -270,7 +259,7 @@ export default class LayerRenderer {
   };
 
   getUnrotatedInstanceSize = (instance: gdInitialInstance) => {
-    const renderedInstance = this.getOrCreateRendererOfInstance(instance);
+    const renderedInstance = this.renderedInstances[instance.ptr];
     const hasCustomSize = instance.hasCustomSize();
     const hasCustomDepth = instance.hasCustomDepth();
     const width = hasCustomSize
@@ -376,14 +365,14 @@ export default class LayerRenderer {
     return bounds;
   }
 
-  getOrCreateRendererOfInstance = (instance: gdInitialInstance) => {
+  getRendererOfInstance = (instance: gdInitialInstance) => {
     var renderedInstance = this.renderedInstances[instance.ptr];
     if (renderedInstance === undefined) {
       //No renderer associated yet, the instance must have been just created!...
       const associatedObjectName = instance.getObjectName();
       const associatedObject = getObjectByName(
-        this.globalObjectsContainer,
-        this.objectsContainer,
+        this.project,
+        this.layout,
         associatedObjectName
       );
       if (!associatedObject) return null;
@@ -393,6 +382,7 @@ export default class LayerRenderer {
         instance.ptr
       ] = ObjectsRenderingService.createNewInstanceRenderer(
         this.project,
+        this.layout,
         instance,
         associatedObject.getConfiguration(),
         this.pixiContainer,

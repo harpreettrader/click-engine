@@ -5,7 +5,6 @@ import { action } from '@storybook/addon-actions';
 import paperDecorator from '../../PaperDecorator';
 
 import InfoBar from '../../../UI/Messages/InfoBar';
-import FixedHeightFlexContainer from '../../FixedHeightFlexContainer';
 import { ColumnStackLayout } from '../../../UI/Layout';
 import RaisedButton from '../../../UI/RaisedButton';
 import { Line } from '../../../UI/Grid';
@@ -23,7 +22,7 @@ export const Default = () => {
     setInfoBarWithActionOpen,
   ] = React.useState<boolean>(false);
   return (
-    <FixedHeightFlexContainer height={600}>
+    <>
       <Line>
         <ColumnStackLayout>
           <RaisedButton
@@ -48,6 +47,6 @@ export const Default = () => {
           />
         </ColumnStackLayout>
       </Line>
-    </FixedHeightFlexContainer>
+    </>
   );
 };

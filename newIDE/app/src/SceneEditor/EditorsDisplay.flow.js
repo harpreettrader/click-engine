@@ -17,18 +17,10 @@ import { type EditorId } from '.';
 import Rectangle from '../Utils/Rectangle';
 import ViewPosition from '../InstancesEditor/ViewPosition';
 import { type ObjectFolderOrObjectWithContext } from '../ObjectsList/EnumerateObjectFolderOrObject';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
-import { type TileMapTileSelection } from '../InstancesEditor/TileSetVisualizer';
 
 export type SceneEditorsDisplayProps = {|
   project: gdProject,
-  layout: gdLayout | null,
-  eventsFunctionsExtension: gdEventsFunctionsExtension | null,
-  eventsBasedObject: gdEventsBasedObject | null,
-  layersContainer: gdLayersContainer,
-  globalObjectsContainer: gdObjectsContainer | null,
-  objectsContainer: gdObjectsContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
+  layout: gdLayout,
   initialInstances: gdInitialInstancesContainer,
   instancesSelection: InstancesSelection,
   selectedLayer: string,
@@ -95,9 +87,6 @@ export type SceneEditorsDisplayProps = {|
   isInstanceOf3DObject: gdInitialInstance => boolean,
   onSelectAllInstancesOfObjectInLayout: string => void,
 
-  tileMapTileSelection: ?TileMapTileSelection,
-  onSelectTileMapTile: (?TileMapTileSelection) => void,
-
   canInstallPrivateAsset: () => boolean,
 
   instancesEditorSettings: InstancesEditorSettings,
@@ -129,6 +118,7 @@ export type SceneEditorsDisplayInterface = {|
   openNewObjectDialog: () => void,
   toggleEditorView: (editorId: EditorId) => void,
   isEditorVisible: (editorId: EditorId) => boolean,
+  renameObjectFolderOrObjectWithContext: ObjectFolderOrObjectWithContext => void,
   viewControls: {|
     zoomBy: (factor: number) => void,
     setZoomFactor: (factor: number) => void,
@@ -145,7 +135,6 @@ export type SceneEditorsDisplayInterface = {|
   |},
   startSceneRendering: (start: boolean) => void,
   instancesHandlers: {|
-    getContentAABB: () => Rectangle | null,
     getSelectionAABB: () => Rectangle,
     addInstances: (
       pos: [number, number],

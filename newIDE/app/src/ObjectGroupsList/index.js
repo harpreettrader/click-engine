@@ -26,7 +26,6 @@ import TreeView, { type TreeViewInterface } from '../UI/TreeView';
 import useForceUpdate from '../Utils/UseForceUpdate';
 import useAlertDialog from '../UI/Alert/useAlertDialog';
 import ErrorBoundary from '../UI/ErrorBoundary';
-import KeyboardShortcuts from '../UI/KeyboardShortcuts';
 
 export const groupWithContextReactDndType = 'GD_GROUP_WITH_CONTEXT';
 
@@ -82,7 +81,7 @@ const isGroupWithContextGlobal = (groupWithContext: GroupWithContext) =>
 export type ObjectGroupsListInterface = {| forceUpdate: () => void |};
 
 type Props = {|
-  globalObjectGroups: gdObjectGroupsContainer | null,
+  globalObjectGroups: gdObjectGroupsContainer,
   objectGroups: gdObjectGroupsContainer,
   onDeleteGroup: (groupWithContext: GroupWithContext, cb: Function) => void,
   onEditGroup: gdObjectGroup => void,
@@ -131,16 +130,6 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
 
     React.useImperativeHandle(ref, () => ({ forceUpdate }));
 
-    // Initialize keyboard shortcuts as empty.
-    // onDelete, onDuplicate and onRename callbacks are set in an effect because it applies to
-    // the selected item (that is a state variable). As it is stored in a ref, the keyboard shortcut
-    // instance does not update with selectedGroupWithContext changes.
-    const keyboardShortcutsRef = React.useRef<KeyboardShortcuts>(
-      new KeyboardShortcuts({
-        shortcutCallbacks: {},
-      })
-    );
-
     const scrollToItem = React.useCallback(
       (groupWithContext: GroupWithContext) => {
         if (treeViewRef.current) {
@@ -170,9 +159,7 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
       () => {
         const name = newNameGenerator(
           'Group',
-          name =>
-            objectGroups.has(name) ||
-            (!!globalObjectGroups && globalObjectGroups.has(name))
+          name => objectGroups.has(name) || globalObjectGroups.has(name)
         );
 
         const newObjectGroup = objectGroups.insertNew(
@@ -228,9 +215,7 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
           if (!doRemove) return;
 
           if (global) {
-            if (globalObjectGroups) {
-              globalObjectGroups.remove(group.getName());
-            }
+            globalObjectGroups.remove(group.getName());
           } else {
             objectGroups.remove(group.getName());
           }
@@ -257,18 +242,13 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
 
         const newName = newNameGenerator(
           group.getName(),
-          name =>
-            objectGroups.has(name) ||
-            (!!globalObjectGroups && globalObjectGroups.has(name)),
+          name => objectGroups.has(name) || globalObjectGroups.has(name),
           ''
         );
 
-        const container: gdObjectGroupsContainer | null = global
+        const container: gdObjectGroupsContainer = global
           ? globalObjectGroups
           : objectGroups;
-        if (!container) {
-          return;
-        }
 
         const serializedDuplicatedGroup = serializeToJSObject(group);
         const newGroup = container.insertNew(
@@ -282,11 +262,10 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
           'unserializeFrom'
         );
         newGroup.setName(newName); // Unserialization has overwritten the name.
-        setSelectedGroupWithContext({ group: newGroup, global });
-        onEditName({ group: newGroup, global });
+
         onObjectGroupModified();
       },
-      [globalObjectGroups, objectGroups, onObjectGroupModified, onEditName]
+      [globalObjectGroups, objectGroups, onObjectGroupModified]
     );
 
     const onRename = React.useCallback(
@@ -317,10 +296,6 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
 
     const setAsGlobalGroup = React.useCallback(
       async (groupWithContext: GroupWithContext, index?: number) => {
-        if (!globalObjectGroups) {
-          return;
-        }
-
         const { group } = groupWithContext;
 
         const groupName = group.getName();
@@ -419,7 +394,7 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
           return;
         }
 
-        let container: gdObjectGroupsContainer | null;
+        let container: gdObjectGroupsContainer;
         let fromIndex: number;
         let toIndex: number;
 
@@ -430,18 +405,12 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
           container = selectedGroupWithContext.global
             ? globalObjectGroups
             : objectGroups;
-          if (!container) {
-            return;
-          }
 
           fromIndex = container.getPosition(
             selectedGroupWithContext.group.getName()
           );
           toIndex = container.getPosition(destinationItem.group.getName());
         } else if (!selectedGroupWithContext.global && destinationItem.global) {
-          if (!globalObjectGroups) {
-            return;
-          }
           const destinationIndex = globalObjectGroups.getPosition(
             destinationItem.group.getName()
           );
@@ -453,9 +422,6 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
         if (toIndex > fromIndex) toIndex -= 1;
         if (where === 'after') toIndex += 1;
 
-        if (!container) {
-          return;
-        }
         container.move(fromIndex, toIndex);
         onObjectGroupModified();
         if (treeViewRef.current) treeViewRef.current.forceUpdateList();
@@ -528,15 +494,12 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
         const objectGroupsList: GroupWithContextList = enumerateGroups(
           objectGroups
         ).map(group => ({ group, global: false }));
-        const globalObjectGroupsList: GroupWithContextList = globalObjectGroups
-          ? enumerateGroups(globalObjectGroups).map(group => ({
-              group,
-              global: true,
-            }))
-          : [];
+        const globalObjectGroupsList: GroupWithContextList = enumerateGroups(
+          globalObjectGroups
+        ).map(group => ({ group, global: true }));
 
         const treeViewItems = [
-          globalObjectGroups && {
+          {
             label: i18n._(t`Global Groups`),
             children:
               globalObjectGroupsList.length > 0
@@ -556,43 +519,17 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
             isRoot: true,
             id: sceneGroupsRootFolderId,
           },
-        ].filter(Boolean);
+        ];
 
         return treeViewItems;
       },
       [globalObjectGroups, objectGroups]
     );
 
-    React.useEffect(
-      () => {
-        if (keyboardShortcutsRef.current) {
-          keyboardShortcutsRef.current.setShortcutCallback('onDelete', () => {
-            if (!selectedGroupWithContext) return;
-            onDelete(selectedGroupWithContext);
-          });
-          keyboardShortcutsRef.current.setShortcutCallback(
-            'onDuplicate',
-            () => {
-              if (!selectedGroupWithContext) return;
-              onDuplicate(selectedGroupWithContext);
-            }
-          );
-          keyboardShortcutsRef.current.setShortcutCallback('onRename', () => {
-            if (!selectedGroupWithContext) return;
-            onEditName(selectedGroupWithContext);
-          });
-        }
-      },
-      [selectedGroupWithContext, onDelete, onDuplicate, onEditName]
-    );
-
     // Force List component to be mounted again if globalObjectGroups or objectGroups
     // has been changed. Avoid accessing to invalid objects that could
     // crash the app.
-    const listKey =
-      objectGroups.ptr +
-      ';' +
-      (globalObjectGroups ? globalObjectGroups.ptr : '');
+    const listKey = objectGroups.ptr + ';' + globalObjectGroups.ptr;
 
     return (
       <Background>
@@ -606,12 +543,7 @@ const ObjectGroupsList = React.forwardRef<Props, ObjectGroupsListInterface>(
             />
           </Column>
         </Line>
-        <div
-          style={styles.listContainer}
-          onKeyDown={keyboardShortcutsRef.current.onKeyDown}
-          onKeyUp={keyboardShortcutsRef.current.onKeyUp}
-          id="objects-groups-list"
-        >
+        <div style={styles.listContainer}>
           <I18n>
             {({ i18n }) => {
               const treeViewData = getTreeViewData(i18n);
@@ -690,7 +622,7 @@ const arePropsEqual = (prevProps: Props, nextProps: Props): boolean =>
   // from the component.
   // If a change is made, the component won't notice it: you have to manually
   // call forceUpdate.
-  prevProps.globalObjectGroups === nextProps.globalObjectGroups &&
+  prevProps.globalObjectGroups === nextProps.globalObjectGroups ||
   prevProps.objectGroups === nextProps.objectGroups;
 
 const MemoizedObjectGroupsList = React.memo<Props, ObjectGroupsListInterface>(

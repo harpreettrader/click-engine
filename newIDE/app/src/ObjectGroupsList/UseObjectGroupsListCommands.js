@@ -4,29 +4,25 @@ import { enumerateGroups } from '../ObjectsList/EnumerateObjects';
 import { useCommandWithOptions } from '../CommandPalette/CommandHooks';
 
 type Props = {|
-  globalObjectsContainer: gdObjectsContainer | null,
-  objectsContainer: ?gdObjectsContainer,
+  project: gdProject,
+  layout: gdLayout,
   onEditObjectGroup: (group: gdObjectGroup) => void,
 |};
 
 const useObjectGroupsListCommands = (props: Props) => {
-  const { globalObjectsContainer, objectsContainer, onEditObjectGroup } = props;
+  const { project, layout, onEditObjectGroup } = props;
 
   useCommandWithOptions('EDIT_OBJECT_GROUP', true, {
     generateOptions: React.useCallback(
       () =>
         [
-          ...(objectsContainer
-            ? enumerateGroups(objectsContainer.getObjectGroups())
-            : []),
-          ...(globalObjectsContainer
-            ? enumerateGroups(globalObjectsContainer.getObjectGroups())
-            : []),
+          ...enumerateGroups(layout.getObjectGroups()),
+          ...enumerateGroups(project.getObjectGroups()),
         ].map(group => ({
           text: group.getName(),
           handler: () => onEditObjectGroup(group),
         })),
-      [onEditObjectGroup, globalObjectsContainer, objectsContainer]
+      [onEditObjectGroup, project, layout]
     ),
   });
 };

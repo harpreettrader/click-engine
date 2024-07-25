@@ -1,6 +1,6 @@
 // @flow
 import * as React from 'react';
-import { action } from '@storybook/addon-actions';
+
 import paperDecorator from '../../../PaperDecorator';
 import FixedHeightFlexContainer from '../../../FixedHeightFlexContainer';
 import { AssetStoreStateProvider } from '../../../../AssetStore/AssetStoreContext';
@@ -55,24 +55,21 @@ const Wrapper = ({ children }: { children: React.Node }) => {
 
 export const Default = () => (
   <Wrapper>
-    <AssetStore onOpenProfile={action('onOpenProfile')} displayPromotions />
+    <AssetStore displayPromotions />
   </Wrapper>
 );
 Default.parameters = apiDataFakePacks;
 
 export const WithoutPromotions = () => (
   <Wrapper>
-    <AssetStore
-      onOpenProfile={action('onOpenProfile')}
-      displayPromotions={false}
-    />
+    <AssetStore displayPromotions={false} />
   </Wrapper>
 );
 WithoutPromotions.parameters = apiDataFakePacks;
 
 export const LoadingError = () => (
   <Wrapper>
-    <AssetStore onOpenProfile={action('onOpenProfile')} />
+    <AssetStore />
   </Wrapper>
 );
 LoadingError.parameters = apiDataServerSideError;

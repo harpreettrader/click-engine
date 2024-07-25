@@ -3,8 +3,6 @@ import {
   getAutocompletionsFromDescriptions,
   insertAutocompletionInExpression,
 } from '.';
-import { ProjectScopedContainersAccessor } from '../InstructionOrExpression/EventsScope.flow';
-
 const gd: libGDevelop = global.gd;
 
 // $FlowExpectedError
@@ -20,9 +18,12 @@ const makeTestContext = () => {
   testLayout.insertNewLayer('Background', 0);
   testLayout.insertNewLayer('Foreground', 0);
 
-  const object = testLayout
-    .getObjects()
-    .insertNewObject(project, 'Sprite', 'MySpriteObject', 0);
+  const object = testLayout.insertNewObject(
+    project,
+    'Sprite',
+    'MySpriteObject',
+    0
+  );
   const spriteConfiguration = gd.asSpriteConfiguration(
     object.getConfiguration()
   );
@@ -37,9 +38,12 @@ const makeTestContext = () => {
   animation.setDirection(direction, 0);
   spriteConfiguration.getAnimations().addAnimation(animation);
 
-  const spriteObjectWithBehaviors = testLayout
-    .getObjects()
-    .insertNewObject(project, 'Sprite', 'MySpriteObjectWithBehaviors', 0);
+  const spriteObjectWithBehaviors = testLayout.insertNewObject(
+    project,
+    'Sprite',
+    'MySpriteObjectWithBehaviors',
+    0
+  );
   spriteObjectWithBehaviors.addNewBehavior(
     project,
     'PlatformBehavior::PlatformerObjectBehavior',
@@ -67,12 +71,13 @@ describe('ExpressionAutocompletion', () => {
       const scope = { project, layout: testLayout };
 
       const expressionNode = parser.parseExpression('My').get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode,
         1
@@ -81,7 +86,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -106,7 +111,7 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode2 = parser.parseExpression('MySpriteObjectW').get();
       const completionDescriptions2 = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode2,
         1
@@ -115,7 +120,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions2,
@@ -138,12 +143,13 @@ describe('ExpressionAutocompletion', () => {
       const scope = { project, layout: testLayout };
 
       const expressionNode = parser.parseExpression('To').get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'string',
         expressionNode,
         1
@@ -152,7 +158,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -193,12 +199,13 @@ describe('ExpressionAutocompletion', () => {
       const scope = { project, layout: testLayout };
 
       const expressionNode = parser.parseExpression('MouseX("Ba').get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode,
         9
@@ -207,7 +214,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -228,12 +235,13 @@ describe('ExpressionAutocompletion', () => {
       const scope = { project, layout: testLayout };
 
       const expressionNode = parser.parseExpression('MySpriteObject.Ani').get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'string',
         expressionNode,
         16
@@ -242,7 +250,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -267,12 +275,13 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode = parser
         .parseExpression('MySpriteObjectWithBehaviors.Speed')
         .get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'string',
         expressionNode,
         'MySpriteObjectWithBehaviors.Speed'.length - 1
@@ -281,7 +290,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -316,12 +325,13 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode = parser
         .parseExpression('MySpriteObject.PointX("He')
         .get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode,
         24
@@ -330,7 +340,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -353,12 +363,13 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode = parser
         .parseExpression('MySpriteObjectWithBehaviors.Plat')
         .get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode,
         28
@@ -367,7 +378,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -391,12 +402,13 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode = parser
         .parseExpression('MySpriteObjectWithBehaviors.a')
         .get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'number',
         expressionNode,
         28
@@ -405,7 +417,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,
@@ -434,12 +446,13 @@ describe('ExpressionAutocompletion', () => {
       const expressionNode = parser
         .parseExpression('MySpriteObjectWithBehaviors.PlatformerObject::Jum')
         .get();
-      const projectScopedContainersAccessor = new ProjectScopedContainersAccessor(
-        scope
+      const projectScopedContainers = gd.ProjectScopedContainers.makeNewProjectScopedContainersForProjectAndLayout(
+        project,
+        testLayout
       );
       const completionDescriptions = gd.ExpressionCompletionFinder.getCompletionDescriptionsFor(
         gd.JsPlatform.get(),
-        projectScopedContainersAccessor.get(),
+        projectScopedContainers,
         'string',
         expressionNode,
         47
@@ -448,7 +461,7 @@ describe('ExpressionAutocompletion', () => {
         {
           gd,
           project: project,
-          projectScopedContainersAccessor,
+          projectScopedContainers,
           scope,
         },
         completionDescriptions,

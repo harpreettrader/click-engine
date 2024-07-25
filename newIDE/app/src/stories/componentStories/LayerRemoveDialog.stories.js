@@ -47,9 +47,7 @@ export const LayerWithInstances = () => {
     <LayerRemoveDialog
       open
       project={project}
-      layout={layout}
-      layersContainer={layout.getLayers()}
-      initialInstances={layout.getInitialInstances()}
+      layersContainer={layout}
       layerRemoved="GUI"
       onClose={action('onClose')}
     />
@@ -72,9 +70,7 @@ export const LayerWithoutInstances = () => {
     <LayerRemoveDialog
       open
       project={project}
-      layout={layout}
-      layersContainer={layout.getLayers()}
-      initialInstances={layout.getInitialInstances()}
+      layersContainer={layout}
       layerRemoved="GUI"
       onClose={action('onClose')}
     />

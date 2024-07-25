@@ -63,10 +63,10 @@ type Props = {|
   project: ?gdProject,
   games: Array<Game>,
   onRefreshGames: () => Promise<void>,
-  onOpenGameId: (gameId: ?string) => void,
+  onOpenGame: (?Game) => void,
 |};
 
-const GamesList = ({ project, games, onRefreshGames, onOpenGameId }: Props) => {
+const GamesList = ({ project, games, onRefreshGames, onOpenGame }: Props) => {
   const {
     routeArguments,
     addRouteArguments,
@@ -148,7 +148,7 @@ const GamesList = ({ project, games, onRefreshGames, onOpenGameId }: Props) => {
           const game = games.find(game => game.id === initialGameId);
           removeRouteArguments(['game-id']);
           if (game) {
-            onOpenGameId(game.id);
+            onOpenGame(game);
           } else {
             // If the game is not in the list, then either
             // - allow to register it, if it's the current project.
@@ -183,7 +183,7 @@ const GamesList = ({ project, games, onRefreshGames, onOpenGameId }: Props) => {
       showConfirmation,
       showAlert,
       project,
-      onOpenGameId,
+      onOpenGame,
     ]
   );
 
@@ -266,7 +266,7 @@ const GamesList = ({ project, games, onRefreshGames, onOpenGameId }: Props) => {
             game={game}
             onOpenGameManager={(tab: GameDetailsTab) => {
               addRouteArguments({ 'games-dashboard-tab': tab });
-              onOpenGameId(game.id);
+              onOpenGame(game);
             }}
             onUpdateGame={onRefreshGames}
           />

@@ -10,7 +10,6 @@ import FeedbackCard from '../../../../GameDashboard/Feedbacks/FeedbackCard';
 import {
   commentProcessed,
   commentUnprocessed,
-  commentWithNoTextUnprocessed,
   fakeSilverAuthenticatedUser,
   indieUserProfile,
 } from '../../../../fixtures/GDevelopServicesTestData';
@@ -24,14 +23,6 @@ export default {
 export const Default = () => (
   <FeedbackCard
     comment={commentUnprocessed}
-    authenticatedUser={fakeSilverAuthenticatedUser}
-    onCommentUpdated={action('onCommentUpdated')}
-  />
-);
-
-export const WithoutText = () => (
-  <FeedbackCard
-    comment={commentWithNoTextUnprocessed}
     authenticatedUser={fakeSilverAuthenticatedUser}
     onCommentUpdated={action('onCommentUpdated')}
   />

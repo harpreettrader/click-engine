@@ -9,7 +9,6 @@ export type CommandName =
   | 'LAUNCH_DEBUG_PREVIEW'
   | 'LAUNCH_NETWORK_PREVIEW'
   | 'HOT_RELOAD_PREVIEW'
-  | 'LAUNCH_PREVIEW_WITH_DIAGNOSTIC_REPORT'
   | 'OPEN_HOME_PAGE'
   | 'CREATE_NEW_PROJECT'
   | 'OPEN_PROJECT'
@@ -39,6 +38,7 @@ export type CommandName =
   | 'TOGGLE_LAYERS_PANEL'
   | 'SCENE_EDITOR_UNDO'
   | 'SCENE_EDITOR_REDO'
+  | 'RENAME_SCENE_OBJECT'
   | 'DELETE_INSTANCES'
   | 'TOGGLE_WINDOW_MASK'
   | 'TOGGLE_GRID'
@@ -53,7 +53,6 @@ export type CommandName =
   | 'EDIT_OBJECT_GROUP'
   | 'ADD_STANDARD_EVENT'
   | 'ADD_SUBEVENT'
-  | 'ADD_LOCAL_VARIABLE'
   | 'ADD_COMMENT_EVENT'
   | 'TOGGLE_EVENT_DISABLED'
   | 'TOGGLE_CONDITION_INVERTED'
@@ -88,7 +87,7 @@ const commandsList: { [CommandName]: CommandMetadata } = {
   // General commands
   QUIT_APP: {
     area: 'GENERAL',
-    displayText: t`Close GDevelop`,
+    displayText: t`Close ClickEngine`,
     handledByElectron: true,
   },
   OPEN_PROJECT_MANAGER: {
@@ -112,10 +111,6 @@ const commandsList: { [CommandName]: CommandMetadata } = {
   HOT_RELOAD_PREVIEW: {
     area: 'PROJECT',
     displayText: t`Apply changes to the running preview`,
-  },
-  LAUNCH_PREVIEW_WITH_DIAGNOSTIC_REPORT: {
-    area: 'PROJECT',
-    displayText: t`Launch preview with diagnostic report`,
   },
   OPEN_HOME_PAGE: { area: 'IDE', displayText: t`Show Home` },
   CREATE_NEW_PROJECT: {
@@ -242,6 +237,10 @@ const commandsList: { [CommandName]: CommandMetadata } = {
     displayText: t`Redo the last changes`,
     noShortcut: true,
   },
+  RENAME_SCENE_OBJECT: {
+    area: 'SCENE',
+    displayText: t`Rename the selected object`,
+  },
   DELETE_INSTANCES: {
     area: 'SCENE',
     displayText: t`Delete the selected instances from the scene`,
@@ -287,10 +286,6 @@ const commandsList: { [CommandName]: CommandMetadata } = {
   ADD_SUBEVENT: {
     area: 'EVENTS',
     displayText: t`Add a sub-event to the selected event`,
-  },
-  ADD_LOCAL_VARIABLE: {
-    area: 'EVENTS',
-    displayText: t`Add a local variable to the selected event`,
   },
   ADD_COMMENT_EVENT: { area: 'EVENTS', displayText: t`Add a comment` },
   TOGGLE_EVENT_DISABLED: {

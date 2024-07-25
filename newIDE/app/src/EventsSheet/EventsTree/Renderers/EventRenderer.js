@@ -4,19 +4,16 @@ import {
   type InstructionsListContext,
   type InstructionContext,
   type ParameterContext,
-  type VariableDeclarationContext,
 } from '../../SelectionHandler';
 import { type EventsScope } from '../../../InstructionOrExpression/EventsScope.flow';
 import { type ScreenType } from '../../../UI/Responsive/ScreenTypeMeasurer';
 import { type WindowSizeType } from '../../../UI/Responsive/ResponsiveWindowMeasurer';
-import { ProjectScopedContainersAccessor } from '../../../InstructionOrExpression/EventsScope.flow';
 
 export type EventRendererProps = {
   project: gdProject,
   scope: EventsScope,
   globalObjectsContainer: gdObjectsContainer,
   objectsContainer: gdObjectsContainer,
-  projectScopedContainersAccessor: ProjectScopedContainersAccessor,
   event: gdBaseEvent,
   disabled: boolean,
 
@@ -38,9 +35,6 @@ export type EventRendererProps = {
   onParameterClick: ParameterContext => void,
   onEndEditingEvent: () => void,
   selection: any,
-
-  onVariableDeclarationClick: VariableDeclarationContext => void,
-  onVariableDeclarationDoubleClick: VariableDeclarationContext => void,
 
   onOpenLayout: string => void,
   onOpenExternalEvents: string => void,

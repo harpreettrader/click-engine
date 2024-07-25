@@ -4,25 +4,23 @@ import { type ObjectFolderOrObjectWithContext } from '../ObjectsList/EnumerateOb
 const gd: libGDevelop = global.gd;
 
 export const cleanNonExistingObjectFolderOrObjectWithContexts = (
-  globalObjectsContainer: ?gdObjectsContainer,
-  objectsContainer: ?gdObjectsContainer,
+  globalObjectsContainer: gdObjectsContainer,
+  objectsContainer: gdObjectsContainer,
   objectFolderOrObjectWithContexts: Array<ObjectFolderOrObjectWithContext>
 ): Array<ObjectFolderOrObjectWithContext> => {
   const allObjectFolderOrObjectPtrs = new Set<number>();
-  if (objectsContainer)
-    mapVector(
-      objectsContainer.getAllObjectFolderOrObjects(),
-      objectFolderOrObject => {
-        allObjectFolderOrObjectPtrs.add(gd.getPointer(objectFolderOrObject));
-      }
-    );
-  if (globalObjectsContainer)
-    mapVector(
-      globalObjectsContainer.getAllObjectFolderOrObjects(),
-      objectFolderOrObject => {
-        allObjectFolderOrObjectPtrs.add(gd.getPointer(objectFolderOrObject));
-      }
-    );
+  mapVector(
+    objectsContainer.getAllObjectFolderOrObjects(),
+    objectFolderOrObject => {
+      allObjectFolderOrObjectPtrs.add(gd.getPointer(objectFolderOrObject));
+    }
+  );
+  mapVector(
+    globalObjectsContainer.getAllObjectFolderOrObjects(),
+    objectFolderOrObject => {
+      allObjectFolderOrObjectPtrs.add(gd.getPointer(objectFolderOrObject));
+    }
+  );
 
   return objectFolderOrObjectWithContexts.filter(
     objectFolderOrObjectWithContext =>

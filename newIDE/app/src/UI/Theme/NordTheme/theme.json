@@ -426,21 +426,9 @@
         }
       }
     },
-    "snackbar": {
-      "border": {
-        "color": {
-          "value": "#C5C5C9"
-        }
-      },
-      "background": {
-        "color": {
-          "value": "#343A46"
-        }
-      }
-    },
     "notification": {
       "badge-color": {
-        "value": "#FF5E3B"
+        "value": "#6BAFFF"
       }
     },
     "text-field": {

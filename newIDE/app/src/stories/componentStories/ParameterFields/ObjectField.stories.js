@@ -23,11 +23,8 @@ export const Default = () => (
       <ObjectField
         project={testProject.project}
         scope={{ project: testProject.project, layout: testProject.testLayout }}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         value={value}
         onChange={onChange}
       />
@@ -42,11 +39,8 @@ export const NonExistingObject = () => (
       <ObjectField
         project={testProject.project}
         scope={{ project: testProject.project, layout: testProject.testLayout }}
-        globalObjectsContainer={testProject.project.getObjects()}
-        objectsContainer={testProject.testLayout.getObjects()}
-        projectScopedContainersAccessor={
-          testProject.testSceneProjectScopedContainersAccessor
-        }
+        globalObjectsContainer={testProject.project}
+        objectsContainer={testProject.testLayout}
         value={value}
         onChange={onChange}
       />
@@ -77,11 +71,8 @@ export const WrongObjectType = () => {
             project: testProject.project,
             layout: testProject.testLayout,
           }}
-          globalObjectsContainer={testProject.project.getObjects()}
-          objectsContainer={testProject.testLayout.getObjects()}
-          projectScopedContainersAccessor={
-            testProject.testSceneProjectScopedContainersAccessor
-          }
+          globalObjectsContainer={testProject.project}
+          objectsContainer={testProject.testLayout}
           instructionMetadata={instructionMetadata}
           parameterMetadata={parameterMetadata}
           parameterIndex={0}
@@ -110,11 +101,8 @@ export const WithRequiredBehavior = () => {
             project: testProject.project,
             layout: testProject.testLayout,
           }}
-          globalObjectsContainer={testProject.project.getObjects()}
-          objectsContainer={testProject.testLayout.getObjects()}
-          projectScopedContainersAccessor={
-            testProject.testSceneProjectScopedContainersAccessor
-          }
+          globalObjectsContainer={testProject.project}
+          objectsContainer={testProject.testLayout}
           instructionMetadata={instructionMetadata}
           parameterIndex={0}
           value={value}

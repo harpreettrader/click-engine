@@ -94,15 +94,8 @@ export default React.forwardRef<ParameterFieldProps, ParameterFieldInterface>(
 export const renderInlineRelationalOperator = ({
   value,
   InvalidParameterValue,
-  parameterMetadata,
 }: ParameterInlineRendererProps) => {
-  const comparedValueType = parameterMetadata
-    ? parameterMetadata.getExtraInfo()
-    : 'unknown';
-  const operators =
-    mapTypeToOperators[comparedValueType] || mapTypeToOperators.unknown;
-
-  if (!operators.includes(value)) {
+  if (!value) {
     return (
       <InvalidParameterValue isEmpty>
         <Trans>Choose an operator</Trans>
